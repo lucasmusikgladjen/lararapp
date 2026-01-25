@@ -545,3 +545,153 @@
 
 ---
 
+---
+
+# APP-SPECIFIKA SCHEMA-ÄNDRINGAR
+
+> **VIKTIGT:** Följande tabeller och fält måste skapas MANUELLT i Airtable innan appen kan implementeras.
+> En LLM kan inte skapa dessa automatiskt - detta måste göras av en människa med Airtable-access.
+
+---
+
+## NYA TABELLER ATT SKAPA
+
+### AppNotifikationer (NY TABELL)
+
+**Syfte:** Lagrar notifikationer som visas i lärarappen. Admin skapar notifikationer här som pushas till lärare.
+
+**Skapa tabell med namn:** `AppNotifikationer`
+
+| Field Name | Type | Beskrivning |
+|------------|------|-------------|
+| **ID** (primary) | Auto number | Automatiskt genererat ID |
+| Lärare | Link to **Lärare** | Vilken lärare notifikationen gäller |
+| Typ | Single select | Typ av notifikation (se värden nedan) |
+| Titel | Single line text | Rubrik som visas i appen |
+| Meddelande | Long text | Detaljerat meddelande |
+| Läst | Checkbox | Om läraren har läst/åtgärdat notifikationen |
+| Metadata | Long text | JSON-sträng med extra data (t.ex. `{"lessonId": "rec123"}`) |
+| Skapad | Created time | När notifikationen skapades |
+| LäsDatum | Date | När notifikationen markerades som läst |
+| Prioritet | Single select | `Hög`, `Normal`, `Låg` |
+
+**Typ-fältets värden (Single select options):**
+- `UNREPORTED_LESSON` - Du har glömt rapportera en lektion
+- `NEW_MATCH` - Ny matchning till dig!
+- `NEW_STUDENT_NEARBY` - Ny elev nära dig
+- `MISSING_BELASTNINGSREGISTER` - Du saknar aktuellt belastningsregister
+- `SALARY_AVAILABLE` - Din lön är tillgänglig
+- `LESSON_REMINDER` - Påminnelse om kommande lektion
+- `GENERAL_MESSAGE` - Allmänt meddelande från admin
+
+---
+
+### PushTokens (NY TABELL)
+
+**Syfte:** Lagrar Firebase Cloud Messaging device tokens för att kunna skicka push-notifikationer till lärarnas enheter.
+
+**Skapa tabell med namn:** `PushTokens`
+
+| Field Name | Type | Beskrivning |
+|------------|------|-------------|
+| **ID** (primary) | Auto number | Automatiskt genererat ID |
+| Lärare | Link to **Lärare** | Vilken lärare token tillhör |
+| Token | Single line text | Firebase device token |
+| Platform | Single select | `ios`, `android` |
+| Aktiv | Checkbox | Om token fortfarande är giltig |
+| Skapad | Created time | När token registrerades |
+| SenastAnvänd | Date | När token senast användes för push |
+
+**Notera:** En lärare kan ha flera tokens (en per enhet de loggar in på).
+
+---
+
+## NYA FÄLT I BEFINTLIGA TABELLER
+
+### Lärare-tabellen - Nya fält
+
+Lägg till följande fält i den befintliga **Lärare**-tabellen:
+
+| Field Name | Type | Beskrivning |
+|------------|------|-------------|
+| PasswordHash | Single line text | Bcrypt-hashad version av lösenordet (ersätter det osäkra Lösenord-fältet) |
+| RefreshToken | Single line text | JWT refresh token för att förnya access tokens |
+| LastLogin | Date | Datum/tid för senaste inloggning |
+| DirectionsCount | Number | Antal Google Directions API-anrop idag (för rate limiting) |
+| DirectionsResetTime | Date | Tidpunkt när DirectionsCount ska nollställas |
+| AppRegistrerad | Checkbox | Om läraren har registrerat sig via appen (vs. webbsidan) |
+| OnboardingKlar | Checkbox | Om läraren har slutfört onboarding i appen |
+
+**VIKTIGT om Lösenord-fältet:**
+- Det befintliga `Lösenord`-fältet (rad 212) innehåller idag hashade lösenord från webbsidan
+- Behåll detta fält för bakåtkompatibilitet
+- Det nya `PasswordHash`-fältet används för app-autentisering
+- Backend bör kontrollera båda fälten vid inloggning för att stödja både webb- och app-användare
+
+---
+
+### Elev-tabellen - Nya fält
+
+**OBS:** Fältet `Önskar` (Link to Lärare) finns redan på rad 54 i schemat. Detta används för ansökningsflödet i FindStudents.
+
+Lägg till följande fält i den befintliga **Elev**-tabellen:
+
+| Field Name | Type | Beskrivning |
+|------------|------|-------------|
+| DisplayID | Formula | Anonymiserat ID för visning i appen: `CONCATENATE("Elev: ", {NummerID})` |
+| ÖnskarDatum | Date | När senaste ansökan från lärare inkom |
+
+---
+
+### Lektioner-tabellen - Nya fält
+
+Lägg till följande fält i den befintliga **Lektioner**-tabellen:
+
+| Field Name | Type | Beskrivning |
+|------------|------|-------------|
+| RapporteradViaApp | Checkbox | Om lektionen rapporterades via appen |
+| RapporteringsDatum | Date | När lektionen rapporterades |
+| SkapadViaApp | Checkbox | Om lektionen skapades via appen |
+
+---
+
+## AUTOMATION: SKAPA NOTIFIKATIONER
+
+Sätt upp följande Airtable Automations för att automatiskt skapa notifikationer:
+
+### 1. Orapporterad lektion
+**Trigger:** När `Datum` i Lektioner passerar OCH `Genomförd` = false OCH `Inställd` = false
+**Vänta:** 24 timmar
+**Action:** Skapa post i AppNotifikationer med:
+- Lärare: Koppla till lektionens lärare
+- Typ: `UNREPORTED_LESSON`
+- Titel: "Glömd rapportering"
+- Meddelande: "Du har en lektion som inte rapporterats"
+- Metadata: `{"lessonId": "<record_id>"}`
+
+### 2. Saknar belastningsregister
+**Trigger:** Varje måndag kl 09:00
+**Filter:** Lärare där `Slutar` = "Aktiv" OCH `Belastningsregister` är tom
+**Action:** Skapa post i AppNotifikationer för varje matchande lärare
+
+### 3. Ny elev nära dig
+**Trigger:** När ny Elev skapas med `Status` = "Söker lärare"
+**Action:** Skapa post i AppNotifikationer för alla aktiva lärare inom 10 km (kräver eventuellt extern integration)
+
+---
+
+## SAMMANFATTNING: CHECKLIST FÖR AIRTABLE-ADMIN
+
+Innan appen kan tas i bruk, säkerställ att följande är gjort:
+
+- [ ] **Skapa tabell:** AppNotifikationer (med alla fält enligt specifikation)
+- [ ] **Skapa tabell:** PushTokens (med alla fält enligt specifikation)
+- [ ] **Lägg till fält i Lärare:** PasswordHash, RefreshToken, LastLogin, DirectionsCount, DirectionsResetTime, AppRegistrerad, OnboardingKlar
+- [ ] **Lägg till fält i Elev:** DisplayID (formula), ÖnskarDatum
+- [ ] **Lägg till fält i Lektioner:** RapporteradViaApp, RapporteringsDatum, SkapadViaApp
+- [ ] **Sätt upp automation:** Orapporterad lektion → AppNotifikationer
+- [ ] **Sätt upp automation:** Saknar belastningsregister → AppNotifikationer
+- [ ] **Verifiera fält:** Kontrollera att `Önskar` (Link to Lärare) finns i Elev-tabellen
+
+---
+
