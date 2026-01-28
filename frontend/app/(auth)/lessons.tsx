@@ -1,0 +1,10 @@
+import { View, Text } from "react-native";
+
+export default function Lessons() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white">
+      <Text className="text-2xl font-bold">Lektioner</Text>
+      <Text className="text-gray-500 mt-2">Hantera dina lektioner</Text>
+    </View>
+  );
+}
