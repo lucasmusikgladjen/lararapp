@@ -1,10 +1,9 @@
 import express from "express";
-import { getStudents } from "../controllers/studentController";
+import { index } from "../controllers/studentController";
 
 const router = express.Router();
 
-
 // GET students
-router.get("/", getStudents);
+router.get("/", index);
 
 export default router;

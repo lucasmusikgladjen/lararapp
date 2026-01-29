@@ -4,7 +4,13 @@ import { getAllStudents } from "../services/studentService";
 
 const debug = Debug("musikgladjen:studentController");
 
-export const getStudents = async (req: Request, res: Response) => {
+/**
+ * GET /students
+ * 
+ * Retrieve all students.
+ * Returns a list of students.
+ */
+export const index = async (req: Request, res: Response) => {
     try {
         const students = await getAllStudents();
         res.send({

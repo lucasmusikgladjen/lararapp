@@ -1,6 +1,7 @@
 import { get } from "./airtable";
-import type { AirtableResponse, AirtableRecord, Student } from "../models/Student.types";
+import type { AirtableResponse, AirtableRecord, Student } from "../types/Student.types";
 
+// Table: "Elev" | ID: tblAj4VVugqhdPWnR
 const TABLE_NAME = "tblAj4VVugqhdPWnR";
 
 const mapAirtableToStudent = (record: AirtableRecord): Student => {
@@ -25,7 +26,7 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
 };
 
 export const getAllStudents = async (): Promise<Student[]> => {
-    const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}`);
+    const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever`);
 
     return response.records.map(mapAirtableToStudent);
 };

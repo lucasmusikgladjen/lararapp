@@ -1,8 +1,10 @@
-import { Router } from "express";
+import express from "express";
+import studentRoutes from "./studentRoutes";
+import profileRoutes from "./profileRoutes";
+import { login } from "../controllers/authController";
+import { validateAccessToken } from "../middlewares/auth/jwt";
 
-import studentRouter from "./studentRoutes"
-
-const router = Router();
+const router = express.Router();
 
 /**
  * Root endpoint to verify the server is running.
@@ -15,11 +17,29 @@ router.get("/", (_req, res) => {
     });
 });
 
-// ---------- STUDENT ROUTE ----------
+// ---------- AUTHENTICATION ROUTES ----------
 
-router.use("/students", studentRouter);
+/**
+ * Log in a teacher. Requires valid credentials (email & password).
+ * This will generate an authentication token for the teacher.
+ */
+router.post("/login", login);
 
+// ---------- PROFILE ROUTES ----------
 
+/**
+ * Profile routes require user authentication.
+ * Actions for fetching the logged-in teacher's profile.
+ */
+router.use("/profile", validateAccessToken, profileRoutes);
+
+// ---------- STUDENT ROUTES ----------
+
+/**
+ * Routes for managing students.
+ * Protected by authentication to ensure only teachers can view students.
+ */
+router.use("/students", validateAccessToken, studentRoutes);
 
 /**
  * Catch-all route handler for undefined routes.
