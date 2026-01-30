@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+/* import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { airtableService } from "./airtableService";
 
@@ -126,3 +126,4 @@ export const authService = {
     }
   },
 };
+ */

@@ -1,45 +1,27 @@
+import Debug from "debug";
 import { Request, Response } from "express";
+import { getAllStudents } from "../services/studentService";
 
-export const studentController = {
-  async getStudents(req: Request, res: Response) {
-    try {
-      // TODO: Implement get students for teacher
-      res.json([]);
-    } catch (error) {
-      console.error("Get students error:", error);
-      res.status(500).json({ error: "Failed to get students" });
-    }
-  },
+const debug = Debug("musikgladjen:studentController");
 
-  async getStudent(req: Request, res: Response) {
+/**
+ * GET /students
+ * 
+ * Retrieve all students.
+ * Returns a list of students.
+ */
+export const index = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      // TODO: Implement get single student
-      res.json({ id, message: "Get student - not implemented" });
+        const students = await getAllStudents();
+        res.send({
+            status: "success",
+            data: students,
+        });
     } catch (error) {
-      console.error("Get student error:", error);
-      res.status(500).json({ error: "Failed to get student" });
+        debug("Error when trying to get students: %O", error);
+        res.status(500).send({
+            message: "Error fetching students",
+            error: (error as Error).message,
+        });
     }
-  },
-
-  async getAvailableStudents(req: Request, res: Response) {
-    try {
-      // TODO: Implement get available students (for FindStudents map)
-      res.json([]);
-    } catch (error) {
-      console.error("Get available students error:", error);
-      res.status(500).json({ error: "Failed to get available students" });
-    }
-  },
-
-  async applyForStudent(req: Request, res: Response) {
-    try {
-      const { studentId } = req.params;
-      // TODO: Implement apply for student
-      res.json({ message: `Applied for student ${studentId}` });
-    } catch (error) {
-      console.error("Apply for student error:", error);
-      res.status(500).json({ error: "Failed to apply for student" });
-    }
-  },
 };
