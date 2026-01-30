@@ -1,53 +1,19 @@
-import { LoginCredentials, RegisterData, AuthResponse } from "../types/auth.types";
+import axios from "axios";
+import { LoginResponse } from "../types/auth.types";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+// ⚙️ API Configuration
+// For iOS Simulator: "http://localhost:3000/api"
+// For Android Emulator: "http://10.0.2.2:3000/api"
+// For Physical Device: Use your computer's IP, "http://192.168.1.X:3000/api"
+const API_URL = "http://localhost:3000/api";
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(credentials),
-    });
-
-    if (!response.ok) {
-      throw new Error("Login failed");
-    }
-
-    return response.json();
-  },
-
-  async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error("Registration failed");
-    }
-
-    return response.json();
-  },
-
-  async refreshToken(token: string): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/api/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Token refresh failed");
-    }
-
-    return response.json();
-  },
+    // Sends login credentials to the backend.Returns the access token and user data if successful.
+    login: async (email: string, password: string): Promise<LoginResponse> => {
+        const response = await axios.post<LoginResponse>(`${API_URL}/login`, {
+            email,
+            password,
+        });
+        return response.data;
+    },
 };

@@ -1,17 +1,17 @@
+// frontend/src/hooks/useStudents.ts
 import { useQuery } from "@tanstack/react-query";
+import { getMyStudents } from "../services/student.service"; 
+import { useAuthStore } from "../store/authStore";
 
-export function useStudents() {
-  const studentsQuery = useQuery({
-    queryKey: ["students"],
+export const useStudents = () => {
+  const token = useAuthStore((state) => state.token);
+
+  return useQuery({
+    queryKey: ["my-students"],
     queryFn: async () => {
-      // TODO: Implement API call
-      return [];
+      if (!token) throw new Error("No token found");
+      return await getMyStudents(token);
     },
+    enabled: !!token, 
   });
-
-  return {
-    students: studentsQuery.data ?? [],
-    isLoading: studentsQuery.isLoading,
-    error: studentsQuery.error,
-  };
-}
+};

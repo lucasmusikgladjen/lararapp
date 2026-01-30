@@ -1,49 +1,24 @@
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  instruments: string[];
-  profileImage?: string;
-  phone?: string;
-  address?: {
-    street: string;
-    city: string;
-    postalCode: string;
-  };
-}
+export type User = {
+    id: string;
+    name: string;
+    email: string;
+    studentIds: string[];
+    profileImageUrl?: string;
+    status?: string;
+};
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
+export type LoginResponse = {
+    status: "success" | "fail";
+    data: {
+        access_token: string;
+        user: User;
+    };
+};
 
-export interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  instruments: string[];
-  phone?: string;
-  address?: {
-    street: string;
-    city: string;
-    postalCode: string;
-  };
-  birthDate?: string;
-  personalNumber?: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-}
-
-export interface JWTPayload {
-  id: string;
-  email: string;
-  namn: string;
-  instruments: string[];
-  iat: number;
-  exp: number;
-}
+export type AuthState = {
+    token: string | null;
+    user: User | null;
+    isAuthenticated: boolean;
+    login: (token: string, user: User) => void;
+    logout: () => void;
+};
