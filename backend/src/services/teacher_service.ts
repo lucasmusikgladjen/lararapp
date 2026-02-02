@@ -35,12 +35,7 @@ export const getTeacherByEmail = async (email: string): Promise<Teacher | null> 
     return mapAirtableToTeacher(response.records[0]);
 };
 
-// NOTE: Try catch here? 
 export const getTeacherById = async (id: string): Promise<Teacher | null> => {
-    try {
-        const record = await get<AirtableTeacherRecord>(`/${TABLE_NAME}/${id}`);
-        return mapAirtableToTeacher(record);
-    } catch (error) {
-        return null;
-    }
+    const response = await get<AirtableTeacherRecord>(`/${TABLE_NAME}/${id}`);
+    return mapAirtableToTeacher(response);
 };

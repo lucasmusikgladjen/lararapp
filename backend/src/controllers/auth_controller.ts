@@ -2,7 +2,7 @@ import Debug from "debug";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-import { getTeacherByEmail } from "../services/teacherService";
+import { getTeacherByEmail } from "../services/teacher_service";
 import { JwtAccessTokenPayload } from "../types/JWT.types";
 import { StringValue } from "ms";
 import { TypedRequestBody } from "../types/Request.types";

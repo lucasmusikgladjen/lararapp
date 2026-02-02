@@ -1,6 +1,6 @@
 import Debug from "debug";
 import { Request, Response } from "express";
-import { getTeacherById } from "../services/teacherService";
+import { getTeacherById } from "../services/teacher_service";
 
 const debug = Debug("musikgladjen:profileController");
 

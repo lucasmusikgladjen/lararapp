@@ -1,7 +1,7 @@
 import express from "express";
 import studentRoutes from "./studentRoutes";
 import profileRoutes from "./profileRoutes";
-import { login } from "../controllers/authController";
+import { login } from "../controllers/auth_controller";
 import { validateAccessToken } from "../middlewares/auth/jwt";
 
 const router = express.Router();

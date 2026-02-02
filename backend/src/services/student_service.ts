@@ -20,12 +20,14 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         },
         status: field.Status || "Okänd",
         upcomingLessons: field["Bokade lektioner"] || [],
+        upcomingLessonTimes: field.Lektionstider || [],
         experience: field["Elevens erfarenhetsnivå"] || "",
         description: field["Kort om eleven (från anmälan)"] || "",
         leadScore: field["Lead score"],
     };
 };
 
+// NOTE: Maybe we can use this later?
 export const getAllStudents = async (): Promise<Student[]> => {
     const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever`);
 
@@ -35,4 +37,12 @@ export const getAllStudents = async (): Promise<Student[]> => {
 export const getStudentById = async (id: string): Promise<Student> => {
     const record = await get<AirtableRecord>(`/${TABLE_NAME}/${id}`);
     return mapAirtableToStudent(record);
+};
+
+export const getStudentsByTeacher = async (teacherName: string): Promise<Student[]> => {
+    const formula = `SEARCH("${teacherName}", {Lärare})`;
+    const encodedFormula = encodeURIComponent(formula);
+
+    const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever&filterByFormula=${encodedFormula}`);
+    return response.records.map(mapAirtableToStudent);
 };
