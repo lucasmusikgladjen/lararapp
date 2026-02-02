@@ -19,6 +19,7 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
             lng: field.Longitude?.[0] || 0,
         },
         status: field.Status || "Okänd",
+        upcomingLessons: field["Bokade lektioner"] || [],
         experience: field["Elevens erfarenhetsnivå"] || "",
         description: field["Kort om eleven (från anmälan)"] || "",
         leadScore: field["Lead score"],

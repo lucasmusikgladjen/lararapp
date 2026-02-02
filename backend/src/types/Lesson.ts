@@ -1,4 +1,4 @@
-export interface Lesson {
+/* export interface Lesson {
   id: string;
   teacherId: string;
   studentId: string;
@@ -39,3 +39,4 @@ export interface UpdateLessonInput {
   status?: LessonStatus;
   notes?: string;
 }
+ */
