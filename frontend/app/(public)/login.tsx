@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useLogin } from "../../src/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+
 // 1. Define the form data structure
 type LoginFormData = {
   email: string;

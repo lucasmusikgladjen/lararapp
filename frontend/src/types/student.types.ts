@@ -9,6 +9,8 @@ export interface Student {
     city: string;
     comment: string;
     lessonPrice: number;
+    upcomingLessons: string[];
+    upcomingLessonTimes: string[];
 }
 
 export interface ApiResponse<T> {
