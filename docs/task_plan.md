@@ -4,7 +4,10 @@
 Skapa en prestandaoptimerad och pixel-perfekt Elevprofil (`app/(auth)/student/[id].tsx`) baserat på referensdesignen i `docs/references/StudentProfile/`.
 
 ## Definition of Done (DoD)
-- [ ] **Navigation:** Fungerande navigering från Dashboard till `/student/[id]` med swipe-back-stöd och fysisk bakåt-knapp i headern.
+- [x] **Backend:** Implementera `PATCH /api/students/:id` med validering (Verifierat i Postman).
+- [ ] **Frontend Types:** Uppdatera `frontend/src/types/student.types.ts` med `notes` och `goals`.
+- [ ] **Frontend Service:** Skapa `updateStudentInfo` i `student.service.ts` och en `useMutation`-hook.
+- [ ] **Navigation:** Fungerande navigering från Dashboard till `/student/[id]` med swipe-back-stöd och bakåt-knapp i headern.
 - [ ] **Header & Info:** Visar "Elevprofil", elevens namn och rund profilbild.
 - [ ] **GuardianCard:** Informationskort med vårdnadshavarens namn, adress, e-post och telefon.
 - [ ] **Toggle-logik:**

@@ -17,6 +17,8 @@ export type AirtableStudentFields = {
     "Närmaste lärare"?: string[];
     Önskar?: string[];
     Lektionstider?: string[];
+    Kommentar?: string;
+    Terminsmål?: string;
 };
 
 export type AirtableRecord = {
@@ -28,6 +30,11 @@ export type AirtableRecord = {
 export type AirtableResponse<T> = {
     records: T[];
     offset?: string;
+};
+
+export type UpdateStudentInput = {
+    kommentar?: string;
+    terminsmal?: string;
 };
 
 export type Student = {
@@ -48,4 +55,6 @@ export type Student = {
     experience: string;
     description: string;
     leadScore?: string;
+    notes?: string;
+    goals?: string;
 };

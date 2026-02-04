@@ -1,5 +1,5 @@
-import { get } from "./airtable";
-import type { AirtableResponse, AirtableRecord, Student } from "../types/Student.types";
+import type { AirtableRecord, AirtableResponse, Student, UpdateStudentInput } from "../types/Student.types";
+import { get, patch } from "./airtable";
 
 // Table: "Elev" | ID: tblAj4VVugqhdPWnR
 const TABLE_NAME = "tblAj4VVugqhdPWnR";
@@ -24,6 +24,8 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         experience: field["Elevens erfarenhetsnivå"] || "",
         description: field["Kort om eleven (från anmälan)"] || "",
         leadScore: field["Lead score"],
+        notes: field.Kommentar || "",
+        goals: field.Terminsmål || "",
     };
 };
 
@@ -45,4 +47,20 @@ export const getStudentsByTeacher = async (teacherName: string): Promise<Student
 
     const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever&filterByFormula=${encodedFormula}`);
     return response.records.map(mapAirtableToStudent);
+};
+
+export const updateStudent = async (id: string, data: UpdateStudentInput): Promise<Student> => {
+    const airtableFields: Record<string, any> = {};
+
+    if (data.kommentar !== undefined) {
+        airtableFields["Kommentar"] = data.kommentar;
+    }
+
+    if (data.terminsmal !== undefined) {
+        airtableFields["Terminsmål"] = data.terminsmal;
+    }
+
+    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, airtableFields);
+
+    return mapAirtableToStudent(updatedRecord);
 };

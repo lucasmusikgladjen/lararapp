@@ -1,6 +1,6 @@
 import Debug from "debug";
 import { Request, Response } from "express";
-import { getAllStudents, getStudentsByTeacher } from "../services/student_service";
+import { getAllStudents, getStudentsByTeacher, updateStudent } from "../services/student_service";
 
 const debug = Debug("musikgladjen:studentController");
 
@@ -33,6 +33,28 @@ export const index = async (req: Request, res: Response) => {
         debug("Error when trying to get students: %O", error);
         res.status(500).send({
             message: "Error fetching students",
+            error: (error as Error).message,
+        });
+    }
+};
+
+export const update = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params as { id: string };
+        const { kommentar, terminsmal } = req.body;
+
+        debug(`Updating student ${id}. Notes: ${kommentar}, Goals: ${terminsmal}`);
+        
+        const updatedStudent = await updateStudent(id, { kommentar, terminsmal });
+
+        res.send({
+            status: "success",
+            data: updatedStudent,
+        });
+    } catch (error) {
+        debug("Error when updating student: %O", error);
+        res.status(500).send({
+            message: "Error updating student",
             error: (error as Error).message,
         });
     }
