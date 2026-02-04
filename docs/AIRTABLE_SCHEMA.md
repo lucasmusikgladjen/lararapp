@@ -108,6 +108,7 @@
 | Onboarding status changed at | Date & Time |
 | Matchningsförslag | Link to **Matchningsförslag** |
 | Matchningar | Link to **Matchningar** |
+| Lektionstider | Lookup to **Lektioner** |
 
 ---
 
