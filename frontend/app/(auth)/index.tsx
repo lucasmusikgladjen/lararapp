@@ -47,7 +47,7 @@ export default function Dashboard() {
 
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
-           {/*  <TouchableOpacity onPress={handleLogout} className="bg-red-50 py-3 rounded-xl items-center">
+            {/*   <TouchableOpacity onPress={handleLogout} className="bg-red-50 py-3 rounded-xl items-center">
                 <Text className="text-red-600 font-bold">Logga ut</Text>
             </TouchableOpacity> */}
 
