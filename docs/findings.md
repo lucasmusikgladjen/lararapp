@@ -30,3 +30,8 @@
     - `src/components/lessons/ExpandableLessonCard.tsx`
     - `src/components/ui/TabToggle.tsx` (Återanvändbar komponent för båda toggle-nivåerna).
 - **Prestanda:** Använd `FlatList` eller `FlashList` för lektionslistor då dessa kan bli långa (>50 poster). 
+
+## Elevprofil: Data-mappning
+- **Senaste anteckningar:** Mappas till Airtable-fältet `Kommentar` i tabellen `Elev`.
+- **Terminsmål:** Mappas till Airtable-fältet `Terminsmål` i tabellen `Elev`.
+- **Spara-logik:** Använder `PATCH /api/students/:id`. Backend verifierar att `teacherId` äger eleven innan uppdatering sker.
