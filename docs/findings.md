@@ -29,4 +29,4 @@
     - `src/components/students/GuardianCard.tsx`
     - `src/components/lessons/ExpandableLessonCard.tsx`
     - `src/components/ui/TabToggle.tsx` (Återanvändbar komponent för båda toggle-nivåerna).
-- **Prestanda:** Använd `FlatList` eller `FlashList` för lektionslistor då dessa kan bli långa (>50 poster).
+- **Prestanda:** Använd `FlatList` eller `FlashList` för lektionslistor då dessa kan bli långa (>50 poster). 
