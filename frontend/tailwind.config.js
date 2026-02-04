@@ -18,6 +18,11 @@ module.exports = {
           DEFAULT: '#FF9800',
           dark: '#F57C00',
         },
+        brand: {
+          orange: '#F97316',
+          green: '#34C759',
+          bg: '#F5F5F7',
+        },
       },
     },
   },

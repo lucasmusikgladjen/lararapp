@@ -1,97 +1,144 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useMemo } from "react"; // 1. Added useMemo
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { NextLessonCard } from "../../src/components/lessons/NextLessonCard"; // 2. Import Component
-import { StudentCard } from "../../src/components/students/StudentCard";
+import { DashboardHeader } from "../../src/components/dashboard/DashboardHeader";
+import { ReportBanner } from "../../src/components/dashboard/ReportBanner";
+import {
+  SchemaToggle,
+  ToggleOption,
+} from "../../src/components/dashboard/SchemaToggle";
+import { ScheduleCard } from "../../src/components/dashboard/ScheduleCard";
+import { NextLessonCard } from "../../src/components/lessons/NextLessonCard";
 import { useStudents } from "../../src/hooks/useStudents";
 import { useAuthStore } from "../../src/store/authStore";
-import { findNextLesson } from "../../src/utils/lessonHelpers"; // 3. Import Logic
+import {
+  findNextLesson,
+  getAllLessonEvents,
+} from "../../src/utils/lessonHelpers";
 
 export default function Dashboard() {
-    const user = useAuthStore((state) => state.user);
-    const logout = useAuthStore((state) => state.logout);
-    const { data: students, isLoading, error } = useStudents();
+  const user = useAuthStore((state) => state.user);
+  const { data: students, isLoading, error } = useStudents();
+  const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
 
-    // 4. Calculate the next lesson dynamically
-    // We use useMemo so this only runs when 'students' data changes
-    const nextLesson = useMemo(() => {
-        if (!students) return null;
-        return findNextLesson(students);
-    }, [students]);
+  // Beräkna nästa lektion dynamiskt
+  const nextLesson = useMemo(() => {
+    if (!students) return null;
+    return findNextLesson(students);
+  }, [students]);
 
-    const handleLogout = async () => {
-        await logout();
-        router.replace("/(public)/login");
-    };
+  // Hämta alla lektionshändelser
+  const allLessons = useMemo(() => {
+    if (!students) return [];
+    return getAllLessonEvents(students);
+  }, [students]);
 
-    return (
-        <SafeAreaView edges={["left", "right", "bottom"]} className="flex-1 bg-slate-50 px-4 pt-2">
-            <View>
-                {/* --- 1. WELCOME CARD --- */}
-                <View className="bg-white rounded-2xl p-6 shadow-sm mb-4 items-center justify-center">
-                    <Text className="text-2xl font-semibold text-slate-800">Välkommen tillbaka, {user?.name ? user.name.split(" ")[0] : "Non"}!</Text>
-                </View>
+  // Filtrera och sortera baserat på aktiv flik
+  const scheduleLessons = useMemo(() => {
+    if (activeTab === "kommande") {
+      return allLessons
+        .filter((l) => l.daysLeft >= 0)
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+    return allLessons
+      .filter((l) => l.daysLeft < 0)
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [allLessons, activeTab]);
 
-                {/* --- 2. ORANGE ACTION CARD --- */}
-              <TouchableOpacity
-                    className="bg-orange-400 rounded-2xl p-5 shadow-sm mb-8 flex-row items-center"
-                    onPress={() => console.log("Report pressed")}
-                >
-                    <View className="mr-4 rotate-[-15deg]">
-                        <Ionicons name="megaphone-outline" size={32} color="white" />
-                    </View>
+  const firstName = user?.name ? user.name.split(" ")[0] : "Non";
 
-                    <View className="flex-1">
-                        <Text className="text-white font-bold text-lg">Glöm inte att rapportera!</Text>
-                        <Text className="text-orange-50 text-sm">Rapportera dina lektioner här</Text>
-                    </View>
+  return (
+    <SafeAreaView className="flex-1 bg-brand-bg">
+      <ScrollView
+        className="flex-1 px-5"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        {/* --- HEADER --- */}
+        <DashboardHeader />
 
-                    <Ionicons name="chevron-forward" size={24} color="white" />
-                </TouchableOpacity>
+        {/* --- VÄLKOMSTBOX --- */}
+        <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-3 items-center">
+          <Text className="text-lg font-semibold text-slate-800">
+            Välkommen tillbaka, {firstName}!
+          </Text>
+        </View>
 
-                {/* --- 3. NEXT LESSON CARD (DYNAMIC) --- */}
-                <View className="mb-6">
-                    <Text className="text-2xl font-bold text-slate-900 mb-3 ml-1">Nästa lektion</Text>
+        {/* --- RAPPORT-BANNER --- */}
+        <ReportBanner onPress={() => console.log("Report pressed")} />
 
-                    {/* Check if we actually found a lesson */}
-                    {nextLesson ? (
-                        <NextLessonCard lesson={nextLesson} />
-                    ) : (
-                        // Fallback design if no lessons are found
-                        <View className="bg-white rounded-3xl p-6 shadow-sm items-center justify-center border border-slate-100">
-                            <Text className="text-slate-400 text-base">Inga inbokade lektioner just nu 😴</Text>
-                        </View>
-                    )}
-                </View>
+        {/* --- NÄSTA LEKTION --- */}
+        <View className="mb-6">
+          <Text className="text-xl font-bold text-slate-900 mb-3">
+            Nästa lektion
+          </Text>
+
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#34C759" />
+          ) : nextLesson ? (
+            <NextLessonCard lesson={nextLesson} />
+          ) : (
+            <View className="bg-white rounded-3xl p-6 shadow-sm items-center border border-gray-100">
+              <Text className="text-gray-400 text-base">
+                Inga inbokade lektioner just nu
+              </Text>
             </View>
+          )}
+        </View>
 
-            {/* --- 4. STUDENTS LIST CONTAINER --- */}
-            <View className="flex-1">
-                {isLoading && <ActivityIndicator size="large" color="#4F46E5" className="mt-10" />}
+        {/* --- DITT SCHEMA --- */}
+        <View className="mb-6">
+          <Text className="text-xl font-bold text-slate-900 mb-3">
+            Ditt schema
+          </Text>
 
-                {error && <Text className="text-red-500 text-center mt-10">Kunde inte hämta elever.</Text>}
+          <SchemaToggle activeTab={activeTab} onToggle={setActiveTab} />
 
-                {!isLoading && !error && (
-                    <View className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex-1 ">
-                        <FlatList
-                            data={students}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item, index }) => (
-                                <StudentCard
-                                    student={item}
-                                    onPress={() => console.log("Klickade på", item.name)}
-                                    isLast={index === (students?.length || 0) - 1}
-                                />
-                            )}
-                        />
-                    </View>
-                )}
-                <TouchableOpacity onPress={handleLogout} className="bg-red-50 py-3 rounded-xl items-center">
-                    <Text className="text-red-600 font-bold">Logga ut</Text>
-                </TouchableOpacity>
+          {isLoading && (
+            <ActivityIndicator
+              size="large"
+              color="#34C759"
+              className="mt-10"
+            />
+          )}
+
+          {error && (
+            <Text className="text-red-500 text-center mt-4">
+              Kunde inte hämta schema.
+            </Text>
+          )}
+
+          {!isLoading && !error && (
+            <View className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+              {scheduleLessons.length > 0 ? (
+                scheduleLessons.map((lesson, index) => (
+                  <ScheduleCard
+                    key={`${lesson.student.id}-${lesson.date}`}
+                    lesson={lesson}
+                    onPress={() =>
+                      console.log("Lesson:", lesson.student.name)
+                    }
+                    isLast={index === scheduleLessons.length - 1}
+                  />
+                ))
+              ) : (
+                <View className="py-10 items-center">
+                  <Text className="text-gray-400 text-base">
+                    {activeTab === "kommande"
+                      ? "Inga kommande lektioner"
+                      : "Inga tidigare lektioner"}
+                  </Text>
+                </View>
+              )}
             </View>
-        </SafeAreaView>
-    );
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
