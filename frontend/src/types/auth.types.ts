@@ -19,6 +19,8 @@ export type AuthState = {
     token: string | null;
     user: User | null;
     isAuthenticated: boolean;
-    login: (token: string, user: User) => void;
-    logout: () => void;
+    isLoading: boolean;
+    login: (token: string, user: User) => Promise<void>;
+    logout: () => Promise<void>;
+    loadUser: () => Promise<void>;
 };

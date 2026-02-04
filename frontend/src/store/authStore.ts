@@ -1,35 +1,50 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { AuthState, User } from "../types/auth.types";
 
-export const useAuthStore = create<AuthState>((set) => ({
-    token: null,
-    user: null,
-    isAuthenticated: false,
+export const useAuthStore = create<AuthState>()(
+    persist(
+        (set) => ({
+            token: null,
+            user: null,
+            isAuthenticated: false,
+            isLoading: true,
 
-    login: async (token: string, user: User) => {
-        // 1. Update app state immediately (so UI reacts fast)
-        set({ token, user, isAuthenticated: true });
+            login: async (token: string, user: User) => {
+                set({ token, user, isAuthenticated: true });
+                await SecureStore.setItemAsync("access_token", token);
+            },
 
-        // 2. Persist securely on device (to remember login next time)
-        try {
-            await SecureStore.setItemAsync("access_token", token);
-            await SecureStore.setItemAsync("user_data", JSON.stringify(user));
-        } catch (error) {
-            console.error("Could not securely save login data:", error);
+            logout: async () => {
+                set({ token: null, user: null, isAuthenticated: false });
+                await SecureStore.deleteItemAsync("access_token");
+            },
+
+            loadUser: async () => {
+                try {
+                    const token = await SecureStore.getItemAsync("access_token");
+                    if (token) {
+                        set({ token, isAuthenticated: true, isLoading: false });
+                    } else {
+                        set({
+                            token: null,
+                            user: null,
+                            isAuthenticated: false,
+                            isLoading: false,
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to load user:", error);
+                    set({ isLoading: false });
+                }
+            },
+        }),
+        {
+            name: "auth-user-storage",
+            storage: createJSONStorage(() => AsyncStorage),
+            partialize: (state) => ({ user: state.user }),
         }
-    },
-
-    logout: async () => {
-        // 1. Clear state
-        set({ token: null, user: null, isAuthenticated: false });
-
-        // 2. Remove data from device
-        try {
-            await SecureStore.deleteItemAsync("access_token");
-            await SecureStore.deleteItemAsync("user_data");
-        } catch (error) {
-            console.error("Error during logout:", error);
-        }
-    },
-}));
+    )
+);
