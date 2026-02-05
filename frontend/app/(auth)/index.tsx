@@ -70,7 +70,10 @@ export default function Dashboard() {
                     {isLoading ? (
                         <ActivityIndicator size="small" color="#34C759" />
                     ) : nextLesson ? (
-                        <NextLessonCard lesson={nextLesson} />
+                        <NextLessonCard
+                            lesson={nextLesson}
+                            onPress={() => router.push(`/(auth)/student/${nextLesson.student.id}`)}
+                        />
                     ) : (
                         <View className="bg-white rounded-3xl p-6 shadow-sm items-center border border-gray-100">
                             <Text className="text-gray-400 text-base">Inga inbokade lektioner just nu</Text>
@@ -95,7 +98,7 @@ export default function Dashboard() {
                                     <ScheduleCard
                                         key={`${lesson.student.id}-${lesson.date}`}
                                         lesson={lesson}
-                                        onPress={() => console.log("Lesson:", lesson.student.name)}
+                                        onPress={() => router.push(`/(auth)/student/${lesson.student.id}`)}
                                         isLast={index === scheduleLessons.length - 1}
                                     />
                                 ))
