@@ -37,6 +37,13 @@ export default function AuthLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="student/[id]"
+        options={{
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
     </Tabs>
   );
 }
