@@ -32,6 +32,9 @@ export interface Student {
     goals: string | null;
     guardian?: Guardian;
     lessons?: Lesson[];
+    guardianName?: string;
+    guardianEmail?: string;
+    guardianPhone?: string;
 }
 
 export interface UpdateStudentPayload {

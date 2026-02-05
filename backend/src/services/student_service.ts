@@ -26,6 +26,9 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         leadScore: field["Lead score"],
         notes: field.Kommentar || "",
         goals: field.Terminsmål || "",
+        guardianName: field["Vårdnadshavare namn"]?.[0] || "",
+        guardianEmail: field["Vårdnadshavare e-post"]?.[0] || "",
+        guardianPhone: field["Vårdnadshavare telefon"]?.[0] || "",
     };
 };
 

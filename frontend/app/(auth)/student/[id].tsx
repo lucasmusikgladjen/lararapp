@@ -1,14 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-    View,
-    Text,
-    ScrollView,
-    Image,
-    TouchableOpacity,
-    FlatList,
-    Alert,
-    ActivityIndicator,
-} from "react-native";
+import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, Alert, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -68,13 +59,14 @@ export default function StudentProfile() {
     // Create guardian object from student data
     const guardian: Guardian | null = useMemo(() => {
         if (!student) return null;
+
         return {
-            name: student.email ? student.name.split(" ")[0] + " (Vårdnadshavare)" : "Vårdnadshavare",
+           name: student.guardianName || "Namn saknas",
             address: student.address || "",
             city: student.city || "",
-            postalCode: "",
-            email: student.email || "",
-            phone: student.phone || "",
+            postalCode: "", // Vi har inte postnummer separat just nu, kan lämnas tomt
+            email: student.guardianEmail || "E-post saknas",
+            phone: student.guardianPhone || "Telefon saknas",
         };
     }, [student]);
 
@@ -99,15 +91,11 @@ export default function StudentProfile() {
     // Split lessons into upcoming and past
     const today = new Date().toISOString().split("T")[0];
     const upcomingLessons = allLessons.filter((l) => l.date >= today);
-    const pastLessons = allLessons
-        .filter((l) => l.date < today)
-        .sort((a, b) => b.date.localeCompare(a.date)); // Most recent first
+    const pastLessons = allLessons.filter((l) => l.date < today).sort((a, b) => b.date.localeCompare(a.date)); // Most recent first
 
     const nextLesson = upcomingLessons[0];
 
-    const avatarUrl = student
-        ? `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}`
-        : "";
+    const avatarUrl = student ? `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}` : "";
 
     const handleSaveNotes = (notes: string) => {
         setSavingNotes(true);
@@ -147,10 +135,7 @@ export default function StudentProfile() {
         return (
             <View className="flex-1 items-center justify-center bg-brand-bg">
                 <Text className="text-slate-900 text-lg">Elev hittades inte</Text>
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    className="mt-4 bg-brand-orange px-6 py-3 rounded-full"
-                >
+                <TouchableOpacity onPress={() => router.back()} className="mt-4 bg-brand-orange px-6 py-3 rounded-full">
                     <Text className="text-white font-semibold">Gå tillbaka</Text>
                 </TouchableOpacity>
             </View>
@@ -201,22 +186,12 @@ export default function StudentProfile() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView
-                className="flex-1"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 100 }}
-            >
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* Student Header */}
                 <View className="items-center py-4">
-                    <Text className="text-xl font-bold text-slate-900 mb-3">
-                        {student.name}
-                    </Text>
+                    <Text className="text-xl font-bold text-slate-900 mb-3">{student.name}</Text>
                     <View className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg">
-                        <Image
-                            source={{ uri: avatarUrl }}
-                            className="w-full h-full"
-                            resizeMode="cover"
-                        />
+                        <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
                     </View>
                 </View>
 
@@ -245,9 +220,7 @@ export default function StudentProfile() {
                 {mainTab === "oversikt" ? (
                     <View className="px-5">
                         {/* Kommande Section */}
-                        <Text className="text-base font-bold text-slate-900 mb-3">
-                            Kommande
-                        </Text>
+                        <Text className="text-base font-bold text-slate-900 mb-3">Kommande</Text>
 
                         {nextLesson ? (
                             <OverviewLessonCard
@@ -259,9 +232,7 @@ export default function StudentProfile() {
                             />
                         ) : (
                             <View className="bg-white rounded-2xl p-4 items-center">
-                                <Text className="text-gray-500">
-                                    Inga kommande lektioner
-                                </Text>
+                                <Text className="text-gray-500">Inga kommande lektioner</Text>
                             </View>
                         )}
 
@@ -318,23 +289,14 @@ export default function StudentProfile() {
                                     />
                                 ) : (
                                     <View className="p-8 items-center">
-                                        <Text className="text-gray-500">
-                                            Inga kommande lektioner
-                                        </Text>
+                                        <Text className="text-gray-500">Inga kommande lektioner</Text>
                                     </View>
                                 )
                             ) : pastLessons.length > 0 ? (
-                                <FlatList
-                                    data={pastLessons}
-                                    renderItem={renderPastLesson}
-                                    keyExtractor={(item) => item.id}
-                                    scrollEnabled={false}
-                                />
+                                <FlatList data={pastLessons} renderItem={renderPastLesson} keyExtractor={(item) => item.id} scrollEnabled={false} />
                             ) : (
                                 <View className="p-8 items-center">
-                                    <Text className="text-gray-500">
-                                        Inga tidigare lektioner
-                                    </Text>
+                                    <Text className="text-gray-500">Inga tidigare lektioner</Text>
                                 </View>
                             )}
                         </View>
@@ -343,10 +305,7 @@ export default function StudentProfile() {
             </ScrollView>
 
             {/* Fixed CTA Button */}
-            <View
-                className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg"
-                style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
-            >
+            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg" style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}>
                 <TouchableOpacity
                     onPress={handleBookLesson}
                     className="bg-brand-green rounded-2xl py-4 flex-row items-center justify-center shadow-lg"

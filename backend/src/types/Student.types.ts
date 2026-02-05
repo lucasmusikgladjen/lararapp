@@ -19,6 +19,9 @@ export type AirtableStudentFields = {
     Lektionstider?: string[];
     Kommentar?: string;
     Terminsmål?: string;
+    "Vårdnadshavare namn"?: string[];
+    "Vårdnadshavare e-post"?: string[];
+    "Vårdnadshavare telefon"?: string[];
 };
 
 export type AirtableRecord = {
@@ -57,4 +60,7 @@ export type Student = {
     leadScore?: string;
     notes?: string;
     goals?: string;
+    guardianName?: string;
+    guardianEmail?: string;
+    guardianPhone?: string;
 };

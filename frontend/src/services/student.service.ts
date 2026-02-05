@@ -19,22 +19,15 @@ export const getMyStudents = async (token: string): Promise<Student[]> => {
 };
 
 export const getStudentById = async (token: string, studentId: string): Promise<Student> => {
-    const response = await axios.get<{ status: string; data: Student }>(
-        `${API_URL}/students/${studentId}`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    );
+    const response = await axios.get<{ status: string; data: Student }>(`${API_URL}/students/${studentId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     return response.data.data;
 };
 
-export const updateStudentInfo = async (
-    token: string,
-    studentId: string,
-    payload: UpdateStudentPayload
-): Promise<Student> => {
+export const updateStudentInfo = async (token: string, studentId: string, payload: UpdateStudentPayload): Promise<Student> => {
     // Map frontend field names to API field names
     // notes -> kommentar, goals -> terminsmal
     const apiPayload: Record<string, string> = {};
@@ -46,14 +39,10 @@ export const updateStudentInfo = async (
         apiPayload.terminsmal = payload.goals;
     }
 
-    const response = await axios.patch<{ status: string; data: Student }>(
-        `${API_URL}/students/${studentId}`,
-        apiPayload,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    );
+    const response = await axios.patch<{ status: string; data: Student }>(`${API_URL}/students/${studentId}`, apiPayload, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     return response.data.data;
 };
