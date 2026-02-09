@@ -1,5 +1,5 @@
-import { get } from "./airtable";
-import type { AirtableResponse, AirtableTeacherRecord, Teacher } from "../types/Teacher.types";
+import { get, post } from "./airtable";
+import type { AirtableResponse, AirtableTeacherRecord, CreateTeacherData, Teacher } from "../types/Teacher.types";
 
 // Table: "Lärare" | ID: tbldsyppY5WQ9MpSp
 const TABLE_NAME = "tbldsyppY5wQ9MpSp";
@@ -17,6 +17,10 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         studentIds: field.Elev || [],
         profileImageUrl: imageUrl,
         status: field.Slutar || "Okänd",
+        address: field.Adress,
+        zip: field.Postnummer,
+        city: field.Ort,
+        birthYear: field.Födelseår,
     };
 };
 
@@ -37,5 +41,24 @@ export const getTeacherByEmail = async (email: string): Promise<Teacher | null> 
 
 export const getTeacherById = async (id: string): Promise<Teacher | null> => {
     const response = await get<AirtableTeacherRecord>(`/${TABLE_NAME}/${id}`);
+    return mapAirtableToTeacher(response);
+};
+
+// Create a new teacher
+export const createTeacher = async (data: CreateTeacherData): Promise<Teacher> => {
+    const body = {
+        fields: {
+            Namn: data.name,
+            "E-post": data.email,
+            Lösenord: data.password, 
+            Adress: data.address,
+            Postnummer: data.zip,
+            Ort: data.city,
+            Födelseår: data.birthYear,
+            Slutar: "Aktiv", 
+        },
+    };
+
+    const response = await post<AirtableTeacherRecord>(`/${TABLE_NAME}`, body);
     return mapAirtableToTeacher(response);
 };

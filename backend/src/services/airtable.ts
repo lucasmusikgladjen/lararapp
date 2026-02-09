@@ -18,6 +18,19 @@ const instance = axios.create({
     },
 });
 
+export const post = async <T>(endpoint: string, body: Record<string, any>) => {
+    try {
+        const res = await instance.post<T>(endpoint, body);
+        return res.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error("Airtable Error:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.error?.message || "Failed to request Airtable");
+        }
+        throw error;
+    }
+};
+
 export const get = async <T>(endpoint: string) => {
     try {
         const res = await instance.get<T>(endpoint);

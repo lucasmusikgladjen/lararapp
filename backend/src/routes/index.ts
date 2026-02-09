@@ -1,7 +1,7 @@
 import express from "express";
 import studentRoutes from "./studentRoutes";
 import profileRoutes from "./profileRoutes";
-import { login } from "../controllers/auth_controller";
+import { login, register } from "../controllers/auth_controller";
 import { validateAccessToken } from "../middlewares/auth/jwt";
 
 const router = express.Router();
@@ -24,6 +24,11 @@ router.get("/", (_req, res) => {
  * This will generate an authentication token for the teacher.
  */
 router.post("/login", login);
+
+/**
+ * Register a new teacher.
+ */
+router.post("/register", register);
 
 // ---------- PROFILE ROUTES ----------
 

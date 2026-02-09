@@ -23,6 +23,10 @@ export type AirtableTeacherRecord = {
         Profilbild?: AirtableImage[];
         Timlön?: number;
         Slutar?: string;
+        Adress?: string;
+        Postnummer?: string;
+        Ort?: string;
+        Födelseår?: string;
     };
 };
 
@@ -35,4 +39,18 @@ export type Teacher = {
     studentIds: string[];
     profileImageUrl: string;
     status: string;
+    address?: string;
+    zip?: string;
+    city?: string;
+    birthYear?: string;
+};
+
+export type CreateTeacherData = {
+    name: string;
+    email: string;
+    password: string;
+    address: string;
+    zip: string;
+    city: string;
+    birthYear: string;
 };

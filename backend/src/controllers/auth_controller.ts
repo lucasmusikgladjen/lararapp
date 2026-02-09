@@ -2,10 +2,11 @@ import Debug from "debug";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-import { getTeacherByEmail } from "../services/teacher_service";
+import { createTeacher, getTeacherByEmail } from "../services/teacher_service";
 import { JwtAccessTokenPayload } from "../types/JWT.types";
 import { StringValue } from "ms";
 import { TypedRequestBody } from "../types/Request.types";
+import { CreateTeacherData } from "../types/Teacher.types";
 
 const debug = Debug("musikgladjen:authController");
 
@@ -108,6 +109,85 @@ export const login = async (req: TypedRequestBody<LoginRequestBody>, res: Respon
         res.status(500).send({
             status: "error",
             message: "An error occurred during login",
+        });
+    }
+};
+
+/**
+ * POST /register
+ * Register a new teacher.
+ */
+export const register = async (req: Request, res: Response) => {
+    // 1. Validate request body
+    const { name, email, password, address, zip, city, birthYear } = req.body as CreateTeacherData;
+
+    if (!name || !email || !password || !address || !zip || !city || !birthYear) {
+        res.status(400).send({
+            status: "fail",
+            message: "Missing required fields.",
+        });
+        return;
+    }
+
+    try {
+        // 2. Check if user already exists
+        const existingTeacher = await getTeacherByEmail(email);
+        if (existingTeacher) {
+            res.status(409).send({
+                status: "fail",
+                message: "Email already in use.",
+            });
+            return;
+        }
+
+        // 3. Hash the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // 4. Create teacher in Airtable
+        const newTeacher = await createTeacher({
+            name,
+            email,
+            password: hashedPassword,
+            address,
+            zip,
+            city,
+            birthYear,
+        });
+
+        debug("Created new teacher: %s", newTeacher.name);
+
+        // 5. Generate Token (Auto-login after register)
+        if (!ACCESS_TOKEN_SECRET) {
+            throw new Error("ACCESS_TOKEN_SECRET missing");
+        }
+
+        const payload: JwtAccessTokenPayload = {
+            id: newTeacher.id,
+            email: newTeacher.email,
+            name: newTeacher.name,
+        };
+
+        const access_token = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
+            expiresIn: ACCESS_TOKEN_LIFETIME,
+        });
+
+        // 6. Respond
+        // Remove password from response
+        const { password: _, ...teacherWithoutPassword } = newTeacher;
+
+        res.status(201).send({
+            status: "success",
+            data: {
+                access_token,
+                user: teacherWithoutPassword,
+            },
+        });
+    } catch (error) {
+        debug("Register error: %O", error);
+        res.status(500).send({
+            status: "error",
+            message: "An error occurred during registration",
         });
     }
 };
