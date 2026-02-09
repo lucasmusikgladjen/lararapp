@@ -28,6 +28,7 @@
 - [x] Backend: Endpoint `POST /register` med validering, hashning och JWT-generering.
 - [x] Backend: Stöd för `PATCH /profile` med `instruments`-array som uppdaterar Airtable.
 - [x] Backend: `POST /register` fungerar nu med fullständig data (adress, födelseår etc).
+- [x] Backend Refactoring: Implementerat `matchedData` och robust valideringslogik med custom validators för Auth.
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
