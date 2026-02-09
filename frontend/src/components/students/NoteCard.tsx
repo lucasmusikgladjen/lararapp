@@ -1,3 +1,5 @@
+// ELEVPROFIL --> 'ÖVERSIKT' --> SENASTE ANTECKNINGAR & TERMINSMÅL
+
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,13 +12,8 @@ interface NoteCardProps {
     placeholder?: string;
 }
 
-export const NoteCard = ({
-    title,
-    value,
-    onSave,
-    isSaving = false,
-    placeholder = "Skriv här...",
-}: NoteCardProps) => {
+// This function is used for both "Senaste anteckningar" and "Terminsmål"
+export const NoteCard = ({ title, value, onSave, isSaving = false, placeholder = "Skriv här..." }: NoteCardProps) => {
     const [localValue, setLocalValue] = useState(value || "");
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -38,9 +35,7 @@ export const NoteCard = ({
 
     return (
         <View className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <Text className="text-base font-bold text-slate-900 mb-3">
-                {title}
-            </Text>
+            <Text className="text-base font-bold text-slate-900 mb-3">{title}</Text>
 
             <TextInput
                 className="bg-gray-50 rounded-xl p-3 text-sm text-slate-800 min-h-[100px] border border-gray-200"
@@ -57,25 +52,15 @@ export const NoteCard = ({
                 <TouchableOpacity
                     onPress={handleSave}
                     disabled={!hasChanges || isSaving}
-                    className={`flex-row items-center px-4 py-2 rounded-full ${
-                        hasChanges && !isSaving
-                            ? "bg-brand-green"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-row items-center px-4 py-2 rounded-full ${hasChanges && !isSaving ? "bg-brand-green" : "bg-gray-300"}`}
                     activeOpacity={0.8}
                 >
                     {isSaving ? (
                         <ActivityIndicator size="small" color="white" />
                     ) : (
                         <>
-                            <Ionicons
-                                name="save-outline"
-                                size={16}
-                                color="white"
-                            />
-                            <Text className="text-white font-semibold text-sm ml-1.5">
-                                Spara
-                            </Text>
+                            <Ionicons name="save-outline" size={16} color="white" />
+                            <Text className="text-white font-semibold text-sm ml-1.5">Spara</Text>
                         </>
                     )}
                 </TouchableOpacity>
