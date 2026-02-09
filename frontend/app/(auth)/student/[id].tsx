@@ -10,7 +10,7 @@ import { NoteCard } from "../../../src/components/students/NoteCard";
 import { TabToggle } from "../../../src/components/ui/TabToggle";
 import { ExpandableLessonCard } from "../../../src/components/lessons/ExpandableLessonCard";
 import { StaticLessonCard } from "../../../src/components/lessons/StaticLessonCard";
-import { OverviewLessonCard } from "../../../src/components/lessons/OverviewLessonCard";
+// OverviewLessonCard behövs inte längre här
 import { Student, Guardian } from "../../../src/types/student.types";
 
 type MainTab = "oversikt" | "lektioner";
@@ -64,7 +64,7 @@ export default function StudentProfile() {
             name: student.guardianName || "Namn saknas",
             address: student.address || "",
             city: student.city || "",
-            postalCode: "", // Vi har inte postnummer separat just nu, kan lämnas tomt
+            postalCode: "",
             email: student.guardianEmail || "E-post saknas",
             phone: student.guardianPhone || "Telefon saknas",
         };
@@ -91,7 +91,7 @@ export default function StudentProfile() {
     // Split lessons into upcoming and past
     const today = new Date().toISOString().split("T")[0];
     const upcomingLessons = allLessons.filter((l) => l.date >= today);
-    const pastLessons = allLessons.filter((l) => l.date < today).sort((a, b) => b.date.localeCompare(a.date)); // Most recent first
+    const pastLessons = allLessons.filter((l) => l.date < today).sort((a, b) => b.date.localeCompare(a.date));
 
     const nextLesson = upcomingLessons[0];
 
@@ -160,7 +160,6 @@ export default function StudentProfile() {
         <View className="flex-1 bg-brand-bg" style={{ paddingTop: insets.top }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 py-3">
-                {/* Vinyl Record Logo */}
                 <View className="w-10 h-10 rounded-full bg-black items-center justify-center overflow-hidden">
                     <View className="w-7 h-7 rounded-full border border-orange-400/50 items-center justify-center">
                         <View className="w-4 h-4 rounded-full border border-orange-400/40 items-center justify-center">
@@ -223,13 +222,18 @@ export default function StudentProfile() {
                         <Text className="text-base font-bold text-slate-900 mb-3">Kommande</Text>
 
                         {nextLesson ? (
-                            <OverviewLessonCard
-                                date={nextLesson.date}
-                                time={nextLesson.time}
-                                studentName={nextLesson.studentName}
-                                instrument={nextLesson.instrument}
-                                onPress={() => setMainTab("lektioner")}
-                            />
+                            // HÄR ÄR ÄNDRINGEN:
+                            // Vi använder en container med samma styling som listan för att få "kort-känslan"
+                            // och använder ExpandableLessonCard istället för OverviewLessonCard.
+                            <View className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                                <ExpandableLessonCard
+                                    lesson={nextLesson}
+                                    onMarkCompleted={handleMarkCompleted}
+                                    onReschedule={handleReschedule}
+                                    onCancel={handleCancel}
+                                    isLast={true} // Tar bort border-bottom eftersom det är ett ensamt kort
+                                />
+                            </View>
                         ) : (
                             <View className="bg-white rounded-2xl p-4 items-center">
                                 <Text className="text-gray-500">Inga kommande lektioner</Text>
@@ -305,7 +309,7 @@ export default function StudentProfile() {
             </ScrollView>
 
             {/* CTA Button | "Boka lektion" */}
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg" >
+            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg">
                 <TouchableOpacity
                     onPress={handleBookLesson}
                     className="bg-brand-green rounded-2xl py-4 flex-row items-center justify-center shadow-lg"
@@ -317,8 +321,6 @@ export default function StudentProfile() {
                     <Text className="text-white font-bold text-lg">Boka lektion</Text>
                 </TouchableOpacity>
             </View>
-
-            
         </View>
     );
 }

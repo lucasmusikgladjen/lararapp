@@ -70,40 +70,34 @@ export const ExpandableLessonCard = ({ lesson, onMarkCompleted, onReschedule, on
             {/* Expanded Actions */}
             {isExpanded && (
                 <View className="flex-row px-5 pb-4 pt-1 justify-start gap-3">
-                    {/* Genomförd Button */}
+                    {/* 1. Genomförd (Green) */}
                     <TouchableOpacity
                         onPress={() => onMarkCompleted?.(lesson.id)}
-                        className="bg-brand-green rounded-xl py-3 px-4 items-center"
+                        className="flex-1 bg-green-600 rounded-xl py-4 items-center justify-center shadow-sm"
                         activeOpacity={0.8}
                     >
-                        <View className="w-8 h-8 items-center justify-center mb-1">
-                            <Ionicons name="checkmark-circle-outline" size={28} color="white" />
-                        </View>
-                        <Text className="text-xs font-semibold text-white">Genomförd</Text>
+                        <Ionicons name="checkmark-circle-outline" size={32} color="white" />
+                        <Text className="text-white font-bold text-xs mt-1">Genomförd</Text>
                     </TouchableOpacity>
 
-                    {/* Boka om Button */}
+                    {/* 2. Boka om (Blue) */}
                     <TouchableOpacity
                         onPress={() => onReschedule?.(lesson.id)}
-                        className="bg-white border border-gray-200 rounded-xl py-3 px-4 items-center"
+                        className="flex-1 bg-blue-500 rounded-xl py-4 items-center justify-center shadow-sm"
                         activeOpacity={0.8}
                     >
-                        <View className="w-8 h-8 items-center justify-center mb-1">
-                            <Ionicons name="calendar-outline" size={26} color="#374151" />
-                        </View>
-                        <Text className="text-xs font-semibold text-slate-700">Boka om</Text>
+                        <Ionicons name="calendar-outline" size={32} color="white" />
+                        <Text className="text-white font-bold text-xs mt-1">Boka om</Text>
                     </TouchableOpacity>
 
-                    {/* Ställ in Button */}
+                    {/* 3. Ställ in (Red) */}
                     <TouchableOpacity
                         onPress={() => onCancel?.(lesson.id)}
-                        className="bg-white border border-gray-200 rounded-xl py-3 px-4 items-center"
+                        className="flex-1 bg-red-500 rounded-xl py-4 items-center justify-center shadow-sm"
                         activeOpacity={0.8}
                     >
-                        <View className="w-8 h-8 items-center justify-center mb-1">
-                            <Ionicons name="close-circle-outline" size={28} color="#EF4444" />
-                        </View>
-                        <Text className="text-xs font-semibold text-slate-700">Ställ in</Text>
+                        <Ionicons name="close-circle-outline" size={32} color="white" />
+                        <Text className="text-white font-bold text-xs mt-1">Ställ in</Text>
                     </TouchableOpacity>
                 </View>
             )}
