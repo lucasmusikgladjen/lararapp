@@ -12,6 +12,8 @@
     - `notes` (Frontend) <-> `kommentar` (API) <-> `Kommentar` (Airtable).
     - `goals` (Frontend) <-> `terminsmal` (API) <-> `Terminsmål` (Airtable).
     - **Data-plattning (Lookup):** För att minimera antalet API-anrop använder vi "Lookup"-fält i Airtable (t.ex. `Vårdnadshavare Namn` direkt på `Elev`-tabellen) istället för att göra separata `GET`-anrop till relaterade tabeller.
+    
+- **Airtable Skriv-operationer:** Vi har utökat `airtable.ts` med en generisk `post`-metod för att kunna skapa nya poster (t.ex. vid registrering).
 
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
@@ -30,6 +32,9 @@
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.
 - **State Persistence:** Användarens grunddata (namn, e-post) sparas via Zustands `persist`-middleware i `AsyncStorage` för att möjliggöra omedelbar rendering av UI vid start.
 - **Routing:** Vi använder `useSegments` och `router.replace` i root-layouten för att hantera autentiserings-boarding.
+- **Lösenordshantering:** Lösenord hashas med `bcrypt` i controllern *innan* de skickas till Airtable. Vi lagrar aldrig klartextlösenord.
+- **Registreringsflöde:** Vid lyckad registrering genereras en JWT-token omedelbart (Auto-login) så användaren slipper logga in separat direkt efter.
+- **Backend Types:** `Teacher.types.ts` har utökats med DTO:er (`CreateTeacherData`) för att strikt typa inkommande data vid registrering.
 
 ## Strategi för Elevprofil
 - **Data-fetching:** Använd `useQuery` med `id` från URL:en för att hämta Student, Vårdnadshavare och Lektioner i en samlad logik.

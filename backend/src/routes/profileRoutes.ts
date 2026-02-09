@@ -1,12 +1,20 @@
 import express from "express";
-import { getProfile } from "../controllers/profile_controller";
+import { getProfile, updateProfile } from "../controllers/profile_controller";
 
 const router = express.Router();
 
 /**
- * GET /
- * Hämtar profilen.
+ * GET
+ * Get the authenticated teachers profile.
  */
 router.get("/", getProfile);
+
+/**
+ * PATCH
+ * Update the authenticated teachers profile.
+ *
+ */
+
+router.patch("/", updateProfile);
 
 export default router;

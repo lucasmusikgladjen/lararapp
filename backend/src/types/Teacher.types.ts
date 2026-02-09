@@ -27,6 +27,7 @@ export type AirtableTeacherRecord = {
         Postnummer?: string;
         Ort?: string;
         Födelseår?: string;
+        Instrument?: string;
     };
 };
 
@@ -43,6 +44,7 @@ export type Teacher = {
     zip?: string;
     city?: string;
     birthYear?: string;
+    instruments: string[];
 };
 
 export type CreateTeacherData = {
@@ -53,4 +55,13 @@ export type CreateTeacherData = {
     zip: string;
     city: string;
     birthYear: string;
+};
+
+export type UpdateTeacherData = {
+    name?: string;
+    email?: string;
+    address?: string;
+    zip?: string;
+    city?: string;
+    instruments?: string[];
 };

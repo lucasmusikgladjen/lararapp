@@ -24,6 +24,8 @@
 - [x] Implementering av Lookups för Vårdnadshavare-info i Backend & Airtable.
 - [x] UX-förbättring: "Kommande" på Elevprofil expanderar direkt istället för redirect.
 - [x] Omstrukturering av Bottenmeny (Ny ordning + Inställningar-flik + Karta-ikon).
+- [x] Backend: Generisk `POST`-metod i Airtable-servicen.
+- [x] Backend: Endpoint `POST /register` med validering, hashning och JWT-generering.
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
