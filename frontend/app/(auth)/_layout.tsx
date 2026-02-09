@@ -41,7 +41,7 @@ export default function AuthLayout() {
         name="student/[id]"
         options={{
           href: null,
-          tabBarStyle: { display: "none" },
+          // tabBarStyle: { display: "none" },
         }}
       />
     </Tabs>

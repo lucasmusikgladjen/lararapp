@@ -61,7 +61,7 @@ export default function StudentProfile() {
         if (!student) return null;
 
         return {
-           name: student.guardianName || "Namn saknas",
+            name: student.guardianName || "Namn saknas",
             address: student.address || "",
             city: student.city || "",
             postalCode: "", // Vi har inte postnummer separat just nu, kan lämnas tomt
@@ -304,8 +304,8 @@ export default function StudentProfile() {
                 )}
             </ScrollView>
 
-            {/* Fixed CTA Button */}
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg" style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}>
+            {/* CTA Button | "Boka lektion" */}
+            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg" >
                 <TouchableOpacity
                     onPress={handleBookLesson}
                     className="bg-brand-green rounded-2xl py-4 flex-row items-center justify-center shadow-lg"
@@ -317,6 +317,8 @@ export default function StudentProfile() {
                     <Text className="text-white font-bold text-lg">Boka lektion</Text>
                 </TouchableOpacity>
             </View>
+
+            
         </View>
     );
 }
