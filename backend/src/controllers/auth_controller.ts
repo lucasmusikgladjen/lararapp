@@ -7,6 +7,7 @@ import { JwtAccessTokenPayload } from "../types/JWT.types";
 import { StringValue } from "ms";
 import { TypedRequestBody } from "../types/Request.types";
 import { CreateTeacherData } from "../types/Teacher.types";
+import { matchedData } from "express-validator";
 
 const debug = Debug("musikgladjen:authController");
 
@@ -118,46 +119,23 @@ export const login = async (req: TypedRequestBody<LoginRequestBody>, res: Respon
  * Register a new teacher.
  */
 export const register = async (req: Request, res: Response) => {
-    // 1. Validate request body
-    const { name, email, password, address, zip, city, birthYear } = req.body as CreateTeacherData;
-
-    if (!name || !email || !password || !address || !zip || !city || !birthYear) {
-        res.status(400).send({
-            status: "fail",
-            message: "Missing required fields.",
-        });
-        return;
-    }
+    // 1. Hämta validerad data.
+    const validData = matchedData(req) as CreateTeacherData;
 
     try {
-        // 2. Check if user already exists
-        const existingTeacher = await getTeacherByEmail(email);
-        if (existingTeacher) {
-            res.status(409).send({
-                status: "fail",
-                message: "Email already in use.",
-            });
-            return;
-        }
-
-        // 3. Hash the password
+        // 2. Hasha lösenord
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(validData.password, salt);
 
-        // 4. Create teacher in Airtable
+        // 3. Skapa i Airtable
         const newTeacher = await createTeacher({
-            name,
-            email,
+            ...validData,
             password: hashedPassword,
-            address,
-            zip,
-            city,
-            birthYear,
         });
 
         debug("Created new teacher: %s", newTeacher.name);
 
-        // 5. Generate Token (Auto-login after register)
+        // 4. Generera Token
         if (!ACCESS_TOKEN_SECRET) {
             throw new Error("ACCESS_TOKEN_SECRET missing");
         }
@@ -172,8 +150,7 @@ export const register = async (req: Request, res: Response) => {
             expiresIn: ACCESS_TOKEN_LIFETIME,
         });
 
-        // 6. Respond
-        // Remove password from response
+        // 5. Svara
         const { password: _, ...teacherWithoutPassword } = newTeacher;
 
         res.status(201).send({

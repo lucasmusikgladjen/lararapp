@@ -26,6 +26,8 @@
 - [x] Omstrukturering av Bottenmeny (Ny ordning + Inställningar-flik + Karta-ikon).
 - [x] Backend: Generisk `POST`-metod i Airtable-servicen.
 - [x] Backend: Endpoint `POST /register` med validering, hashning och JWT-generering.
+- [x] Backend: Stöd för `PATCH /profile` med `instruments`-array som uppdaterar Airtable.
+- [x] Backend: `POST /register` fungerar nu med fullständig data (adress, födelseår etc).
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.

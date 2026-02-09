@@ -3,6 +3,7 @@ import studentRoutes from "./studentRoutes";
 import profileRoutes from "./profileRoutes";
 import { login, register } from "../controllers/auth_controller";
 import { validateAccessToken } from "../middlewares/auth/jwt";
+import { createTeacherRules } from "../validations/teacher_validation";
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.post("/login", login);
 /**
  * Register a new teacher.
  */
-router.post("/register", register);
+router.post("/register", createTeacherRules, register);
 
 // ---------- PROFILE ROUTES ----------
 

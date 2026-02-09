@@ -14,6 +14,8 @@
     - **Data-plattning (Lookup):** För att minimera antalet API-anrop använder vi "Lookup"-fält i Airtable (t.ex. `Vårdnadshavare Namn` direkt på `Elev`-tabellen) istället för att göra separata `GET`-anrop till relaterade tabeller.
     
 - **Airtable Skriv-operationer:** Vi har utökat `airtable.ts` med en generisk `post`-metod för att kunna skapa nya poster (t.ex. vid registrering).
+- **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable. Detta möjliggör flerval utan att bryta datamodellen.
+- **Säker Profiluppdatering:** `updateProfile`-controllern ignorerar `id` i URL-parametrar och använder istället strikt `req.user.id` från JWT-token. Detta förhindrar att en inloggad användare råkar (eller illvilligt) uppdatera någon annans profil.
 
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
