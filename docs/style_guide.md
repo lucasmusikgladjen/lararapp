@@ -150,5 +150,6 @@ Alla kort använder `shadow-sm` från Tailwind, som i React Native motsvarar:
 | Pil (banner)     | `chevron-forward`        | 18      | white   |
 | Pil (schema)     | `chevron-forward`        | 20      | #D1D5DB |
 | Tab: Dashboard   | `grid-outline`           | —       | tab tint|
-| Tab: Lektioner   | `people-outline`         | —       | tab tint|
-| Tab: Hitta elever| `search-outline`         | —       | tab tint|
+| Tab: Hitta elever| `map-outline`            | —       | tab tint|
+| Tab: Elever      | `people-outline`         | —       | tab tint|
+| Tab: Inställningar| `settings-outline`      | —       | tab tint|

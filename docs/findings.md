@@ -11,6 +11,7 @@
 - **Fältmappning (Elev):**
     - `notes` (Frontend) <-> `kommentar` (API) <-> `Kommentar` (Airtable).
     - `goals` (Frontend) <-> `terminsmal` (API) <-> `Terminsmål` (Airtable).
+    - **Data-plattning (Lookup):** För att minimera antalet API-anrop använder vi "Lookup"-fält i Airtable (t.ex. `Vårdnadshavare Namn` direkt på `Elev`-tabellen) istället för att göra separata `GET`-anrop till relaterade tabeller.
 
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
@@ -23,6 +24,7 @@
 - **System:** NativeWind (Tailwind CSS) används för all styling.
 - **Konsistens:** När stylingen är satt för Dashboard, låser vi den i `docs/style_guide.md` för att säkerställa visuell identitet i framtida vyer.
 - **Komponenter:** PascalCase (t.ex. `NextLessonCard.tsx`) och funktionsbaserade komponenter.
+- **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
 
 ## Autentisering & Säkerhet
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.

@@ -16,13 +16,6 @@ export default function Dashboard() {
     const { data: students, isLoading, error } = useStudents();
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
 
-    const logout = useAuthStore((state) => state.logout);
-
-    const handleLogout = async () => {
-        await logout();
-        router.replace("/(public)/login");
-    };
-
     // Beräkna nästa lektion dynamiskt
     const nextLesson = useMemo(() => {
         if (!students) return null;
@@ -47,10 +40,6 @@ export default function Dashboard() {
 
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
-            {/*   <TouchableOpacity onPress={handleLogout} className="bg-red-50 py-3 rounded-xl items-center">
-                <Text className="text-red-600 font-bold">Logga ut</Text>
-            </TouchableOpacity> */}
-
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
                 {/* --- HEADER --- */}
                 <DashboardHeader />
@@ -70,10 +59,7 @@ export default function Dashboard() {
                     {isLoading ? (
                         <ActivityIndicator size="small" color="#34C759" />
                     ) : nextLesson ? (
-                        <NextLessonCard
-                            lesson={nextLesson}
-                            onPress={() => router.push(`/(auth)/student/${nextLesson.student.id}`)}
-                        />
+                        <NextLessonCard lesson={nextLesson} onPress={() => router.push(`/(auth)/student/${nextLesson.student.id}`)} />
                     ) : (
                         <View className="bg-white rounded-3xl p-6 shadow-sm items-center border border-gray-100">
                             <Text className="text-gray-400 text-base">Inga inbokade lektioner just nu</Text>
