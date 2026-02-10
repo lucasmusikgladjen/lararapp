@@ -1,5 +1,5 @@
 import axios from "axios";
-import { LoginResponse } from "../types/auth.types";
+import { CreateTeacherData, LoginResponse, RegisterResponse } from "../types/auth.types";
 
 // ⚙️ API Configuration
 // For iOS Simulator: "http://localhost:3000/api"
@@ -8,12 +8,18 @@ import { LoginResponse } from "../types/auth.types";
 const API_URL = "http://localhost:3000/api";
 
 export const authService = {
-    // Sends login credentials to the backend.Returns the access token and user data if successful.
+    // Sends login credentials to the backend. Returns the access token and user data if successful.
     login: async (email: string, password: string): Promise<LoginResponse> => {
         const response = await axios.post<LoginResponse>(`${API_URL}/login`, {
             email,
             password,
         });
+        return response.data;
+    },
+
+    // Registers a new teacher. Returns the access token and user data on success.
+    register: async (data: CreateTeacherData): Promise<RegisterResponse> => {
+        const response = await axios.post<RegisterResponse>(`${API_URL}/register`, data);
         return response.data;
     },
 };
