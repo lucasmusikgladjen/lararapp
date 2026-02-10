@@ -40,8 +40,7 @@ export const useRegister = () => {
         onSuccess: (data: RegisterResponse) => {
             console.log("Registration successful for:", data.data.user.email);
             loginToStore(data.data.access_token, data.data.user);
-            // TODO: Navigate to /(auth)/onboarding/instruments when Phase 3 is implemented
-            router.replace("/(auth)");
+            router.replace("/(auth)/onboarding/instruments");
         },
 
         onError: (error: any) => {

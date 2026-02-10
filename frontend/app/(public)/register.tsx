@@ -235,7 +235,7 @@ export default function RegisterScreen() {
                             <ActivityIndicator color="#fff" />
                         ) : (
                             <Text className="text-white font-bold text-lg">
-                                Skapa konto
+                                FORTSÄTT
                             </Text>
                         )}
                     </TouchableOpacity>
