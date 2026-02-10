@@ -11,6 +11,7 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             isLoading: true,
+            needsOnboarding: false,
 
             login: async (token: string, user: User) => {
                 set({ token, user, isAuthenticated: true });
@@ -18,8 +19,12 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: async () => {
-                set({ token: null, user: null, isAuthenticated: false });
+                set({ token: null, user: null, isAuthenticated: false, needsOnboarding: false });
                 await SecureStore.deleteItemAsync("access_token");
+            },
+
+            setNeedsOnboarding: (value: boolean) => {
+                set({ needsOnboarding: value });
             },
 
             loadUser: async () => {

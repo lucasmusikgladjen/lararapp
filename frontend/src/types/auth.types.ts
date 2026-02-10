@@ -42,7 +42,9 @@ export type AuthState = {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    needsOnboarding: boolean;
     login: (token: string, user: User) => Promise<void>;
     logout: () => Promise<void>;
     loadUser: () => Promise<void>;
+    setNeedsOnboarding: (value: boolean) => void;
 };

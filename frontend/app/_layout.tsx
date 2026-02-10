@@ -8,7 +8,7 @@ import { useAuthStore } from "../src/store/authStore";
 const queryClient = new QueryClient();
 
 function useProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, needsOnboarding } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
 
@@ -18,7 +18,11 @@ function useProtectedRoute() {
     const inAuthGroup = segments[0] === "(auth)";
 
     if (isAuthenticated && !inAuthGroup) {
-      router.replace("/(auth)");
+      if (needsOnboarding) {
+        router.replace("/(auth)/onboarding/instruments");
+      } else {
+        router.replace("/(auth)");
+      }
     } else if (!isAuthenticated && inAuthGroup) {
       router.replace("/(public)");
     }

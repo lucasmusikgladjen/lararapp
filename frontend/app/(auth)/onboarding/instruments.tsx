@@ -30,6 +30,7 @@ const PRESET_INSTRUMENTS = [
 export default function InstrumentsScreen() {
     const router = useRouter();
     const token = useAuthStore((state) => state.token);
+    const setNeedsOnboarding = useAuthStore((state) => state.setNeedsOnboarding);
     const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
     const [showCustomInput, setShowCustomInput] = useState(false);
     const [customInstrument, setCustomInstrument] = useState("");
@@ -40,6 +41,7 @@ export default function InstrumentsScreen() {
             return authService.updateProfile(token, { instruments });
         },
         onSuccess: () => {
+            setNeedsOnboarding(false);
             router.replace("/(auth)");
         },
         onError: (error: any) => {

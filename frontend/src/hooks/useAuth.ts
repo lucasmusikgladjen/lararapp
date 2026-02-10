@@ -29,8 +29,8 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-    const router = useRouter();
     const loginToStore = useAuthStore((state) => state.login);
+    const setNeedsOnboarding = useAuthStore((state) => state.setNeedsOnboarding);
 
     return useMutation({
         mutationFn: async (data: CreateTeacherData) => {
@@ -39,8 +39,8 @@ export const useRegister = () => {
 
         onSuccess: (data: RegisterResponse) => {
             console.log("Registration successful for:", data.data.user.email);
+            setNeedsOnboarding(true);
             loginToStore(data.data.access_token, data.data.user);
-            router.replace("/(auth)/onboarding/instruments");
         },
 
         onError: (error: any) => {
