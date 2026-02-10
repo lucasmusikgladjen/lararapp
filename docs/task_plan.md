@@ -1,55 +1,54 @@
-# Task Plan: Frontend Onboarding Implementation
+# Task Plan: Implementation av Onboarding (Frontend)
 
-## Goal
-Implement a friction-less, two-step onboarding flow for new teachers using React Native, NativeWind, and our existing Backend API.
+## Mål
+Implementera ett friktionsfritt, två-stegs onboarding-flöde för nya lärare. Flödet bygger vidare på befintlig mappstruktur i `frontend/`.
 
-## Architecture & Flow
-1.  **Start Screen (`app/(public)/index.tsx`):** Entry point. Choice between "Log In" and "Get Started".
-2.  **Step 1: Registration (`app/(public)/register.tsx`):**
-    * Collects core user data (Name, Email, Password, Address, etc.).
-    * **API:** Calls `POST /register`.
-    * **Outcome:** On success, receives JWT, saves to SecureStore, and auto-logins.
-    * **Navigation:** Moves to Step 2 (which is inside the Auth protection).
-3.  **Step 2: Instruments (`app/(auth)/onboarding/instruments.tsx`):**
-    * **Context:** User is now authenticated.
-    * **UI:** Grid of instruments + "Add Other" option.
-    * **API:** Calls `PATCH /profile` with `{ instruments: string[] }`.
-    * **Outcome:** Redirects to Dashboard.
+## Arkitektur & Flöde
+
+### 1. Startskärm (Landningssida)
+* **Fil:** `app/(public)/index.tsx` (Skapa denna fil).
+* **Syfte:** Första sidan användaren ser.
+* **Val:** "Börja nu" (Navigerar till Register) eller "Logga in" (Navigerar till `login.tsx`).
+* *Notera: Om `app/(public)/onboarding/index.tsx` finns idag och inte används, bör den tas bort eller refaktoriseras.*
+
+### 2. Steg 1: Registrering (Konto)
+* **Fil:** `app/(public)/register.tsx` (Skapa denna fil).
+* **Handling:** Användaren fyller i namn, e-post, lösenord, etc.
+* **API:** `POST /register`.
+* **Vid Succé:** 1. Spara JWT i SecureStore.
+    2. Uppdatera Auth Context (Zustand).
+    3. Navigera till Steg 2 (som ligger i Auth-stacken).
+
+### 3. Steg 2: Välj Instrument
+* **Fil:** `app/(auth)/onboarding/instruments.tsx` (Skapa mapp och fil).
+* **Kontext:** Skyddad rutt (kräver token).
+* **Layout-krav:** Denna skärm ligger i `(auth)`, men ska **INTE** visa botten-menyn (Tabs). Detta måste konfigureras i `app/(auth)/_layout.tsx` (`tabBarStyle: { display: 'none' }` eller `href: null`).
+* **API:** `PATCH /profile` med `{ instruments: string[] }`.
+* **Vid Succé:** Navigera till Dashboard (`app/(auth)/index.tsx`).
 
 ## Definition of Done (DoD)
 
-### Phase 1: Structure & Components
-- [ ] **Navigation:** Set up `_layout` files to handle the transition from Public -> Auth stack smoothly.
-- [ ] **Component:** Create `OnboardingProgressBar`.
-    -   Props: `step` (1 or 2), `total` (2).
-    -   Visual: Green bar (`bg-brand-green`) filling 50% or 100%.
-- [ ] **Component:** Create `InstrumentCard`.
-    -   State: Selected (Blue border/bg) vs Unselected (White bg).
-    -   Content: Icon + Label.
+### Fas 1: Komponenter & Struktur
+- [ ] **Mappstruktur:** Skapa mappen `src/components/onboarding/`.
+- [ ] **Komponent:** `src/components/onboarding/ProgressBar.tsx`
+    -   Props: `step` (1/2), `total` (2).
+    -   Design: Grön bar (`bg-brand-green`) som fyller bredden baserat på steg.
+- [ ] **Komponent:** `src/components/onboarding/InstrumentCard.tsx`
+    -   Design: Kort med ikon och text. Blå border vid `selected`.
 
-### Phase 2: Step 1 (Register)
-- [ ] **UI:** Replicate design `2.1_create_account.png`.
-- [ ] **Form:** Inputs for Name, Email, Password, Address, Zip, City, BirthYear.
-- [ ] **Validation:** Use `zod` to validate all fields (especially email format and password length).
-- [ ] **Logic:**
-    -   Submit form to `POST /register`.
-    -   Handle 409 Conflict (Email exists) with a user-friendly error.
-    -   Save `access_token` to SecureStore.
-    -   Update global Auth State (Zustand) to trigger navigation to Step 2.
+### Fas 2: Steg 1 (Register UI & Logik)
+- [ ] **Fil:** Skapa `app/(public)/register.tsx`.
+- [ ] **Formulär:** Implementera fält för `CreateTeacherData` (Namn, E-post, Lösenord, Adress, Postnummer, Ort, Födelseår).
+- [ ] **Validering:** Använd `zod` schema som matchar backend-reglerna.
+- [ ] **API-anrop:** Använd `axios` för att posta till `/register`.
+- [ ] **Felhantering:** Visa felmeddelande om e-posten är upptagen (409).
 
-### Phase 3: Step 2 (Instruments)
-- [ ] **UI:** Replicate design `3.1_choose_instruments.png`.
-- [ ] **Grid:** Display predefined instruments (Piano, Guitar, Violin, Drums, Winds, etc.).
-- [ ] **Interaction:** Multi-select support. Clicking toggles selection state.
-- [ ] **"Other" Logic:**
-    -   Button to "Add other instrument".
-    -   When clicked, reveals a text input field.
-    -   Input value is added to the selected array.
-- [ ] **Logic:**
-    -   "Continue" button calls `PATCH /profile` with the array of strings.
-    -   On success, navigate to `(tabs)/index`.
+### Fas 3: Steg 2 (Instrument UI & Logik)
+- [ ] **Fil:** Skapa `app/(auth)/onboarding/instruments.tsx`.
+- [ ] **Auth-konfig:** Uppdatera `app/(auth)/_layout.tsx` för att dölja tab-baren på denna rutt.
+- [ ] **Grid:** Visa instrument-val.
+- [ ] **Logik:** "Spara"-knapp som kör `PATCH /profile`.
 
-## UI/UX Requirements
--   **Progress:** Step 1 shows "1 / 2" (50% bar). Step 2 shows "2 / 2" (100% bar).
--   **Feedback:** Loading spinners on API calls.
--   **Styling:** Follow `docs/style_guide.md` (Brand Orange for primary actions, Brand Green for progress).
+## UI/UX Krav
+-   **Styling:** Använd `NativeWind` klasser enligt `docs/style_guide.md`.
+-   **Keyboard:** Använd `KeyboardAvoidingView` för formulär.
