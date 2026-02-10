@@ -35,6 +35,13 @@
 - [x] Auth Layout: Tab-bar dold på onboarding-rutten via `tabBarStyle: { display: "none" }` och `href: null`.
 - [x] Fixat bugg i onboarding-flödet: Navigering går nu korrekt till Instrument-val efter registrering. Orsak: race condition mellan auth-guard och `useRegister`-hook. Lösning: `needsOnboarding`-flagga i Zustand-store som auth-guarden läser för att välja rätt redirect-mål.
 
+- [x] Empty State Dashboard för nya användare utan elever (`EmptyStateDashboard.tsx`):
+    - Välkomstmeddelande med lärarens namn
+    - Profilstatus-banner (100% klar)
+    - Hero Card med CTA "Hitta elever" som navigerar till find-students-tabben
+    - Tomt schema-placeholder med streckad border
+    - Villkorsstyrd rendering i `app/(auth)/index.tsx` baserat på `students.length`
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 

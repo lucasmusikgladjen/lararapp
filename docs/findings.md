@@ -28,6 +28,12 @@
 - **Datumhantering:** Jämförelser sker mot `new Date().toISOString().split('T')[0]` för att undvika tidszonsförskjutningar vid midnatt.
 - **Onboarding-navigering (Register -> Instruments -> Dashboard):** Navigeringen efter registrering styrs av auth-guarden i `app/_layout.tsx` via flaggan `needsOnboarding` i Zustand-store — **inte** via direkt `router.replace` i `useRegister`-hooken. Detta löser en race condition där auth-guarden (som reagerar på `isAuthenticated`-ändringen) och hook-navigeringen tävlade om att navigera användaren, vilket ledde till att Dashboard visades direkt istället för instrumentvalet. Flödet: `useRegister` sätter `needsOnboarding: true` → anropar `loginToStore` → auth-guard ser `isAuthenticated && needsOnboarding` → navigerar till `/(auth)/onboarding/instruments` → vid avslutad profilsparning sätts `needsOnboarding: false` och navigering sker till Dashboard.
 
+## Empty State Dashboard
+- **Villkorsstyrd Dashboard:** `app/(auth)/index.tsx` kontrollerar `students.length` efter att `useStudents` har laddat klart. Om läraren saknar elever renderas `EmptyStateDashboard` istället för den vanliga dashboarden.
+- **Komponent:** `src/components/dashboard/EmptyStateDashboard.tsx` — en fristående vy med välkomsthälsning, profilstatus, hero card med CTA och tomt schema-placeholder.
+- **Navigation:** CTA-knappen "Hitta elever" navigerar via `router.push("/(auth)/find-students")` till kartfliken.
+- **Laddningstillstånd:** En centrerad `ActivityIndicator` visas medan studentdata hämtas, innan villkoret avgör vilken vy som renderas.
+
 ## UI & Styling Strategy
 - **Källa:** Figma Design (gratisversionen).
 - **Metod:** Visuell uppskattning och manuell kontroll av värden (färgkoder, avstånd, hörnradie) i Design-tabben då Dev Mode ej används.

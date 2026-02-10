@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DashboardHeader } from "../../src/components/dashboard/DashboardHeader";
+import { EmptyStateDashboard } from "../../src/components/dashboard/EmptyStateDashboard";
 import { ReportBanner } from "../../src/components/dashboard/ReportBanner";
 import { ScheduleCard } from "../../src/components/dashboard/ScheduleCard";
 import { SchemaToggle, ToggleOption } from "../../src/components/dashboard/SchemaToggle";
@@ -38,6 +39,20 @@ export default function Dashboard() {
 
     const firstName = user?.name ? user.name.split(" ")[0] : "Non";
 
+    // Visa laddningsindikator medan data hämtas
+    if (isLoading) {
+        return (
+            <SafeAreaView className="flex-1 bg-brand-bg items-center justify-center">
+                <ActivityIndicator size="large" color="#F97316" />
+            </SafeAreaView>
+        );
+    }
+
+    // Om läraren inte har några elever, visa Empty State Dashboard
+    if (!students || students.length === 0) {
+        return <EmptyStateDashboard />;
+    }
+
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
@@ -56,9 +71,7 @@ export default function Dashboard() {
                 <View className="mb-6">
                     <Text className="text-xl font-bold text-slate-900 mb-3">Nästa lektion</Text>
 
-                    {isLoading ? (
-                        <ActivityIndicator size="small" color="#34C759" />
-                    ) : nextLesson ? (
+                    {nextLesson ? (
                         <NextLessonCard lesson={nextLesson} onPress={() => router.push(`/(auth)/student/${nextLesson.student.id}`)} />
                     ) : (
                         <View className="bg-white rounded-3xl p-6 shadow-sm items-center border border-gray-100">
@@ -73,11 +86,9 @@ export default function Dashboard() {
 
                     <SchemaToggle activeTab={activeTab} onToggle={setActiveTab} />
 
-                    {isLoading && <ActivityIndicator size="large" color="#34C759" className="mt-10" />}
-
                     {error && <Text className="text-red-500 text-center mt-4">Kunde inte hämta schema.</Text>}
 
-                    {!isLoading && !error && (
+                    {!error && (
                         <View className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                             {scheduleLessons.length > 0 ? (
                                 scheduleLessons.map((lesson, index) => (
