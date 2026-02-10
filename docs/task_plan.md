@@ -12,19 +12,23 @@ Implementera ett friktionsfritt, två-stegs onboarding-flöde för nya lärare. 
 * *Notera: Om `app/(public)/onboarding/index.tsx` finns idag och inte används, bör den tas bort eller refaktoriseras.*
 
 ### 2. Steg 1: Registrering (Konto)
-* **Fil:** `app/(public)/register.tsx` (Skapa denna fil).
+* **Fil:** `app/(public)/register.tsx`.
 * **Handling:** Användaren fyller i namn, e-post, lösenord, etc.
 * **API:** `POST /register`.
-* **Vid Succé:** 1. Spara JWT i SecureStore.
-    2. Uppdatera Auth Context (Zustand).
-    3. Navigera till Steg 2 (som ligger i Auth-stacken).
+* **Vid Succé:**
+    1. Sätt `needsOnboarding: true` i Zustand-store.
+    2. Spara JWT i SecureStore och uppdatera Auth Context (Zustand) via `loginToStore`.
+    3. Auth-guarden i `app/_layout.tsx` upptäcker att användaren är autentiserad och `needsOnboarding === true`, och navigerar automatiskt till `/(auth)/onboarding/instruments`.
+* **Viktigt:** Navigeringen sker via auth-guarden, **inte** via direkt `router.replace` i hook:en. Detta förhindrar race conditions mellan auth-guard och hook-navigering.
 
 ### 3. Steg 2: Välj Instrument
-* **Fil:** `app/(auth)/onboarding/instruments.tsx` (Skapa mapp och fil).
+* **Fil:** `app/(auth)/onboarding/instruments.tsx`.
 * **Kontext:** Skyddad rutt (kräver token).
-* **Layout-krav:** Denna skärm ligger i `(auth)`, men ska **INTE** visa botten-menyn (Tabs). Detta måste konfigureras i `app/(auth)/_layout.tsx` (`tabBarStyle: { display: 'none' }` eller `href: null`).
+* **Layout-krav:** Denna skärm ligger i `(auth)`, men ska **INTE** visa botten-menyn (Tabs). Konfigurerat i `app/(auth)/_layout.tsx` med `tabBarStyle: { display: 'none' }` och `href: null`.
 * **API:** `PATCH /profile` med `{ instruments: string[] }`.
-* **Vid Succé:** Navigera till Dashboard (`app/(auth)/index.tsx`).
+* **Vid Succé:**
+    1. Sätt `needsOnboarding: false` i Zustand-store.
+    2. Navigera till Dashboard (`/(auth)`) via `router.replace`.
 
 ## Definition of Done (DoD)
 
