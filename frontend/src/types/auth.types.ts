@@ -15,6 +15,24 @@ export type LoginResponse = {
     };
 };
 
+export type CreateTeacherData = {
+    name: string;
+    email: string;
+    password: string;
+    address: string;
+    zip: string;
+    city: string;
+    birthYear: string;
+};
+
+export type RegisterResponse = {
+    status: "success" | "fail";
+    data: {
+        access_token: string;
+        user: User;
+    };
+};
+
 export type AuthState = {
     token: string | null;
     user: User | null;

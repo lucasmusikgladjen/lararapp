@@ -3,37 +3,62 @@ import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import { authService } from "../services/auth.service";
 import { useAuthStore } from "../store/authStore";
-import { LoginResponse } from "../types/auth.types";
+import { CreateTeacherData, LoginResponse, RegisterResponse } from "../types/auth.types";
 
 export const useLogin = () => {
     const router = useRouter();
     const loginToStore = useAuthStore((state) => state.login);
 
     return useMutation({
-        // The actual function that calls the API. React Query passes the variables (email, password) here.
-        mutationFn: async ({ email, password }: any) => {
+        mutationFn: async ({ email, password }: { email: string; password: string }) => {
             return await authService.login(email, password);
         },
 
-        // Runs only if the API returns 200 OK.
         onSuccess: (data: LoginResponse) => {
             console.log("Login successful for:", data.data.user.email);
-
-            // 1. Save Token & User to Zustand Store (and SecureStore)
             loginToStore(data.data.access_token, data.data.user);
-
-            // 2. Navigate to the protected app area
-            // This matches your folder structure: app/(auth)/index.tsx
             router.replace("/(auth)");
         },
 
-        // Runs if the API returns 400, 401, or 500.
         onError: (error: any) => {
             console.error("Login failed:", error);
-
             const message = error.response?.data?.message || "Something went wrong. Please try again.";
-
             Alert.alert("Login Failed", message);
+        },
+    });
+};
+
+export const useRegister = () => {
+    const router = useRouter();
+    const loginToStore = useAuthStore((state) => state.login);
+
+    return useMutation({
+        mutationFn: async (data: CreateTeacherData) => {
+            return await authService.register(data);
+        },
+
+        onSuccess: (data: RegisterResponse) => {
+            console.log("Registration successful for:", data.data.user.email);
+            loginToStore(data.data.access_token, data.data.user);
+            // TODO: Navigate to /(auth)/onboarding/instruments when Phase 3 is implemented
+            router.replace("/(auth)");
+        },
+
+        onError: (error: any) => {
+            console.error("Registration failed:", error);
+
+            // Check for validation errors (400) - e.g. email already exists
+            const validationErrors = error.response?.data?.data?.errors;
+            if (validationErrors && Array.isArray(validationErrors)) {
+                const emailError = validationErrors.find((e: any) => e.path === "email");
+                if (emailError) {
+                    Alert.alert("Registrering misslyckades", "E-postadressen är redan registrerad.");
+                    return;
+                }
+            }
+
+            const message = error.response?.data?.message || "Något gick fel. Försök igen.";
+            Alert.alert("Registrering misslyckades", message);
         },
     });
 };

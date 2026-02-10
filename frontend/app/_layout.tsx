@@ -20,7 +20,7 @@ function useProtectedRoute() {
     if (isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)");
     } else if (!isAuthenticated && inAuthGroup) {
-      router.replace("/(public)/login");
+      router.replace("/(public)");
     }
   }, [isAuthenticated, isLoading, segments]);
 }
