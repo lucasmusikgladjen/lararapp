@@ -1,21 +1,12 @@
-import React from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-} from "react-native";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { z } from "zod";
+import ProgressBar from "../../src/components/onboarding/ProgressBar";
 import { useRegister } from "../../src/hooks/useAuth";
 import { CreateTeacherData } from "../../src/types/auth.types";
-import ProgressBar from "../../src/components/onboarding/ProgressBar";
 
 // Zod schema matching backend CreateTeacherData validation rules
 const registerSchema = z.object({
@@ -62,9 +53,7 @@ function FormField({
                 name={name}
                 render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                        className={`bg-slate-100 p-4 rounded-xl border ${
-                            error ? "border-red-400" : "border-slate-200"
-                        } text-slate-800`}
+                        className={`bg-slate-100 p-4 rounded-xl border ${error ? "border-red-400" : "border-slate-200"} text-slate-800`}
                         placeholder={placeholder}
                         placeholderTextColor="#94a3b8"
                         onBlur={onBlur}
@@ -76,9 +65,7 @@ function FormField({
                     />
                 )}
             />
-            {error && (
-                <Text className="text-red-500 text-sm mt-1">{error}</Text>
-            )}
+            {error && <Text className="text-red-500 text-sm mt-1">{error}</Text>}
         </View>
     );
 }
@@ -118,23 +105,12 @@ export default function RegisterScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="flex-1"
-            >
-                <ScrollView
-                    className="flex-1 px-8"
-                    contentContainerStyle={{ paddingBottom: 40 }}
-                    keyboardShouldPersistTaps="handled"
-                >
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
+                <ScrollView className="flex-1 px-8" contentContainerStyle={{ paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
                     {/* Header */}
                     <View className="mt-6 mb-6">
-                        <Text className="text-2xl font-bold text-slate-900 mb-1">
-                            Skapa konto
-                        </Text>
-                        <Text className="text-sm text-gray-400 mb-4">
-                            Steg 1 av 2
-                        </Text>
+                        <Text className="text-2xl font-bold text-slate-900 mb-1">Skapa konto</Text>
+                        <Text className="text-sm text-gray-400 mb-4">Steg 1 av 2</Text>
                         <ProgressBar step={1} total={2} />
                     </View>
 
@@ -167,13 +143,7 @@ export default function RegisterScreen() {
                         secureTextEntry
                     />
 
-                    <FormField
-                        control={control}
-                        name="address"
-                        label="Adress"
-                        placeholder="Storgatan 1"
-                        error={errors.address?.message}
-                    />
+                    <FormField control={control} name="address" label="Adress" placeholder="Storgatan 1" error={errors.address?.message} />
 
                     {/* Zip + City row */}
                     <View className="flex-row gap-4">
@@ -188,13 +158,7 @@ export default function RegisterScreen() {
                             />
                         </View>
                         <View className="flex-1">
-                            <FormField
-                                control={control}
-                                name="city"
-                                label="Ort"
-                                placeholder="Stockholm"
-                                error={errors.city?.message}
-                            />
+                            <FormField control={control} name="city" label="Ort" placeholder="Stockholm" error={errors.city?.message} />
                         </View>
                     </View>
 
@@ -202,7 +166,7 @@ export default function RegisterScreen() {
                         control={control}
                         name="birthYear"
                         label="Födelseår"
-                        placeholder="1990"
+                        placeholder="2000"
                         error={errors.birthYear?.message}
                         keyboardType="numeric"
                     />
@@ -211,10 +175,8 @@ export default function RegisterScreen() {
                     {registerMutation.isError && (
                         <View className="bg-red-50 p-3 rounded-xl mb-4">
                             <Text className="text-red-600 text-sm text-center">
-                                {registerMutation.error?.response?.data?.data
-                                    ?.errors?.[0]?.msg ||
-                                    registerMutation.error?.response?.data
-                                        ?.message ||
+                                {registerMutation.error?.response?.data?.data?.errors?.[0]?.msg ||
+                                    registerMutation.error?.response?.data?.message ||
                                     "Något gick fel. Försök igen."}
                             </Text>
                         </View>
@@ -224,19 +186,13 @@ export default function RegisterScreen() {
                     <TouchableOpacity
                         onPress={handleSubmit(onSubmit)}
                         disabled={registerMutation.isPending}
-                        className={`p-4 rounded-2xl items-center ${
-                            registerMutation.isPending
-                                ? "bg-gray-400"
-                                : "bg-brand-green"
-                        }`}
+                        className={`p-4 rounded-2xl items-center ${registerMutation.isPending ? "bg-gray-400" : "bg-brand-green"}`}
                         activeOpacity={0.8}
                     >
                         {registerMutation.isPending ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
-                            <Text className="text-white font-bold text-lg">
-                                FORTSÄTT
-                            </Text>
+                            <Text className="text-white font-bold text-lg">FORTSÄTT</Text>
                         )}
                     </TouchableOpacity>
                 </ScrollView>
