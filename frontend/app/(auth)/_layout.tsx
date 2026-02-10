@@ -53,6 +53,15 @@ export default function AuthLayout() {
                     href: null,
                 }}
             />
+
+            {/* Onboarding – hidden from tab bar */}
+            <Tabs.Screen
+                name="onboarding/instruments"
+                options={{
+                    href: null,
+                    tabBarStyle: { display: "none" },
+                }}
+            />
         </Tabs>
     );
 }

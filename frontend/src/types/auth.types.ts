@@ -33,6 +33,10 @@ export type RegisterResponse = {
     };
 };
 
+export type UpdateProfilePayload = {
+    instruments: string[];
+};
+
 export type AuthState = {
     token: string | null;
     user: User | null;

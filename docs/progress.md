@@ -29,6 +29,10 @@
 - [x] Backend: Stöd för `PATCH /profile` med `instruments`-array som uppdaterar Airtable.
 - [x] Backend: `POST /register` fungerar nu med fullständig data (adress, födelseår etc).
 - [x] Backend Refactoring: Implementerat `matchedData` och robust valideringslogik med custom validators för Auth.
+- [x] Frontend Onboarding Fas 1: `ProgressBar` och `InstrumentCard` komponenter i `src/components/onboarding/`.
+- [x] Frontend Onboarding Fas 2: Registreringsformulär (`app/(public)/register.tsx`) med Zod-validering och `POST /register`.
+- [x] Frontend Onboarding Fas 3: Instrument-val (`app/(auth)/onboarding/instruments.tsx`) med 2-kolumns grid, chip-tags, custom-input och `PATCH /profile`.
+- [x] Auth Layout: Tab-bar dold på onboarding-rutten via `tabBarStyle: { display: "none" }` och `href: null`.
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
