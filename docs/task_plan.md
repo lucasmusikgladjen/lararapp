@@ -37,12 +37,12 @@ Implementera en Google Maps-inspirerad vy för att hitta elever. Vyn ska innehå
 - [x] **Uppdatera:** `docs/progress.md`.
 - [x] **Uppdatera:** `docs/findings.md`.
 
-### Fas 3: Lista & Interaktion
-- [ ] **Komponent:** Skapa `StudentListSheet` (Lista i botten).
-- [ ] **Synk:** När kartan rör sig, uppdatera listan "Elever i närheten".
-- [ ] **Klick:** Klick på lista -> Panorera till marker. Klick på Marker -> Öppna liten info-ruta (`3_student_info.png`).
-- [ ] **Uppdatera:** `docs/progress.md`.
-- [ ] **Uppdatera:** `docs/findings.md`.
+### Fas 3: Lista & Interaktion (Klar)
+- [x] **Komponent:** Skapa `StudentListSheet` (Lista i botten).
+- [x] **Synk:** Listan visar elever från store (synkad med filter/sök).
+- [x] **Klick:** Klick på lista -> Panorera till marker. Klick på Marker -> Öppna liten info-ruta (`3_student_info.png`).
+- [x] **Uppdatera:** `docs/progress.md`.
+- [x] **Uppdatera:** `docs/findings.md`.
 
 ### Fas 4: Detaljvy & Ansökan
 - [ ] **Komponent:** Skapa `StudentDetailModal` (`4_student_modal.png`).

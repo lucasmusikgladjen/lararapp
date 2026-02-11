@@ -72,6 +72,14 @@
 - **State Management (Karta):** All kartlogik (vilken elev som är vald, var användaren är, filter) ligger i `findStudentsStore` (Zustand). Vyn `find-students.tsx` är endast ansvarig för rendering, inte logik.
 - **Prestanda (Markers):** För att undvika lagg vid rendering av många markörer använder vi `tracksViewChanges={false}` på `<Marker />` och enkla `View`-komponenter istället för tunga bilder.
 
+## Lista & Interaktion (Karta Fas 3)
+- **Bottom Sheet (MVP):** `StudentListSheet` använder en fast höjd (~38% av skärmhöjden via `Dimensions.get("window").height * 0.38`) istället för ett komplex gesture-baserat draggable sheet. Absolut positionerad med `bottom: 0`.
+- **FlatList-prestanda:** Varje rad renderas med `useCallback` + `keyExtractor` för att undvika onödiga omrenderingar vid stora datamängder (100+ elever).
+- **Kartkontroll:** `mapRef.current.animateToRegion()` med 400ms duration och `ANIMATE_DELTA = 0.02` ger en mjuk zoom-in-animation vid klick på en elev i listan.
+- **Info-kort (Marker-klick):** `StudentInfoCard` renderas som en absolut positionerad overlay ovanpå kartan (inte som en native Callout) för full kontroll över design och interaktion. Stängs vid klick på tom kartyta via `MapView.onPress`.
+- **Sheet-toggle:** Användaren kan stänga bottom sheet via X-knapp och öppna den igen via en flytande "Elever i närheten (X)"-knapp. State hanteras lokalt i `find-students.tsx` med `useState`.
+- **Vald-elev markering:** Vald elev i listan markeras med lila border (`border-[#8B5CF6]`) och ljusgrå bakgrund för tydlig visuell feedback.
+
 ## Filter & Sök (Karta Fas 2)
 - **Debounce-strategi:** Sökfältet (text) använder en 500ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop. Filter-chips triggar omedelbar refetch eftersom de är diskreta val (inte löpande inmatning).
 - **Modul-level timer:** Debounce-timern (`debounceTimer`) lever utanför Zustand-storen som en modul-variabel. Detta undviker att timern nollställs vid varje state-uppdatering och fungerar korrekt med Zustandss `set/get`-mönster.

@@ -63,10 +63,22 @@
     - Skapat `FilterBar`-komponent (`src/components/find-students/FilterBar.tsx`) med sökfält + horisontell chip-scroll.
     - Integrerat `FilterBar` ovanpå kartan i `find-students.tsx` med safe area insets för korrekt notch-hantering.
 
+- [x] **Frontend - Karta (Fas 3): Lista & Interaktion:**
+    - Skapat `StudentListSheet`-komponent (`src/components/find-students/StudentListSheet.tsx`) med absolut positionering i botten (~38% av skärmhöjden).
+    - Design: Vit bakgrund, rundade hörn (`rounded-t-3xl`), skugga, drag handle, header med elevantal.
+    - `FlatList` för prestandaoptimerad rendering av elevkort (avatar, namn, avstånd, instrument-chips, chevron).
+    - Visuell markering av vald elev med lila border.
+    - Skapat `StudentInfoCard`-komponent (`src/components/find-students/StudentInfoCard.tsx`) för marker-klick overlay.
+    - Info-kort visar avatar, namn, instrument, stad, avstånd och "Läs mer"-knapp (förberett för Fas 4).
+    - **Interaktioner:**
+        - Klick på elev i listan → `selectStudent()` + `animateToRegion()` panorerar kartan till eleven.
+        - Klick på marker → `selectStudent()` + visar info-kort ovanpå kartan.
+        - Klick på tom kartyta → avmarkerar vald elev (stänger info-kort).
+        - Stäng-knapp på sheet → döljer listan, visar "Elever i närheten (X)"-knapp för att öppna igen.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 
 ## Kommande 📅
-- [ ] Karta Fas 3: Elev-lista i botten (StudentListSheet) och marker-klick interaktion.
 - [ ] Karta Fas 4: Detaljvy och ansökan (StudentDetailModal).
 - [ ] Push-notifikationer.
