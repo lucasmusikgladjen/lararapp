@@ -1,6 +1,6 @@
 // frontend/src/services/student.service.ts
 import axios from "axios";
-import { ApiResponse, Student, UpdateStudentPayload } from "../types/student.types";
+import { ApiResponse, SearchStudentsResponse, Student, StudentPublicDTO, UpdateStudentPayload } from "../types/student.types";
 
 const API_URL = "http://localhost:3000/api";
 // Note: Use "http://10.0.2.2:3000/api" for Android Emulator
@@ -44,5 +44,26 @@ export const updateStudentInfo = async (token: string, studentId: string, payloa
             Authorization: `Bearer ${token}`,
         },
     });
+    return response.data.data;
+};
+
+export const searchStudents = async (
+    lat: number,
+    lng: number,
+    radius: number,
+    instrument?: string,
+): Promise<StudentPublicDTO[]> => {
+    const params: Record<string, string> = {
+        lat: String(lat),
+        lng: String(lng),
+        radius: String(radius),
+    };
+    if (instrument) {
+        params.instrument = instrument;
+    }
+    const response = await axios.get<SearchStudentsResponse>(
+        `${API_URL}/students/search`,
+        { params },
+    );
     return response.data.data;
 };

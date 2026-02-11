@@ -29,6 +29,15 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-secure-store"]
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Musikglädjen behöver din plats för att visa elever i ditt område."
+        }
+      ]
+    ]
   }
 }
