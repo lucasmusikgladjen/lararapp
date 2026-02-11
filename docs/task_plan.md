@@ -48,6 +48,8 @@ Implementera en Google Maps-inspirerad vy för att hitta elever. Vyn ska innehå
 - [ ] **Komponent:** Skapa `StudentDetailModal` (`4_student_modal.png`).
 - [ ] **Innehåll:** Visa Elev-avatar, Instrument-ikon, Beskrivning och Textfält för hälsning.
 - [ ] **Logik:** "ANSÖK"-knapp (Logik för detta kommer senare, men UI ska finnas).
+- [ ] **Uppdatera:** `docs/progress.md`.
+- [ ] **Uppdatera:** `docs/findings.md`.
 
 ### Fas 5: Dokumentation
 - [ ] **Uppdatera:** `docs/progress.md`.

@@ -72,6 +72,12 @@
 - **State Management (Karta):** All kartlogik (vilken elev som är vald, var användaren är, filter) ligger i `findStudentsStore` (Zustand). Vyn `find-students.tsx` är endast ansvarig för rendering, inte logik.
 - **Prestanda (Markers):** För att undvika lagg vid rendering av många markörer använder vi `tracksViewChanges={false}` på `<Marker />` och enkla `View`-komponenter istället för tunga bilder.
 
+## Filter & Sök (Karta Fas 2)
+- **Debounce-strategi:** Sökfältet (text) använder en 500ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop. Filter-chips triggar omedelbar refetch eftersom de är diskreta val (inte löpande inmatning).
+- **Modul-level timer:** Debounce-timern (`debounceTimer`) lever utanför Zustand-storen som en modul-variabel. Detta undviker att timern nollställs vid varje state-uppdatering och fungerar korrekt med Zustandss `set/get`-mönster.
+- **Safe Area Overlay:** `FilterBar` använder `useSafeAreaInsets` från `react-native-safe-area-context` och positioneras absolut med `top: insets.top + 4` för att respektera notch/dynamic island på alla enheter.
+- **Backend-koppling (city):** Sökfältets text skickas som `city`-parameter till backend, som redan stöder filtrering på ort via `SEARCH()`-formler i Airtable.
+
 ## Lista & Interaktion (Karta Fas 3)
 - **Bottom Sheet (MVP):** `StudentListSheet` använder en fast höjd (~38% av skärmhöjden via `Dimensions.get("window").height * 0.38`) istället för ett komplex gesture-baserat draggable sheet. Absolut positionerad med `bottom: 0`.
 - **FlatList-prestanda:** Varje rad renderas med `useCallback` + `keyExtractor` för att undvika onödiga omrenderingar vid stora datamängder (100+ elever).
@@ -79,9 +85,3 @@
 - **Info-kort (Marker-klick):** `StudentInfoCard` renderas som en absolut positionerad overlay ovanpå kartan (inte som en native Callout) för full kontroll över design och interaktion. Stängs vid klick på tom kartyta via `MapView.onPress`.
 - **Sheet-toggle:** Användaren kan stänga bottom sheet via X-knapp och öppna den igen via en flytande "Elever i närheten (X)"-knapp. State hanteras lokalt i `find-students.tsx` med `useState`.
 - **Vald-elev markering:** Vald elev i listan markeras med lila border (`border-[#8B5CF6]`) och ljusgrå bakgrund för tydlig visuell feedback.
-
-## Filter & Sök (Karta Fas 2)
-- **Debounce-strategi:** Sökfältet (text) använder en 500ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop. Filter-chips triggar omedelbar refetch eftersom de är diskreta val (inte löpande inmatning).
-- **Modul-level timer:** Debounce-timern (`debounceTimer`) lever utanför Zustand-storen som en modul-variabel. Detta undviker att timern nollställs vid varje state-uppdatering och fungerar korrekt med Zustandss `set/get`-mönster.
-- **Safe Area Overlay:** `FilterBar` använder `useSafeAreaInsets` från `react-native-safe-area-context` och positioneras absolut med `top: insets.top + 4` för att respektera notch/dynamic island på alla enheter.
-- **Backend-koppling (city):** Sökfältets text skickas som `city`-parameter till backend, som redan stöder filtrering på ort via `SEARCH()`-formler i Airtable.
