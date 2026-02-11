@@ -55,9 +55,18 @@
     - Kopplat frontend mot backend via `student.service.ts` med korrekt Auth-header.
     - Prestandaoptimering av markörer (`tracksViewChanges={false}`) och färgkodning baserat på instrument.
 
+- [x] **Frontend - Karta (Fas 2): Filter & Sök:**
+    - Uppdaterat `student.service.ts` med `searchQuery`-parameter som skickas som `city` till backend.
+    - Utökat `findStudentsStore` med `searchQuery`-state, `setSearchQuery`-action och debounce-logik (500ms) för API-anrop.
+    - `setFilter` triggar omedelbar refetch; `setSearchQuery` debouncar för att undvika spam.
+    - Skapat `FilterChip`-komponent (`src/components/ui/FilterChip.tsx`) med pill-design: Vald = lila (#8B5CF6), Ovald = vit.
+    - Skapat `FilterBar`-komponent (`src/components/find-students/FilterBar.tsx`) med sökfält + horisontell chip-scroll.
+    - Integrerat `FilterBar` ovanpå kartan i `find-students.tsx` med safe area insets för korrekt notch-hantering.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 
 ## Kommande 📅
-- [ ] Elevkarta i FindStudents med Google Directions integration.
+- [ ] Karta Fas 3: Elev-lista i botten (StudentListSheet) och marker-klick interaktion.
+- [ ] Karta Fas 4: Detaljvy och ansökan (StudentDetailModal).
 - [ ] Push-notifikationer.

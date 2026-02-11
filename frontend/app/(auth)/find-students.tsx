@@ -4,6 +4,7 @@ import MapView, { Marker, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { useFindStudentsStore } from "../../src/store/findStudentsStore";
 import { StudentPublicDTO } from "../../src/types/student.types";
+import { FilterBar } from "../../src/components/find-students/FilterBar";
 
 // Stockholm fallback when location permission is denied
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
@@ -93,9 +94,12 @@ export default function FindStudents() {
                 ))}
             </MapView>
 
+            {/* Search bar + filter chips overlay */}
+            <FilterBar />
+
             {/* Loading overlay when fetching students */}
             {loading && (
-                <View className="absolute top-20 self-center bg-white rounded-full px-4 py-2 shadow-sm">
+                <View className="absolute top-40 self-center bg-white rounded-full px-4 py-2 shadow-sm">
                     <Text className="text-sm text-gray-500">Söker elever...</Text>
                 </View>
             )}
