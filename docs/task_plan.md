@@ -20,14 +20,14 @@ Implementera en Google Maps-inspirerad vy för att hitta elever. Vyn ska innehå
 
 ## Definition of Done (DoD)
 
-### Fas 1: Grundstruktur & Karta
+### Fas 1: Grundstruktur & Karta (Klar)
 - [x] **Paket:** Installera `react-native-maps` och `expo-location`.
 - [x] **Store:** Skapa `src/store/findStudentsStore.ts` (actions: `setStudents`, `setFilter`, `selectStudent`).
 - [x] **Fil:** Skapa `app/(auth)/find-students.tsx`.
 - [x] **Karta:** Implementera `MapView` som visar användarens position och hämtar elever via API (`/api/students/search`).
 - [x] **Markers:** Visa custom markers för varje elev.
 
-### Fas 2: Filter & Sök (Klar ✅)
+### Fas 2: Filter & Sök (Klar)
 - [x] **Service:** Uppdatera `student.service.ts` (`searchStudents`) för att ta emot `searchQuery` (string) och skicka det som `city` till backend.
 - [x] **Store:** Uppdatera `findStudentsStore` med `searchQuery`-state och logik för att kombinera text + filter.
 - [x] **Prestanda:** Implementera **Debounce** (fördröjning) i sökningen för att spara API-anrop.
@@ -41,6 +41,8 @@ Implementera en Google Maps-inspirerad vy för att hitta elever. Vyn ska innehå
 - [ ] **Komponent:** Skapa `StudentListSheet` (Lista i botten).
 - [ ] **Synk:** När kartan rör sig, uppdatera listan "Elever i närheten".
 - [ ] **Klick:** Klick på lista -> Panorera till marker. Klick på Marker -> Öppna liten info-ruta (`3_student_info.png`).
+- [ ] **Uppdatera:** `docs/progress.md`.
+- [ ] **Uppdatera:** `docs/findings.md`.
 
 ### Fas 4: Detaljvy & Ansökan
 - [ ] **Komponent:** Skapa `StudentDetailModal` (`4_student_modal.png`).
