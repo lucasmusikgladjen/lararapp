@@ -8,6 +8,7 @@ import { StudentPublicDTO } from "../../src/types/student.types";
 import { FilterBar } from "../../src/components/find-students/FilterBar";
 import { StudentListSheet } from "../../src/components/find-students/StudentListSheet";
 import { StudentInfoCard } from "../../src/components/find-students/StudentInfoCard";
+import { StudentDetailModal } from "../../src/components/find-students/StudentDetailModal";
 
 // Stockholm fallback when location permission is denied
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
@@ -34,6 +35,7 @@ export default function FindStudents() {
     const [permissionDenied, setPermissionDenied] = useState(false);
     const [initializing, setInitializing] = useState(true);
     const [sheetVisible, setSheetVisible] = useState(true);
+    const [detailModalVisible, setDetailModalVisible] = useState(false);
 
     const { students, loading, userLocation, fetchStudents, setUserLocation, selectStudent, selectedStudent } = useFindStudentsStore();
 
@@ -75,9 +77,9 @@ export default function FindStudents() {
         }
     }, [selectedStudent, selectStudent]);
 
-    // Info card "Läs mer" → placeholder for Phase 4 detail modal
+    // Info card "Läs mer" → open detail modal
     const handleReadMore = useCallback((_student: StudentPublicDTO) => {
-        // Will open StudentDetailModal in Phase 4
+        setDetailModalVisible(true);
     }, []);
 
     // Request location permission and fetch initial data
@@ -199,6 +201,13 @@ export default function FindStudents() {
                     <Text className="text-sm text-gray-500 text-center">Platsåtkomst nekad. Visar Stockholm som standard.</Text>
                 </View>
             )}
+
+            {/* Student detail modal (Phase 4) */}
+            <StudentDetailModal
+                visible={detailModalVisible}
+                student={selectedStudent}
+                onClose={() => setDetailModalVisible(false)}
+            />
         </View>
     );
 }

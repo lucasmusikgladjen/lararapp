@@ -85,3 +85,11 @@
 - **Info-kort (Marker-klick):** `StudentInfoCard` renderas som en absolut positionerad overlay ovanpå kartan (inte som en native Callout) för full kontroll över design och interaktion. Stängs vid klick på tom kartyta via `MapView.onPress`.
 - **Sheet-toggle:** Användaren kan stänga bottom sheet via X-knapp och öppna den igen via en flytande "Elever i närheten (X)"-knapp. State hanteras lokalt i `find-students.tsx` med `useState`.
 - **Vald-elev markering:** Vald elev i listan markeras med lila border (`border-[#8B5CF6]`) och ljusgrå bakgrund för tydlig visuell feedback.
+
+## Detaljvy & Ansökan (Karta Fas 4)
+- **Modal-typ:** React Native `Modal` med `presentationStyle="pageSheet"` och `animationType="slide"` ger native iOS page sheet-beteende (dra-ned för att stänga) utan extra dependencies.
+- **Tangentbordshantering:** `KeyboardAvoidingView` med `behavior="padding"` (iOS) / `"height"` (Android) wrappat runt `ScrollView` säkerställer att `TextInput` aldrig döljs av tangentbordet.
+- **Mock-logik:** "ANSÖK"-knappen visar en `Alert.alert` och stänger modalen. Riktig API-koppling (POST-anrop till backend) implementeras i en framtida fas.
+- **State-hantering:** `detailModalVisible` hanteras som lokal state i `find-students.tsx` (inte i Zustand-store) eftersom det är rent UI-state utan koppling till affärslogik.
+- **Avatar & Badges:** Avatarer genereras via DiceBear API (`avataaars`-stil) med elevens ID som seed. Instrument-badge (orange) och stjärn-badge (grön) positioneras absolut relativt till avataren.
+- **Dynamisk beskrivning:** "Om eleven"-texten genereras dynamiskt baserat på elevens `instruments` och `city` från `StudentPublicDTO`, eftersom backend inte tillhandahåller en separat beskrivningstext.
