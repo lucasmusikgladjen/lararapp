@@ -1,6 +1,7 @@
 import Debug from "debug";
 import { Request, Response } from "express";
-import { getAllStudents, getStudentsByTeacher, updateStudent } from "../services/student_service";
+import { findStudents, getAllStudents, getStudentsByTeacher, updateStudent } from "../services/student_service";
+import { GetStudentsQuery } from "../types/Student.types";
 
 const debug = Debug("musikgladjen:studentController");
 
@@ -38,13 +39,42 @@ export const index = async (req: Request, res: Response) => {
     }
 };
 
+export const search = async (req: Request, res: Response) => {
+    try {
+        // Typsäkra parametrarna från URL:en
+        const query: GetStudentsQuery = {
+            city: req.query.city as string,
+            instrument: req.query.instrument as string,
+            lat: req.query.lat as string,
+            lng: req.query.lng as string,
+            radius: req.query.radius as string,
+        };
+
+        // debug(`Searching students with params: %O`, query);
+
+        const students = await findStudents(query);
+
+        res.send({
+            status: "success",
+            count: students.length,
+            data: students,
+        });
+    } catch (error) {
+        debug("Error searching students: %O", error);
+        res.status(500).send({
+            message: "Error searching students",
+            error: (error as Error).message,
+        });
+    }
+};
+
 export const update = async (req: Request, res: Response) => {
     try {
         const { id } = req.params as { id: string };
         const { kommentar, terminsmal } = req.body;
 
         debug(`Updating student ${id}. Notes: ${kommentar}, Goals: ${terminsmal}`);
-        
+
         const updatedStudent = await updateStudent(id, { kommentar, terminsmal });
 
         res.send({
