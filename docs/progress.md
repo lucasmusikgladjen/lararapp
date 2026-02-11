@@ -41,6 +41,7 @@
     - Hero Card med CTA "Hitta elever" som navigerar till find-students-tabben
     - Tomt schema-placeholder med streckad border
     - Villkorsstyrd rendering i `app/(auth)/index.tsx` baserat på `students.length`
+- [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.

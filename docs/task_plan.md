@@ -1,30 +1,48 @@
-# Task Plan: Backend - Sök & Filtrering av Elever
+# Task Plan: Frontend - "Hitta Elever" Karta & UI
 
 ## Mål
-Bygga endpoint `GET /api/students/search` som filtrerar elever baserat på stad, instrument och avstånd.
+Implementera en Google Maps-inspirerad vy för att hitta elever. Vyn ska innehålla en interaktiv karta, filtrering på instrument, och en lista över elever i närheten.
 
-## Viktigt om Data
-* **Airtable-struktur:** Fälten `Latitude`, `Longitude` och `Ort` returneras som arrayer (`number[]`, `string[]`) enligt `Student.types.ts`. Backend måste mappa ut första värdet (`[0]`) för att logiken ska fungera.
+## Design & Referenser
+* **Huvudvy:** `docs/references/FindStudents/2_students_map.png` (Karta + Sökfält + Filterchips + Lista i botten).
+* **Marker-klick:** `docs/references/FindStudents/3_student_info.png` (Liten info-ruta på kartan).
+* **Detaljvy:** `docs/references/FindStudents/4_student_modal.png` (Fullskärms-modal/BottomSheet med "Ansök"-knapp).
+
+## Arkitektur
+* **Karta:** `react-native-maps` (Provider: Google).
+* **Plats:** `expo-location` för att centrera kartan på läraren.
+* **State:** `findStudentsStore` (Zustand) för att hantera sökresultat, filter och vald elev.
+* **UI Komponenter:**
+    * `FindStudentsMap`: Wrapper för MapView.
+    * `FilterBar`: Horisontell scroll-lista med chips (Piano, Gitarr, etc).
+    * `StudentListSheet`: BottomSheet som visar "Elever i närheten".
+    * `StudentDetailModal`: Modal för fullständig info och ansökan.
 
 ## Definition of Done (DoD)
 
-### Fas 1: Typer
-- [ ] **Fil:** Uppdatera `src/types/Student.types.ts`.
-- [ ] **Action:** Lägg till `StudentPublicDTO` och `GetStudentsQuery` (utan att radera befintliga typer).
+### Fas 1: Grundstruktur & Karta
+- [ ] **Paket:** Installera `react-native-maps` och `expo-location`.
+- [ ] **Store:** Skapa `src/store/findStudentsStore.ts` (actions: `setStudents`, `setFilter`, `selectStudent`).
+- [ ] **Fil:** Skapa `app/(auth)/find-students.tsx`.
+- [ ] **Karta:** Implementera `MapView` som visar användarens position och hämtar elever via API (`/api/students/search`).
+- [ ] **Markers:** Visa custom markers för varje elev.
 
-### Fas 2: Service (Logik)
-- [ ] **Fil:** Uppdatera `src/services/student_service.ts`.
-- [ ] **Funktion:** `findStudents`.
-- [ ] **Logik:**
-    - Hämta data från Airtable.
-    - **Säker mappning:** `lat: record.fields.Latitude?.[0]`.
-    - **Avståndsberäkning:** Haversine-formel.
-    - **Filtrering:** Applicera `radius` i koden.
+### Fas 2: Filter & Sök
+- [ ] **Komponent:** Skapa `FilterBar` (Sökfält + Instrument-chips).
+- [ ] **Logik:** När man klickar på "Piano", filtrera markörerna på kartan och gör nytt API-anrop om nödvändigt.
+- [ ] **Design:** Matcha stilen i `2_students_map.png` (Lila/Gröna chips, rundat sökfält).
 
-### Fas 3: API
-- [ ] **Fil:** Skapa `searchStudents` i `src/controllers/student_controller.ts`.
-- [ ] **Fil:** Lägg till route i `src/routes/studentRoutes.ts`.
-    - **VIKTIGT:** Routen `/search` måste ligga FÖRE `/:id`.
+### Fas 3: Lista & Interaktion
+- [ ] **Komponent:** Skapa `StudentListSheet` (Lista i botten).
+- [ ] **Synk:** När kartan rör sig, uppdatera listan "Elever i närheten".
+- [ ] **Klick:** Klick på lista -> Panorera till marker. Klick på Marker -> Öppna liten info-ruta (`3_student_info.png`).
 
-### Fas 4: Dokumentation
-- [ ] **Uppdatera:** `docs/progress.md` och `docs/findings.md` med info om den nya sök-arkitekturen.
+### Fas 4: Detaljvy & Ansökan
+- [ ] **Komponent:** Skapa `StudentDetailModal` (`4_student_modal.png`).
+- [ ] **Innehåll:** Visa Elev-avatar, Instrument-ikon, Beskrivning och Textfält för hälsning.
+- [ ] **Logik:** "ANSÖK"-knapp (Logik för detta kommer senare, men UI ska finnas).
+
+### Fas 5: Dokumentation
+- [ ] **Uppdatera:** `docs/progress.md`.
+- [ ] **Uppdatera:** `docs/findings.md`.
+- [ ] **Uppdatera:** `docs/task_plan.md`.
