@@ -37,6 +37,22 @@ export interface Student {
     guardianPhone?: string;
 }
 
+export interface StudentPublicDTO {
+    id: string;
+    name: string;
+    instruments: string[];
+    city: string;
+    lat?: number;
+    lng?: number;
+    distance?: number;
+}
+
+export interface SearchStudentsResponse {
+    status: "success" | "fail";
+    count: number;
+    data: StudentPublicDTO[];
+}
+
 export interface UpdateStudentPayload {
     notes?: string;
     goals?: string;
