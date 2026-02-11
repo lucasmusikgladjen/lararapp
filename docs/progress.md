@@ -76,9 +76,17 @@
         - Klick på tom kartyta → avmarkerar vald elev (stänger info-kort).
         - Stäng-knapp på sheet → döljer listan, visar "Elever i närheten (X)"-knapp för att öppna igen.
 
+- [x] **Frontend - Karta (Fas 4): Detaljvy & Ansökan:**
+    - Skapat `StudentDetailModal`-komponent (`src/components/find-students/StudentDetailModal.tsx`) med slide-up `Modal` (`presentationStyle="pageSheet"`).
+    - Design matchar `4_student_modal.png`: Drag handle, stängknapp, stor centrerad avatar med stjärn-badge (grön) och instrument-badge (orange).
+    - "Om eleven"-sektion med dynamisk beskrivningstext baserad på elevens instrument och stad.
+    - "Skicka ansökan"-sektion med grön bakgrund, multiline `TextInput` för hälsning och informationstext.
+    - Grön "ANSÖK"-knapp med mock-logik (`Alert.alert`) — riktig API-koppling kommer senare.
+    - `KeyboardAvoidingView` + `ScrollView` för korrekt tangentbordshantering.
+    - Integrerat i `find-students.tsx`: "Läs mer"-klick på `StudentInfoCard` öppnar modalen via lokal `detailModalVisible`-state.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 
 ## Kommande 📅
-- [ ] Karta Fas 4: Detaljvy och ansökan (StudentDetailModal).
 - [ ] Push-notifikationer.
