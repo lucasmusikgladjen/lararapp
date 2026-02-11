@@ -43,6 +43,18 @@
     - Villkorsstyrd rendering i `app/(auth)/index.tsx` baserat på `students.length`
 - [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
+- [x] **Backend - Geospatial Sökning:**
+    - Implementerat `GET /api/students/search` med Haversine-formel för avståndsberäkning.
+    - Avancerad filtrering i Airtable (`SEARCH`-formler) för att hantera "Söker lärare" och array-fält (`Ort`).
+    - Typsäker DTO (`StudentPublicDTO`) för att skydda elevdata.
+    
+- [x] **Frontend - Karta (Fas 1):**
+    - Installation och konfiguration av `react-native-maps` och `expo-location` i `app.json`.
+    - Implementerat `findStudentsStore` (Zustand) för att hantera kart-state (elever, plats, filter).
+    - Skapat kartvyn i `app/(auth)/find-students.tsx` med hantering av rättigheter och fallback till Stockholm.
+    - Kopplat frontend mot backend via `student.service.ts` med korrekt Auth-header.
+    - Prestandaoptimering av markörer (`tracksViewChanges={false}`) och färgkodning baserat på instrument.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 

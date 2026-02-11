@@ -28,15 +28,7 @@ export default function FindStudents() {
     const [permissionDenied, setPermissionDenied] = useState(false);
     const [initializing, setInitializing] = useState(true);
 
-    const {
-        students,
-        loading,
-        userLocation,
-        fetchStudents,
-        setUserLocation,
-        selectStudent,
-        selectedStudent,
-    } = useFindStudentsStore();
+    const { students, loading, userLocation, fetchStudents, setUserLocation, selectStudent, selectedStudent } = useFindStudentsStore();
 
     // Request location permission and fetch initial data
     useEffect(() => {
@@ -111,9 +103,7 @@ export default function FindStudents() {
             {/* Permission denied banner */}
             {permissionDenied && (
                 <View className="absolute bottom-6 self-center bg-white rounded-2xl px-5 py-3 shadow-sm mx-5">
-                    <Text className="text-sm text-gray-500 text-center">
-                        Platsåtkomst nekad. Visar Stockholm som standard.
-                    </Text>
+                    <Text className="text-sm text-gray-500 text-center">Platsåtkomst nekad. Visar Stockholm som standard.</Text>
                 </View>
             )}
         </View>
@@ -134,11 +124,7 @@ function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
     const size = isSelected ? 20 : 14;
 
     return (
-        <Marker
-            coordinate={{ latitude: student.lat, longitude: student.lng }}
-            onPress={onPress}
-            tracksViewChanges={false}
-        >
+        <Marker coordinate={{ latitude: student.lat, longitude: student.lng }} onPress={onPress} tracksViewChanges={false}>
             <View
                 style={{
                     width: size,

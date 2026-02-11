@@ -47,12 +47,7 @@ export const updateStudentInfo = async (token: string, studentId: string, payloa
     return response.data.data;
 };
 
-export const searchStudents = async (
-    lat: number,
-    lng: number,
-    radius: number,
-    instrument?: string,
-): Promise<StudentPublicDTO[]> => {
+export const searchStudents = async (token: string, lat: number, lng: number, radius: number, instrument?: string): Promise<StudentPublicDTO[]> => {
     const params: Record<string, string> = {
         lat: String(lat),
         lng: String(lng),
@@ -61,9 +56,13 @@ export const searchStudents = async (
     if (instrument) {
         params.instrument = instrument;
     }
-    const response = await axios.get<SearchStudentsResponse>(
-        `${API_URL}/students/search`,
-        { params },
-    );
+
+    const response = await axios.get<SearchStudentsResponse>(`${API_URL}/students/search`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        params,
+    });
+
     return response.data.data;
 };

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { StudentPublicDTO } from "../types/student.types";
 import { searchStudents } from "../services/student.service";
+import { useAuthStore } from "./authStore";
 
 const DEFAULT_RADIUS_KM = 10;
 
@@ -34,9 +35,17 @@ export const useFindStudentsStore = create<FindStudentsState>()((set, get) => ({
     fetchStudents: async (lat: number, lng: number, radius?: number) => {
         set({ loading: true });
         try {
+            const token = useAuthStore.getState().token;
+
+            if (!token) {
+                console.error("No token found!");
+                set({ loading: false });
+                return;
+            }
+
             const r = radius ?? get().radius;
             const filter = get().filter ?? undefined;
-            const data = await searchStudents(lat, lng, r, filter);
+            const data = await searchStudents(token, lat, lng, r, filter);
             set({ students: data, loading: false });
         } catch (error) {
             console.error("Failed to fetch students:", error);

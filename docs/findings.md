@@ -63,3 +63,11 @@
 - **Senaste anteckningar:** Mappas till Airtable-fältet `Kommentar` i tabellen `Elev`.
 - **Terminsmål:** Mappas till Airtable-fältet `Terminsmål` i tabellen `Elev`.
 - **Spara-logik:** Använder `PATCH /api/students/:id`. Backend verifierar att `teacherId` äger eleven innan uppdatering sker.
+
+## Maps & Geospatial Architecture
+- **Backend-styrd logik:** Vi beräknar avstånd och filtrering i backend (Node.js) istället för att hämta alla elever till klienten. Detta sparar bandbredd och gör appen skalbar.
+- **Airtable-egenheter (Geo):** Fält som `Ort` och `Latitude` returneras ofta som arrayer (Lookups). Vi hanterar detta genom att "platta till" dem i backend (`record.fields.Latitude?.[0]`) och använda `SEARCH()`-formler istället för strikt likhet (`=`) vid filtrering.
+- **Kart-leverantör:** Vi använder plattformens standardkarta (Apple Maps på iOS, Google Maps på Android) för MVP. Detta minimerar konfiguration (API-nycklar) och ger bäst prestanda på respektive plattform.
+- **Native Modules i Expo:** Installation av bibliotek som `react-native-maps` kräver en omstart av simulatorn/appen (delete app + `npx expo start --clear`) för att ladda in native-koden korrekt.
+- **State Management (Karta):** All kartlogik (vilken elev som är vald, var användaren är, filter) ligger i `findStudentsStore` (Zustand). Vyn `find-students.tsx` är endast ansvarig för rendering, inte logik.
+- **Prestanda (Markers):** För att undvika lagg vid rendering av många markörer använder vi `tracksViewChanges={false}` på `<Marker />` och enkla `View`-komponenter istället för tunga bilder.
