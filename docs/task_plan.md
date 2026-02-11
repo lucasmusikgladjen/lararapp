@@ -27,15 +27,15 @@ Implementera en Google Maps-inspirerad vy för att hitta elever. Vyn ska innehå
 - [x] **Karta:** Implementera `MapView` som visar användarens position och hämtar elever via API (`/api/students/search`).
 - [x] **Markers:** Visa custom markers för varje elev.
 
-### Fas 2: Filter & Sök (Pågående)
-- [ ] **Service:** Uppdatera `student.service.ts` (`searchStudents`) för att ta emot `searchQuery` (string) och skicka det som `city` till backend.
-- [ ] **Store:** Uppdatera `findStudentsStore` med `searchQuery`-state och logik för att kombinera text + filter.
-- [ ] **Prestanda:** Implementera **Debounce** (fördröjning) i sökningen för att spara API-anrop.
-- [ ] **Komponent:** Skapa `FilterBar` (Sökfält + Instrument-chips).
-- [ ] **Design:** Matcha stilen i `2_students_map.png` (Lila/Gröna chips, rundat sökfält).
-- [ ] **Integrera:** Lägg `FilterBar` ovanpå kartan i `find-students.tsx`.
-- [ ] **Uppdatera:** `docs/progress.md`.
-- [ ] **Uppdatera:** `docs/findings.md`.
+### Fas 2: Filter & Sök (Klar ✅)
+- [x] **Service:** Uppdatera `student.service.ts` (`searchStudents`) för att ta emot `searchQuery` (string) och skicka det som `city` till backend.
+- [x] **Store:** Uppdatera `findStudentsStore` med `searchQuery`-state och logik för att kombinera text + filter.
+- [x] **Prestanda:** Implementera **Debounce** (fördröjning) i sökningen för att spara API-anrop.
+- [x] **Komponent:** Skapa `FilterBar` (Sökfält + Instrument-chips).
+- [x] **Design:** Matcha stilen i `2_students_map.png` (Lila/Gröna chips, rundat sökfält).
+- [x] **Integrera:** Lägg `FilterBar` ovanpå kartan i `find-students.tsx`.
+- [x] **Uppdatera:** `docs/progress.md`.
+- [x] **Uppdatera:** `docs/findings.md`.
 
 ### Fas 3: Lista & Interaktion
 - [ ] **Komponent:** Skapa `StudentListSheet` (Lista i botten).

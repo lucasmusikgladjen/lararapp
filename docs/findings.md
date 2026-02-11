@@ -71,3 +71,9 @@
 - **Native Modules i Expo:** Installation av bibliotek som `react-native-maps` kräver en omstart av simulatorn/appen (delete app + `npx expo start --clear`) för att ladda in native-koden korrekt.
 - **State Management (Karta):** All kartlogik (vilken elev som är vald, var användaren är, filter) ligger i `findStudentsStore` (Zustand). Vyn `find-students.tsx` är endast ansvarig för rendering, inte logik.
 - **Prestanda (Markers):** För att undvika lagg vid rendering av många markörer använder vi `tracksViewChanges={false}` på `<Marker />` och enkla `View`-komponenter istället för tunga bilder.
+
+## Filter & Sök (Karta Fas 2)
+- **Debounce-strategi:** Sökfältet (text) använder en 500ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop. Filter-chips triggar omedelbar refetch eftersom de är diskreta val (inte löpande inmatning).
+- **Modul-level timer:** Debounce-timern (`debounceTimer`) lever utanför Zustand-storen som en modul-variabel. Detta undviker att timern nollställs vid varje state-uppdatering och fungerar korrekt med Zustandss `set/get`-mönster.
+- **Safe Area Overlay:** `FilterBar` använder `useSafeAreaInsets` från `react-native-safe-area-context` och positioneras absolut med `top: insets.top + 4` för att respektera notch/dynamic island på alla enheter.
+- **Backend-koppling (city):** Sökfältets text skickas som `city`-parameter till backend, som redan stöder filtrering på ort via `SEARCH()`-formler i Airtable.
