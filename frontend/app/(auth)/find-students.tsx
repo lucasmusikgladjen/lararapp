@@ -5,17 +5,15 @@ import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { FilterBar } from "../../src/components/find-students/FilterBar";
 import { StudentDetailModal } from "../../src/components/find-students/StudentDetailModal";
-import { StudentInfoCard } from "../../src/components/find-students/StudentInfoCard";
 import { StudentListSheet } from "../../src/components/find-students/StudentListSheet";
 import { useFindStudentsStore } from "../../src/store/findStudentsStore";
 import { StudentPublicDTO } from "../../src/types/student.types";
 
-// Stockholm fallback when location permission is denied
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
 const DEFAULT_RADIUS_KM = 10;
 const DEFAULT_DELTA = 0.08;
+const ANIMATE_DELTA = 0.02;
 
-// Marker color based on instrument
 const MARKER_COLORS: Record<string, string> = {
     piano: "#F97316",
     gitarr: "#8B5CF6",
@@ -28,80 +26,66 @@ function getMarkerColor(instruments: string[]): string {
     return MARKER_COLORS[first] ?? "#14B8A6";
 }
 
-const ANIMATE_DELTA = 0.02;
-
 export default function FindStudents() {
     const mapRef = useRef<MapView>(null);
     const [permissionDenied, setPermissionDenied] = useState(false);
     const [initializing, setInitializing] = useState(true);
-    const [sheetVisible, setSheetVisible] = useState(true);
-    const [detailModalVisible, setDetailModalVisible] = useState(false);
+    
+    // UI State: 'list' (browsing) or 'detail' (viewing a student)
+    const [isListVisible, setIsListVisible] = useState(true);
 
     const { students, loading, userLocation, fetchStudents, setUserLocation, selectStudent, selectedStudent } = useFindStudentsStore();
 
-    // Animate map to a student's location
+    // --- ANIMATION LOGIC ---
     const animateToStudent = useCallback((student: StudentPublicDTO) => {
         if (!student.lat || !student.lng || !mapRef.current) return;
-        mapRef.current.animateToRegion(
-            {
-                latitude: student.lat,
-                longitude: student.lng,
-                latitudeDelta: ANIMATE_DELTA,
-                longitudeDelta: ANIMATE_DELTA,
-            },
-            400,
-        );
+
+        // OFFSET TRICK:
+        // Since the Detail Sheet (at Peek/25%) covers the bottom 1/4 of the screen,
+        // we want the marker to be centered in the remaining top 3/4.
+        // We shift the camera 'South' slightly so the marker appears 'North' (up).
+        const latitudeOffset = ANIMATE_DELTA * 0.15; 
+
+        mapRef.current.animateToRegion({
+            latitude: student.lat - latitudeOffset, 
+            longitude: student.lng,
+            latitudeDelta: ANIMATE_DELTA,
+            longitudeDelta: ANIMATE_DELTA,
+        }, 500);
     }, []);
 
-    // List item pressed → select + animate
-    const handleListStudentPress = useCallback(
-        (student: StudentPublicDTO) => {
-            selectStudent(student);
-            animateToStudent(student);
-        },
-        [selectStudent, animateToStudent],
-    );
+    // 1. CLICK MARKER (The interaction you asked for!)
+    const handleMarkerPress = useCallback((student: StudentPublicDTO) => {
+        selectStudent(student);      // 1. Select student data
+        animateToStudent(student);   // 2. Pan map (with offset)
+        setIsListVisible(false);     // 3. Hide list -> Reveals Detail Sheet
+    }, [selectStudent, animateToStudent]);
 
-    // Marker pressed → select student (info card will show)
-    const handleMarkerPress = useCallback(
-        (student: StudentPublicDTO) => {
-            selectStudent(student);
-        },
-        [selectStudent],
-    );
+    // 2. CLICK LIST ITEM
+    const handleListStudentPress = useCallback((student: StudentPublicDTO) => {
+        selectStudent(student);
+        animateToStudent(student);
+        setIsListVisible(false);
+    }, [selectStudent, animateToStudent]);
 
-    // Tap empty map area → deselect
+    // 3. CLOSE DETAIL / CLICK MAP
     const handleMapPress = useCallback(() => {
-        if (selectedStudent) {
-            selectStudent(null);
-        }
-    }, [selectedStudent, selectStudent]);
+        selectStudent(null);
+        setIsListVisible(true); // Show list again
+    }, [selectStudent]);
 
-    // Info card "Läs mer" → open detail modal
-    const handleReadMore = useCallback((_student: StudentPublicDTO) => {
-        setDetailModalVisible(true);
-    }, []);
-
-    // Request location permission and fetch initial data
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
-
             let location = STOCKHOLM;
-
             if (status === "granted") {
                 try {
-                    const pos = await Location.getCurrentPositionAsync({
-                        accuracy: Location.Accuracy.Balanced,
-                    });
+                    const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
                     location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                } catch {
-                    // Fall back to Stockholm if position fetch fails
-                }
+                } catch { }
             } else {
                 setPermissionDenied(true);
             }
-
             setUserLocation(location);
             await fetchStudents(location.lat, location.lng, DEFAULT_RADIUS_KM);
             setInitializing(false);
@@ -126,7 +110,6 @@ export default function FindStudents() {
 
     return (
         <View className="flex-1 bg-brand-bg">
-            {/* Map fills the entire screen */}
             <MapView
                 ref={mapRef}
                 style={{ flex: 1 }}
@@ -146,57 +129,47 @@ export default function FindStudents() {
                 ))}
             </MapView>
 
-            {/* Search bar + filter chips overlay */}
             <FilterBar />
 
-            {/* Student info card (marker click overlay) */}
-            {selectedStudent && <StudentInfoCard student={selectedStudent} onClose={() => selectStudent(null)} onReadMore={handleReadMore} />}
-
-            {/* Loading overlay when fetching students */}
             {loading && (
                 <View className="absolute top-40 self-center bg-white rounded-full px-4 py-2 shadow-sm">
                     <Text className="text-sm text-gray-500">Söker elever...</Text>
                 </View>
             )}
 
-            {/* Student list bottom sheet */}
-            <StudentListSheet onStudentPress={handleListStudentPress} visible={sheetVisible} onClose={() => setSheetVisible(false)} />
+            {/* LIST SHEET (Visible only when NO student selected) */}
+            <StudentListSheet 
+                onStudentPress={handleListStudentPress} 
+                visible={isListVisible && !selectedStudent} 
+                onClose={() => setIsListVisible(false)} 
+            />
 
-            {/* Reopen sheet button (when closed) */}
-            {!sheetVisible && (
-                <View className="absolute bottom-6 self-center">
+            {/* RE-OPEN LIST BUTTON */}
+            {!isListVisible && !selectedStudent && (
+                 <View className="absolute bottom-6 self-center">
                     <TouchableOpacity
-                        onPress={() => setSheetVisible(true)}
+                        onPress={() => setIsListVisible(true)}
                         activeOpacity={0.85}
-                        className="bg-white rounded-full px-5 py-3 flex-row items-center"
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 4,
-                            elevation: 3,
-                        }}
+                        className="bg-white rounded-full px-5 py-3 flex-row items-center shadow-md"
                     >
                         <Ionicons name="people-outline" size={18} color="#F97316" />
-                        <Text className="text-slate-900 font-semibold text-sm ml-2">Elever i närheten ({students.length})</Text>
+                        <Text className="text-slate-900 font-semibold text-sm ml-2">Visa lista</Text>
                     </TouchableOpacity>
                 </View>
             )}
 
-            {/* Permission denied banner */}
-            {permissionDenied && !sheetVisible && (
-                <View className="absolute bottom-6 self-center bg-white rounded-2xl px-5 py-3 shadow-sm mx-5">
-                    <Text className="text-sm text-gray-500 text-center">Platsåtkomst nekad. Visar Stockholm som standard.</Text>
-                </View>
+            {/* DETAIL SHEET (Visible when student IS selected) */}
+            {selectedStudent && (
+                <StudentDetailModal 
+                    student={selectedStudent} 
+                    onClose={handleMapPress} // Clicking 'X' or dragging down deselects
+                />
             )}
-
-            {/* Student detail modal (Phase 4) */}
-            <StudentDetailModal visible={detailModalVisible} student={selectedStudent} onClose={() => setDetailModalVisible(false)} />
         </View>
     );
 }
 
-// ─── Custom Pin Marker (Google Maps Style) ──────────────────────────────────
+// ... (Keep your existing StudentMarker component below)
 interface StudentMarkerProps {
     student: StudentPublicDTO;
     isSelected: boolean;
@@ -205,13 +178,8 @@ interface StudentMarkerProps {
 
 function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
     if (!student.lat || !student.lng) return null;
-
     const color = getMarkerColor(student.instruments);
-    // Scale effect for selection
     const scale = isSelected ? 1.2 : 1;
-
-    // Dimensions for the "White Border" layer vs "Colored Content" layer
-    // We make the white layer slightly larger to create the border effect
     const HEAD_SIZE = 36;
     const BORDER_WIDTH = 2.5;
     const INNER_HEAD_SIZE = HEAD_SIZE - BORDER_WIDTH * 2;
@@ -219,88 +187,24 @@ function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
     return (
         <Marker
             coordinate={{ latitude: student.lat, longitude: student.lng }}
-            onPress={onPress}
+            onPress={(e) => {
+                e.stopPropagation(); // Stop map click event
+                onPress();
+            }}
             tracksViewChanges={false}
             zIndex={isSelected ? 999 : 1}
-            // Anchor at (0.5, 1) puts the tip of the triangle at the coordinate
             anchor={{ x: 0.5, y: 1 }}
-            centerOffset={{ x: 0, y: -(HEAD_SIZE / 2 + 6) }} // Adjust visual center slightly up if needed
+            centerOffset={{ x: 0, y: -(HEAD_SIZE / 2 + 6) }}
         >
-            <View
-                style={{
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transform: [{ scale }],
-                    // Add a shadow to the whole pin for depth (lifting it off the map)
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 3 },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 3,
-                    elevation: 5,
-                }}
-            >
-                {/* 1. THE HEAD (Circle) */}
-                <View
-                    style={{
-                        width: HEAD_SIZE,
-                        height: HEAD_SIZE,
-                        borderRadius: HEAD_SIZE / 2,
-                        backgroundColor: "white", // Acts as the border
-                        alignItems: "center",
-                        justifyContent: "center",
-                    }}
-                >
-                    {/* Inner Colored Circle */}
-                    <View
-                        style={{
-                            width: INNER_HEAD_SIZE,
-                            height: INNER_HEAD_SIZE,
-                            borderRadius: INNER_HEAD_SIZE / 2,
-                            backgroundColor: color,
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
+            <View style={{ alignItems: "center", justifyContent: "center", transform: [{ scale }], shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 3, elevation: 5 }}>
+                <View style={{ width: HEAD_SIZE, height: HEAD_SIZE, borderRadius: HEAD_SIZE / 2, backgroundColor: "white", alignItems: "center", justifyContent: "center" }}>
+                    <View style={{ width: INNER_HEAD_SIZE, height: INNER_HEAD_SIZE, borderRadius: INNER_HEAD_SIZE / 2, backgroundColor: color, alignItems: "center", justifyContent: "center" }}>
                         <Ionicons name="musical-notes" size={16} color="white" />
                     </View>
                 </View>
-
-                {/* 2. THE TAIL (Triangle) */}
                 <View style={{ marginTop: -2, alignItems: "center" }}>
-                    {/* White Triangle (Border) */}
-                    <View
-                        style={{
-                            width: 0,
-                            height: 0,
-                            backgroundColor: "transparent",
-                            borderStyle: "solid",
-                            borderLeftWidth: 8,
-                            borderRightWidth: 8,
-                            borderTopWidth: 10,
-                            borderLeftColor: "transparent",
-                            borderRightColor: "transparent",
-                            borderTopColor: "white", // The border color
-                        }}
-                    />
-
-                    {/* Colored Triangle (Overlay) */}
-                    {/* We position this absolutely on top of the white one to leave a 'border' visible */}
-                    <View
-                        style={{
-                            position: "absolute",
-                            top: -2.5, // Shift up to cover the top part of the white triangle
-                            width: 0,
-                            height: 0,
-                            backgroundColor: "transparent",
-                            borderStyle: "solid",
-                            borderLeftWidth: 5.5, // Slightly narrower
-                            borderRightWidth: 5.5,
-                            borderTopWidth: 7.5, // Slightly shorter
-                            borderLeftColor: "transparent",
-                            borderRightColor: "transparent",
-                            borderTopColor: color,
-                        }}
-                    />
+                    <View style={{ width: 0, height: 0, backgroundColor: "transparent", borderStyle: "solid", borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10, borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: "white" }} />
+                    <View style={{ position: "absolute", top: -2.5, width: 0, height: 0, backgroundColor: "transparent", borderStyle: "solid", borderLeftWidth: 5.5, borderRightWidth: 5.5, borderTopWidth: 7.5, borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: color }} />
                 </View>
             </View>
         </Marker>

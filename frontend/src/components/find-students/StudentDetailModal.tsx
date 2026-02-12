@@ -1,26 +1,14 @@
-import React, { useState } from "react";
-import {
-    View,
-    Text,
-    Modal,
-    TouchableOpacity,
-    TextInput,
-    Image,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-} from "react-native";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { View, Text, TouchableOpacity, TextInput, Image, Alert, Keyboard, StyleSheet } from "react-native";
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { StudentPublicDTO } from "../../types/student.types";
 
-interface StudentDetailModalProps {
-    visible: boolean;
+interface StudentDetailSheetProps {
     student: StudentPublicDTO | null;
     onClose: () => void;
 }
 
-// Map instrument names to Ionicons icon names
 const INSTRUMENT_ICONS: Record<string, string> = {
     piano: "musical-notes",
     gitarr: "guitar",
@@ -33,9 +21,22 @@ function getInstrumentIcon(instrument: string): string {
     return INSTRUMENT_ICONS[instrument.toLowerCase()] ?? "musical-notes";
 }
 
-export function StudentDetailModal({ visible, student, onClose }: StudentDetailModalProps) {
+export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps) {
     const [greeting, setGreeting] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const sheetRef = useRef<BottomSheet>(null);
+
+    // GOOGLE MAPS BEHAVIOR:
+    // 25% = "Peek" (See name + rating + small info)
+    // 90% = "Full" (See reviews, photos, etc.)
+    const snapPoints = useMemo(() => ["25%", "90%"], []);
+
+    useEffect(() => {
+        setGreeting("");
+        // When a new student is selected, snap to the "Peek" position (index 0)
+        // or "Full" (index 1) depending on preference. Google Maps usually peeks first.
+        sheetRef.current?.snapToIndex(0); 
+    }, [student]);
 
     if (!student) return null;
 
@@ -43,170 +44,106 @@ export function StudentDetailModal({ visible, student, onClose }: StudentDetailM
     const primaryInstrument = student.instruments[0] ?? "Instrument";
 
     const handleApply = () => {
+        Keyboard.dismiss();
         setSubmitting(true);
-        // Mock: real API call comes later
         setTimeout(() => {
             setSubmitting(false);
             Alert.alert("Ansökan skickad!", "Vi hör av oss.");
-            setGreeting("");
             onClose();
         }, 300);
     };
 
-    const handleClose = () => {
-        setGreeting("");
-        onClose();
-    };
-
     return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            presentationStyle="pageSheet"
-            onRequestClose={handleClose}
+        <BottomSheet
+            ref={sheetRef}
+            index={0} // Start at 25% (Peek)
+            snapPoints={snapPoints}
+            enablePanDownToClose={true}
+            onClose={onClose}
+            backgroundStyle={styles.sheetBackground}
+            handleIndicatorStyle={styles.dragHandle}
         >
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="flex-1 bg-white"
-            >
-                <ScrollView
-                    className="flex-1"
-                    bounces={false}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Drag Handle */}
-                    <View className="items-center pt-3 pb-1">
-                        <View className="w-10 h-1 rounded-full bg-gray-300" />
-                    </View>
+            <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+                
+                {/* Header / Close (Visible in Peek) */}
+                <View className="flex-row items-center justify-between px-5 pt-1 pb-2">
+                    <View className="w-8" /> 
+                    <Text className="text-lg font-bold text-slate-900">Elevprofil</Text>
+                    <TouchableOpacity onPress={onClose} className="w-8 h-8 bg-slate-50 rounded-full items-center justify-center">
+                        <Ionicons name="close" size={20} color="#6B7280" />
+                    </TouchableOpacity>
+                </View>
 
-                    {/* Header with close button */}
-                    <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
-                        <Text className="text-xl font-bold text-slate-900">
-                            Elev: {student.name}
-                        </Text>
-                        <TouchableOpacity
-                            onPress={handleClose}
-                            activeOpacity={0.7}
-                            className="w-8 h-8 items-center justify-center"
-                        >
-                            <Ionicons name="close" size={24} color="#6B7280" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Hero Section - Avatar with badges */}
-                    <View className="items-center px-5 pb-6">
-                        <View className="relative">
-                            {/* Avatar */}
-                            <Image
-                                source={{ uri: avatarUrl }}
-                                className="w-28 h-28 rounded-full bg-slate-100"
-                            />
-
-                            {/* Star badge (bottom left) */}
-                            <View
-                                className="absolute -left-3 bottom-4 w-10 h-10 rounded-full items-center justify-center"
-                                style={{ backgroundColor: "#34C759" }}
-                            >
-                                <Ionicons name="star" size={20} color="#FFFFFF" />
-                            </View>
-
-                            {/* Instrument badge (top right) */}
-                            <View
-                                className="absolute -right-3 top-2 w-10 h-10 rounded-full items-center justify-center"
-                                style={{ backgroundColor: "#F97316" }}
-                            >
-                                <Ionicons
-                                    name={getInstrumentIcon(primaryInstrument) as any}
-                                    size={20}
-                                    color="#FFFFFF"
-                                />
-                            </View>
-                        </View>
-
-                        {/* Instrument label */}
-                        <Text className="text-base font-bold text-slate-900 mt-3">
-                            {primaryInstrument.charAt(0).toUpperCase() + primaryInstrument.slice(1)}
-                        </Text>
-                    </View>
-
-                    {/* About Section */}
-                    <View className="px-5 pb-4">
-                        <Text className="text-lg font-bold text-slate-900 mb-2">
-                            Om eleven
-                        </Text>
-                        <Text className="text-sm text-gray-500 leading-5">
-                            {student.name} söker en lärare i{" "}
-                            {student.instruments.join(", ").toLowerCase()}.
-                            Eleven bor i {student.city} och letar efter en pedagogisk lärare
-                            som kan hjälpa till att ta nästa steg i sin musikaliska utveckling.
-                        </Text>
-                    </View>
-
-                    {/* Divider */}
-                    <View className="mx-5 border-b border-gray-200 mb-4" />
-
-                    {/* Application Section */}
-                    <View className="px-5 pb-4">
-                        <Text className="text-lg font-bold text-slate-900 mb-3">
-                            Skicka ansökan
-                        </Text>
-
-                        {/* Green card with input */}
-                        <View
-                            className="rounded-2xl p-4"
-                            style={{ backgroundColor: "#F0FDF4" }}
-                        >
-                            <Text className="text-sm font-bold text-slate-900 mb-2">
-                                Skriv en hälsning!
-                            </Text>
-
-                            <TextInput
-                                className="bg-white rounded-xl p-4 text-sm text-slate-900 min-h-[100px]"
-                                placeholder="Hej! Jag skulle gärna vilja bli din pianolärare och hjälpa dig utvecklas."
-                                placeholderTextColor="#9CA3AF"
-                                multiline
-                                textAlignVertical="top"
-                                value={greeting}
-                                onChangeText={setGreeting}
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#E5E7EB",
-                                }}
-                            />
-
-                            <Text className="text-xs text-gray-400 mt-2">
-                                Din hälsning visas för eleven och Musikglädjens team direkt!
-                            </Text>
+                {/* Hero Section (Visible in Peek) */}
+                <View className="items-center px-5 py-2">
+                    <View className="relative">
+                        <Image source={{ uri: avatarUrl }} className="w-20 h-20 rounded-full bg-slate-100" />
+                        <View className="absolute -right-1 top-0 w-8 h-8 rounded-full items-center justify-center bg-orange-500 border-2 border-white">
+                            <Ionicons name={getInstrumentIcon(primaryInstrument) as any} size={14} color="#FFFFFF" />
                         </View>
                     </View>
+                    <Text className="text-2xl font-bold text-slate-900 mt-2">{student.name}</Text>
+                    <Text className="text-gray-500 text-sm font-medium">{student.city} • {student.instruments.join(", ")}</Text>
+                </View>
 
-                    {/* Apply Button */}
-                    <View className="px-5 pb-2">
-                        <TouchableOpacity
-                            onPress={handleApply}
-                            activeOpacity={0.85}
-                            disabled={submitting}
-                            className="rounded-2xl py-4 items-center"
-                            style={{
-                                backgroundColor: "#34C759",
-                                opacity: submitting ? 0.6 : 1,
-                            }}
-                        >
-                            <Text className="text-white font-bold text-base tracking-wider">
-                                ANSÖK
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+                {/* Everything below here is revealed when swiping up to 90% */}
+                <View className="px-5 py-4 mt-2">
+                    <Text className="text-lg font-bold text-slate-900 mb-2">Om eleven</Text>
+                    <Text className="text-base text-gray-600 leading-6">
+                        {student.name} söker en lärare i {student.instruments.join(", ").toLowerCase()}. 
+                        Eleven vill utvecklas och söker en pedagogisk lärare.
+                    </Text>
+                </View>
 
-                    {/* Subtitle */}
-                    <View className="items-center pb-8">
-                        <Text className="text-xs text-gray-400">
-                            Vanligtvis får du svar samma dag!
-                        </Text>
+                <View className="h-[1px] bg-gray-100 mx-5 my-2" />
+
+                <View className="px-5 py-4">
+                    <Text className="text-lg font-bold text-slate-900 mb-3">Skicka ansökan</Text>
+                    <View className="bg-green-50 rounded-2xl p-4 border border-green-100">
+                        <TextInput
+                            className="bg-white rounded-xl p-3 text-base text-slate-900 min-h-[100px] border border-gray-200"
+                            placeholder="Hej! Jag hjälper dig gärna..."
+                            placeholderTextColor="#9CA3AF"
+                            multiline
+                            textAlignVertical="top"
+                            value={greeting}
+                            onChangeText={setGreeting}
+                        />
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </Modal>
+                </View>
+
+                <View className="px-5 pt-2">
+                    <TouchableOpacity
+                        onPress={handleApply}
+                        disabled={submitting}
+                        className="rounded-full py-4 items-center bg-green-500 shadow-sm"
+                        style={{ opacity: submitting ? 0.7 : 1 }}
+                    >
+                        <Text className="text-white font-bold text-lg">SKICKA ANSÖKAN</Text>
+                    </TouchableOpacity>
+                </View>
+
+            </BottomSheetScrollView>
+        </BottomSheet>
     );
 }
+
+const styles = StyleSheet.create({
+    sheetBackground: {
+        backgroundColor: "white",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    dragHandle: {
+        backgroundColor: "#E2E8F0",
+        width: 40,
+        height: 5,
+        borderRadius: 10,
+        marginTop: 8,
+    },
+});

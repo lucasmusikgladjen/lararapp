@@ -78,30 +78,14 @@
 - **Safe Area Overlay:** `FilterBar` använder `useSafeAreaInsets` från `react-native-safe-area-context` och positioneras absolut med `top: insets.top + 4` för att respektera notch/dynamic island på alla enheter.
 - **Backend-koppling (city):** Sökfältets text skickas som `city`-parameter till backend, som redan stöder filtrering på ort via `SEARCH()`-formler i Airtable.
 
-## Lista & Interaktion (Karta Fas 3)
-- **Bottom Sheet (MVP):** `StudentListSheet` använder en fast höjd (~38% av skärmhöjden via `Dimensions.get("window").height * 0.38`) istället för ett komplex gesture-baserat draggable sheet. Absolut positionerad med `bottom: 0`.
-- **FlatList-prestanda:** Varje rad renderas med `useCallback` + `keyExtractor` för att undvika onödiga omrenderingar vid stora datamängder (100+ elever).
-- **Kartkontroll:** `mapRef.current.animateToRegion()` med 400ms duration och `ANIMATE_DELTA = 0.02` ger en mjuk zoom-in-animation vid klick på en elev i listan.
-- **Info-kort (Marker-klick):** `StudentInfoCard` renderas som en absolut positionerad overlay ovanpå kartan (inte som en native Callout) för full kontroll över design och interaktion. Stängs vid klick på tom kartyta via `MapView.onPress`.
-- **Sheet-toggle:** Användaren kan stänga bottom sheet via X-knapp och öppna den igen via en flytande "Elever i närheten (X)"-knapp. State hanteras lokalt i `find-students.tsx` med `useState`.
-- **Vald-elev markering:** Vald elev i listan markeras med lila border (`border-[#8B5CF6]`) och ljusgrå bakgrund för tydlig visuell feedback.
-
-## Detaljvy & Ansökan (Karta Fas 4)
-- **Modal-typ:** React Native `Modal` med `presentationStyle="pageSheet"` och `animationType="slide"` ger native iOS page sheet-beteende (dra-ned för att stänga) utan extra dependencies.
-- **Tangentbordshantering:** `KeyboardAvoidingView` med `behavior="padding"` (iOS) / `"height"` (Android) wrappat runt `ScrollView` säkerställer att `TextInput` aldrig döljs av tangentbordet.
-- **Mock-logik:** "ANSÖK"-knappen visar en `Alert.alert` och stänger modalen. Riktig API-koppling (POST-anrop till backend) implementeras i en framtida fas.
-- **State-hantering:** `detailModalVisible` hanteras som lokal state i `find-students.tsx` (inte i Zustand-store) eftersom det är rent UI-state utan koppling till affärslogik.
-- **Avatar & Badges:** Avatarer genereras via DiceBear API (`avataaars`-stil) med elevens ID som seed. Instrument-badge (orange) och stjärn-badge (grön) positioneras absolut relativt till avataren.
-- **Dynamisk beskrivning:** "Om eleven"-texten genereras dynamiskt baserat på elevens `instruments` och `city` från `StudentPublicDTO`, eftersom backend inte tillhandahåller en separat beskrivningstext.
-
-## Lista & Interaktion (Karta Fas 3 - Uppdaterad)
-- **Biblioteksval:** Vi bytte från egenbyggd absolut vy till `@gorhom/bottom-sheet` och `react-native-gesture-handler`. Detta löser problemet med "nested scrolling" (att scrolla listan vs att dra i sheetet) och ger native-prestanda (60fps).
-- **Snap Point-strategi:** För att förhindra att sheetet täcker sökfältet och statusbaren vid full expansion, använder vi inte `90%` rakt av. Vi beräknar toppen dynamiskt: `ScreenHeight - SafeAreaInsets.top - 70px`.
-- **Låst Höjd (No Overdrag):** Genom att sätta `enableOverDrag={false}` låser vi sheetet vid dess högsta snap point. Detta gör att scroll-gesten omedelbart scrollar *listan* istället för att "gummibands-dra" hela sheetet uppåt.
-- **Markör-design (Google Maps Style):** Istället för bilder använder vi React Native `View`-komponenter med absolut positionering för att bygga en "Pin".
-    - *Lager 1:* Vit cirkel + vit triangel (fungerar som border).
-    - *Lager 2:* Färgad cirkel + färgad triangel (innehåll).
-    - *Ikon:* Vit `Ionicons` (musical-notes) centrerad.
-    - *Skugga:* Appliceras på containern för att lyfta markören från kartan.
-    - *Anchor:* `anchor={{ x: 0.5, y: 1 }}` säkerställer att triangelns spets pekar på den exakta koordinaten.
-- **TypeScript & Listor:** För att undvika `any`-varningar i `BottomSheetFlatList` måste komponenten typas generiskt (`<StudentPublicDTO>`) eller `keyExtractor` typas explicit i callbacken.
+## Lista & Interaktion (Karta Fas 3 & 4)
+- **High Fidelity Google Maps UX:** Vi bytte från en enkel lista till en fullfjädrad `@gorhom/bottom-sheet` implementation.
+- **Interaktionsflöde:**
+    1.  **Startläge:** Kartan visar alla elever och listan ligger som en "Sheet" (Snap point 15% och 45%).
+    2.  **Val av elev (Lista):** Klick i listan → Centrerar kartan (med offset) och öppnar Detalj-sheetet.
+    3.  **Val av elev (Markör):** Klick på markör → Centrerar kartan (med offset) och öppnar Detalj-sheetet direkt (ingen modal).
+- **Snap Points & Scroll:**
+    - **Lista:** 15% (Peek), 45% (Halv), Dynamisk Topp (ScreenHeight - SafeArea - 70px).
+    - **Detaljvy:** 25% (Peek - visar namn/betyg), 90% (Full - visar hela profilen).
+- **Camera Offset:** För att markören inte ska gömmas bakom sheetet när man klickar på den, förskjuter vi kartans kamera "söderut" (`latitude - delta * 0.15`), vilket visuellt placerar markören i det lediga utrymmet ovanför sheetet.
+- **Design:** Listan följer Google Maps "Tile"-design: Vit bakgrund, ingen border, subtil grå separator (`mb-1.5`), och ren typografi utan onödiga ikoner.

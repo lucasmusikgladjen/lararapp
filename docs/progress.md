@@ -63,19 +63,6 @@
     - Skapat `FilterBar`-komponent (`src/components/find-students/FilterBar.tsx`) med sökfält + horisontell chip-scroll.
     - Integrerat `FilterBar` ovanpå kartan i `find-students.tsx` med safe area insets för korrekt notch-hantering.
 
-- [x] **Frontend - Karta (Fas 3): Lista & Interaktion:**
-    - Skapat `StudentListSheet`-komponent (`src/components/find-students/StudentListSheet.tsx`) med absolut positionering i botten (~38% av skärmhöjden).
-    - Design: Vit bakgrund, rundade hörn (`rounded-t-3xl`), skugga, drag handle, header med elevantal.
-    - `FlatList` för prestandaoptimerad rendering av elevkort (avatar, namn, avstånd, instrument-chips, chevron).
-    - Visuell markering av vald elev med lila border.
-    - Skapat `StudentInfoCard`-komponent (`src/components/find-students/StudentInfoCard.tsx`) för marker-klick overlay.
-    - Info-kort visar avatar, namn, instrument, stad, avstånd och "Läs mer"-knapp (förberett för Fas 4).
-    - **Interaktioner:**
-        - Klick på elev i listan → `selectStudent()` + `animateToRegion()` panorerar kartan till eleven.
-        - Klick på marker → `selectStudent()` + visar info-kort ovanpå kartan.
-        - Klick på tom kartyta → avmarkerar vald elev (stänger info-kort).
-        - Stäng-knapp på sheet → döljer listan, visar "Elever i närheten (X)"-knapp för att öppna igen.
-
 - [x] **Frontend - Karta (Fas 3): Lista & Interaktion (High Fidelity):**
     - Implementerat `@gorhom/bottom-sheet` för äkta native-känsla med gestures (flick, snap).
     - **Snap Points:** 15% (Peek), 45% (Sök), och dynamisk topp-punkt (låst under sökfältet).
@@ -85,15 +72,12 @@
     - Visuell markering av vald elev med lila border.
     - Skapat `StudentInfoCard`-komponent (`src/components/find-students/StudentInfoCard.tsx`) för marker-klick overlay.        
 
-- [x] **Frontend - Karta (Fas 4): Detaljvy & Ansökan:**
-    - Skapat `StudentDetailModal`-komponent (`src/components/find-students/StudentDetailModal.tsx`) med slide-up `Modal` (`presentationStyle="pageSheet"`).
-    - Design matchar `4_student_modal.png`: Drag handle, stängknapp, stor centrerad avatar med stjärn-badge (grön) och instrument-badge (orange).
-    - "Om eleven"-sektion med dynamisk beskrivningstext baserad på elevens instrument och stad.
-    - "Skicka ansökan"-sektion med grön bakgrund, multiline `TextInput` för hälsning och informationstext.
-    - Grön "ANSÖK"-knapp med mock-logik (`Alert.alert`) — riktig API-koppling kommer senare.
-    - `KeyboardAvoidingView` + `ScrollView` för korrekt tangentbordshantering.
-    - Integrerat i `find-students.tsx`: "Läs mer"-klick på `StudentInfoCard` öppnar modalen via lokal `detailModalVisible`-state.
-
+- [x] **Frontend - Karta (Fas 4): Detaljvy & Ansökan (Google Maps Style):**
+    - Ersatte den gamla `Modal`-lösningen med en andra `BottomSheet` för detaljvyn (`StudentDetailModal`).
+    - **Interaction Parity:** Klick på markör → öppnar detalj-sheet direkt (Peek 25% -> Full 90%).
+    - **Smart Camera:** Vid val av elev (via lista eller markör) centreras kartan med en *offset* så att markören alltid syns ovanför sheetet.
+    - **Design:** Uppdaterad list-design ("Tiles" med grå mellanrum) för att matcha Google Maps exakt.
+    - Rensat bort överflödig kod (`StudentInfoCard.tsx` borttagen).
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
