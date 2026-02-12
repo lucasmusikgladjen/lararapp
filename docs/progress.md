@@ -76,6 +76,15 @@
         - Klick på tom kartyta → avmarkerar vald elev (stänger info-kort).
         - Stäng-knapp på sheet → döljer listan, visar "Elever i närheten (X)"-knapp för att öppna igen.
 
+- [x] **Frontend - Karta (Fas 3): Lista & Interaktion (High Fidelity):**
+    - Implementerat `@gorhom/bottom-sheet` för äkta native-känsla med gestures (flick, snap).
+    - **Snap Points:** 15% (Peek), 45% (Sök), och dynamisk topp-punkt (låst under sökfältet).
+    - **Låst Scroll:** `enableOverDrag={false}` och beräknad `topInset` förhindrar att listan täcker hela skärmen; innehållet scrollar inuti sheetet.
+    - **Google Maps-liknande Markörer:** Custom `Marker`-komponent byggd med lager av `View`s (vit border, instrumentfärg, triangel-svans) och ikoner (`musical-notes`).
+    - **Typsäkerhet:** Generisk typning av `BottomSheetFlatList<StudentPublicDTO>` för att lösa TS-varningar.
+    - Visuell markering av vald elev med lila border.
+    - Skapat `StudentInfoCard`-komponent (`src/components/find-students/StudentInfoCard.tsx`) för marker-klick overlay.        
+
 - [x] **Frontend - Karta (Fas 4): Detaljvy & Ansökan:**
     - Skapat `StudentDetailModal`-komponent (`src/components/find-students/StudentDetailModal.tsx`) med slide-up `Modal` (`presentationStyle="pageSheet"`).
     - Design matchar `4_student_modal.png`: Drag handle, stängknapp, stor centrerad avatar med stjärn-badge (grön) och instrument-badge (orange).
@@ -84,6 +93,7 @@
     - Grön "ANSÖK"-knapp med mock-logik (`Alert.alert`) — riktig API-koppling kommer senare.
     - `KeyboardAvoidingView` + `ScrollView` för korrekt tangentbordshantering.
     - Integrerat i `find-students.tsx`: "Läs mer"-klick på `StudentInfoCard` öppnar modalen via lokal `detailModalVisible`-state.
+
 
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.

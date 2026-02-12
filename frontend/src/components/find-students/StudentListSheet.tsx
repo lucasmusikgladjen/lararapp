@@ -1,18 +1,10 @@
-import React, { useRef, useCallback } from "react";
-import {
-    View,
-    Text,
-    FlatList,
-    TouchableOpacity,
-    Image,
-    Dimensions,
-} from "react-native";
+import React, { useRef, useCallback, useMemo } from "react";
+import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions, Platform } from "react-native";
+import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context"; // Import this
 import { StudentPublicDTO } from "../../types/student.types";
 import { useFindStudentsStore } from "../../store/findStudentsStore";
-
-const SCREEN_HEIGHT = Dimensions.get("window").height;
-const SHEET_HEIGHT = SCREEN_HEIGHT * 0.38;
 
 interface StudentListSheetProps {
     onStudentPress: (student: StudentPublicDTO) => void;
@@ -22,8 +14,27 @@ interface StudentListSheetProps {
 
 export function StudentListSheet({ onStudentPress, visible, onClose }: StudentListSheetProps) {
     const { students, selectedStudent } = useFindStudentsStore();
-    const flatListRef = useRef<FlatList<StudentPublicDTO>>(null);
+    const sheetRef = useRef<BottomSheet>(null);
+    const insets = useSafeAreaInsets(); // Get safe area insets
 
+    // 1. CALCULATE SNAP POINTS
+    // We calculate the top snap point dynamically to leave a specific gap at the top.
+    const screenHeight = Dimensions.get("window").height;
+
+    // Top Gap: Inset (Status Bar) + Search Bar area (approx 60-80px)
+    // This ensures the sheet stops BEFORE covering the search bar completely.
+    const topSnapPoint = screenHeight - insets.top - 70;
+
+    const snapPoints = useMemo(
+        () => [
+            "15%", // Peek
+            "45%", // Half
+            topSnapPoint, // Calculated Max Height (instead of "90%")
+        ],
+        [topSnapPoint],
+    );
+
+    // 2. Render List Item
     const renderItem = useCallback(
         ({ item }: { item: StudentPublicDTO }) => {
             const isSelected = selectedStudent?.id === item.id;
@@ -33,115 +44,104 @@ export function StudentListSheet({ onStudentPress, visible, onClose }: StudentLi
                 <TouchableOpacity
                     onPress={() => onStudentPress(item)}
                     activeOpacity={0.7}
-                    className={`flex-row items-center mx-4 mb-3 p-4 rounded-2xl ${isSelected ? "bg-gray-50 border border-[#8B5CF6]" : "bg-white border border-gray-100"}`}
-                    style={{
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.05,
-                        shadowRadius: 2,
-                        elevation: 1,
-                    }}
+                    className={`flex-row items-center mx-4 mb-3 p-4 rounded-2xl ${
+                        isSelected ? "bg-gray-50 border border-[#8B5CF6]" : "bg-white border border-gray-100"
+                    }`}
+                    style={styles.itemShadow}
                 >
-                    {/* Avatar */}
-                    <Image
-                        source={{ uri: avatarUrl }}
-                        className="w-12 h-12 rounded-full bg-slate-100"
-                    />
-
-                    {/* Student Info */}
+                    <Image source={{ uri: avatarUrl }} className="w-12 h-12 rounded-full bg-slate-100" />
                     <View className="flex-1 ml-3">
                         <Text className="text-slate-900 font-bold text-base" numberOfLines={1}>
                             {item.name}
                         </Text>
-
-                        {/* Distance */}
-                        <View className="flex-row items-center mt-0.5">
-                            <Ionicons name="location-outline" size={14} color="#9CA3AF" />
-                            <Text className="text-gray-400 text-sm ml-1">
-                                {item.distance != null
-                                    ? `${item.distance.toFixed(1)} km`
-                                    : item.city}
-                            </Text>
-                        </View>
-
-                        {/* Instrument chips */}
-                        <View className="flex-row mt-1.5">
-                            {item.instruments.slice(0, 2).map((instrument) => (
-                                <View
-                                    key={instrument}
-                                    className="bg-brand-green rounded-full px-2.5 py-0.5 mr-1.5"
-                                >
-                                    <Text className="text-white text-xs font-bold">
-                                        {instrument.toUpperCase()}
-                                    </Text>
-                                </View>
-                            ))}
+                        <View className="flex-row items-center mt-1 flex-wrap gap-2">
+                            <View className="flex-row items-center">
+                                <Ionicons name="location-outline" size={14} color="#9CA3AF" />
+                                <Text className="text-gray-400 text-xs ml-0.5">
+                                    {item.distance != null ? `${item.distance.toFixed(1)} km` : item.city}
+                                </Text>
+                            </View>
+                            <Text className="text-gray-300 text-xs">•</Text>
+                            <View className="flex-row">
+                                {item.instruments.slice(0, 2).map((instrument) => (
+                                    <View key={instrument} className="bg-green-100 rounded-md px-1.5 py-0.5 mr-1">
+                                        <Text className="text-green-800 text-[10px] font-bold uppercase tracking-wide">{instrument}</Text>
+                                    </View>
+                                ))}
+                            </View>
                         </View>
                     </View>
-
-                    {/* Chevron */}
-                    <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
+                    <Ionicons name="chevron-forward" size={20} color="#E5E7EB" />
                 </TouchableOpacity>
             );
         },
         [selectedStudent, onStudentPress],
     );
 
-    const keyExtractor = useCallback((item: StudentPublicDTO) => item.id, []);
-
     if (!visible) return null;
 
     return (
-        <View
-            className="absolute left-0 right-0 bottom-0 bg-white rounded-t-3xl"
-            style={{
-                height: SHEET_HEIGHT,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 12,
-                elevation: 10,
-            }}
+        <BottomSheet
+            ref={sheetRef}
+            index={1}
+            snapPoints={snapPoints}
+            // --- LOCKING CONFIGURATION ---
+            topInset={insets.top} // Hard ceiling at the status bar
+            enableOverDrag={false} // Strictly forbid dragging past the top point
+            enablePanDownToClose={false} // Keep sheet interactive
+            // -----------------------------
+            onClose={onClose}
+            backgroundStyle={styles.sheetBackground}
+            handleIndicatorStyle={styles.dragHandle}
         >
-            {/* Drag Handle */}
-            <View className="items-center pt-3 pb-2">
-                <View className="w-10 h-1 rounded-full bg-gray-300" />
-            </View>
-
-            {/* Header */}
-            <View className="flex-row items-center justify-between px-5 pb-3">
-                <Text className="text-xl font-bold text-slate-900">
-                    Elever i närheten ({students.length})
+            <View className="px-5 pb-2 border-b border-gray-50 mb-2 flex-row justify-between items-center">
+                <Text className="text-lg font-bold text-slate-900">
+                    Elever i närheten <Text className="text-gray-400 font-normal">({students.length})</Text>
                 </Text>
 
-                <View className="flex-row items-center">
-                    <TouchableOpacity
-                        onPress={onClose}
-                        activeOpacity={0.7}
-                        className="ml-3"
-                    >
-                        <Ionicons name="close" size={24} color="#6B7280" />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity onPress={onClose} className="p-1 bg-gray-100 rounded-full">
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                </TouchableOpacity>
             </View>
 
-            {/* Student List */}
-            <FlatList
-                ref={flatListRef}
+            <BottomSheetFlatList
                 data={students}
+                // Explicitly tell TypeScript what 'item' is right here:
+                keyExtractor={(item: StudentPublicDTO) => item.id}
                 renderItem={renderItem}
-                keyExtractor={keyExtractor}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 20 }}
+                contentContainerStyle={{ paddingBottom: 80 }}
                 ListEmptyComponent={
-                    <View className="items-center py-8">
-                        <Ionicons name="people-outline" size={40} color="#D1D5DB" />
-                        <Text className="text-gray-400 text-sm mt-2">
-                            Inga elever hittades i detta område
-                        </Text>
+                    <View className="items-center py-10 opacity-50">
+                        <Ionicons name="map-outline" size={48} color="#D1D5DB" />
+                        <Text className="text-gray-400 text-sm mt-3">Inga elever i detta område</Text>
                     </View>
                 }
             />
-        </View>
+        </BottomSheet>
     );
 }
+
+const styles = StyleSheet.create({
+    sheetBackground: {
+        backgroundColor: "white",
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 10,
+    },
+    dragHandle: {
+        backgroundColor: "#E5E7EB",
+        width: 40,
+        height: 4,
+    },
+    itemShadow: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+});

@@ -93,3 +93,15 @@
 - **State-hantering:** `detailModalVisible` hanteras som lokal state i `find-students.tsx` (inte i Zustand-store) eftersom det är rent UI-state utan koppling till affärslogik.
 - **Avatar & Badges:** Avatarer genereras via DiceBear API (`avataaars`-stil) med elevens ID som seed. Instrument-badge (orange) och stjärn-badge (grön) positioneras absolut relativt till avataren.
 - **Dynamisk beskrivning:** "Om eleven"-texten genereras dynamiskt baserat på elevens `instruments` och `city` från `StudentPublicDTO`, eftersom backend inte tillhandahåller en separat beskrivningstext.
+
+## Lista & Interaktion (Karta Fas 3 - Uppdaterad)
+- **Biblioteksval:** Vi bytte från egenbyggd absolut vy till `@gorhom/bottom-sheet` och `react-native-gesture-handler`. Detta löser problemet med "nested scrolling" (att scrolla listan vs att dra i sheetet) och ger native-prestanda (60fps).
+- **Snap Point-strategi:** För att förhindra att sheetet täcker sökfältet och statusbaren vid full expansion, använder vi inte `90%` rakt av. Vi beräknar toppen dynamiskt: `ScreenHeight - SafeAreaInsets.top - 70px`.
+- **Låst Höjd (No Overdrag):** Genom att sätta `enableOverDrag={false}` låser vi sheetet vid dess högsta snap point. Detta gör att scroll-gesten omedelbart scrollar *listan* istället för att "gummibands-dra" hela sheetet uppåt.
+- **Markör-design (Google Maps Style):** Istället för bilder använder vi React Native `View`-komponenter med absolut positionering för att bygga en "Pin".
+    - *Lager 1:* Vit cirkel + vit triangel (fungerar som border).
+    - *Lager 2:* Färgad cirkel + färgad triangel (innehåll).
+    - *Ikon:* Vit `Ionicons` (musical-notes) centrerad.
+    - *Skugga:* Appliceras på containern för att lyfta markören från kartan.
+    - *Anchor:* `anchor={{ x: 0.5, y: 1 }}` säkerställer att triangelns spets pekar på den exakta koordinaten.
+- **TypeScript & Listor:** För att undvika `any`-varningar i `BottomSheetFlatList` måste komponenten typas generiskt (`<StudentPublicDTO>`) eller `keyExtractor` typas explicit i callbacken.

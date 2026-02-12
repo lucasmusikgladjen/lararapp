@@ -1,54 +1,57 @@
-import "../global.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
-import { Slot, useRouter, useSegments } from "expo-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "../global.css";
 import { useAuthStore } from "../src/store/authStore";
 
 const queryClient = new QueryClient();
 
 function useProtectedRoute() {
-  const { isAuthenticated, isLoading, needsOnboarding } = useAuthStore();
-  const segments = useSegments();
-  const router = useRouter();
+    const { isAuthenticated, isLoading, needsOnboarding } = useAuthStore();
+    const segments = useSegments();
+    const router = useRouter();
 
-  useEffect(() => {
-    if (isLoading) return;
+    useEffect(() => {
+        if (isLoading) return;
 
-    const inAuthGroup = segments[0] === "(auth)";
+        const inAuthGroup = segments[0] === "(auth)";
 
-    if (isAuthenticated && !inAuthGroup) {
-      if (needsOnboarding) {
-        router.replace("/(auth)/onboarding/instruments");
-      } else {
-        router.replace("/(auth)");
-      }
-    } else if (!isAuthenticated && inAuthGroup) {
-      router.replace("/(public)");
-    }
-  }, [isAuthenticated, isLoading, segments]);
+        if (isAuthenticated && !inAuthGroup) {
+            if (needsOnboarding) {
+                router.replace("/(auth)/onboarding/instruments");
+            } else {
+                router.replace("/(auth)");
+            }
+        } else if (!isAuthenticated && inAuthGroup) {
+            router.replace("/(public)");
+        }
+    }, [isAuthenticated, isLoading, segments]);
 }
 
 export default function RootLayout() {
-  const { isLoading, loadUser } = useAuthStore();
+    const { isLoading, loadUser } = useAuthStore();
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+    useEffect(() => {
+        loadUser();
+    }, []);
 
-  useProtectedRoute();
+    useProtectedRoute();
 
-  if (isLoading) {
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size="large" color="#F97316" />
+            </View>
+        );
+    }
+
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#F97316" />
-      </View>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <QueryClientProvider client={queryClient}>
+                <Slot />
+            </QueryClientProvider>
+        </GestureHandlerRootView>
     );
-  }
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Slot />
-    </QueryClientProvider>
-  );
 }

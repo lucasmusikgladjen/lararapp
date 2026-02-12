@@ -18,9 +18,9 @@ const DEFAULT_DELTA = 0.08;
 // Marker color based on instrument
 const MARKER_COLORS: Record<string, string> = {
     piano: "#F97316",
-    gitarr: "#34C759",
+    gitarr: "#8B5CF6",
     fiol: "#EF4444",
-    trummor: "#8B5CF6",
+    trummor: "#ef476f",
 };
 
 function getMarkerColor(instruments: string[]): string {
