@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, ActivityIndicator, Platform, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import MapView, { Marker, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
+import { FilterBar } from "../../src/components/find-students/FilterBar";
+import { StudentDetailModal } from "../../src/components/find-students/StudentDetailModal";
+import { StudentInfoCard } from "../../src/components/find-students/StudentInfoCard";
+import { StudentListSheet } from "../../src/components/find-students/StudentListSheet";
 import { useFindStudentsStore } from "../../src/store/findStudentsStore";
 import { StudentPublicDTO } from "../../src/types/student.types";
-import { FilterBar } from "../../src/components/find-students/FilterBar";
-import { StudentListSheet } from "../../src/components/find-students/StudentListSheet";
-import { StudentInfoCard } from "../../src/components/find-students/StudentInfoCard";
-import { StudentDetailModal } from "../../src/components/find-students/StudentDetailModal";
 
 // Stockholm fallback when location permission is denied
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
@@ -150,13 +150,7 @@ export default function FindStudents() {
             <FilterBar />
 
             {/* Student info card (marker click overlay) */}
-            {selectedStudent && (
-                <StudentInfoCard
-                    student={selectedStudent}
-                    onClose={() => selectStudent(null)}
-                    onReadMore={handleReadMore}
-                />
-            )}
+            {selectedStudent && <StudentInfoCard student={selectedStudent} onClose={() => selectStudent(null)} onReadMore={handleReadMore} />}
 
             {/* Loading overlay when fetching students */}
             {loading && (
@@ -166,11 +160,7 @@ export default function FindStudents() {
             )}
 
             {/* Student list bottom sheet */}
-            <StudentListSheet
-                onStudentPress={handleListStudentPress}
-                visible={sheetVisible}
-                onClose={() => setSheetVisible(false)}
-            />
+            <StudentListSheet onStudentPress={handleListStudentPress} visible={sheetVisible} onClose={() => setSheetVisible(false)} />
 
             {/* Reopen sheet button (when closed) */}
             {!sheetVisible && (
@@ -188,9 +178,7 @@ export default function FindStudents() {
                         }}
                     >
                         <Ionicons name="people-outline" size={18} color="#F97316" />
-                        <Text className="text-slate-900 font-semibold text-sm ml-2">
-                            Elever i närheten ({students.length})
-                        </Text>
+                        <Text className="text-slate-900 font-semibold text-sm ml-2">Elever i närheten ({students.length})</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -203,16 +191,12 @@ export default function FindStudents() {
             )}
 
             {/* Student detail modal (Phase 4) */}
-            <StudentDetailModal
-                visible={detailModalVisible}
-                student={selectedStudent}
-                onClose={() => setDetailModalVisible(false)}
-            />
+            <StudentDetailModal visible={detailModalVisible} student={selectedStudent} onClose={() => setDetailModalVisible(false)} />
         </View>
     );
 }
 
-// ─── Custom Marker ──────────────────────────────────────────────────────
+// ─── Custom Pin Marker (Google Maps Style) ──────────────────────────────────
 interface StudentMarkerProps {
     student: StudentPublicDTO;
     isSelected: boolean;
@@ -223,20 +207,102 @@ function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
     if (!student.lat || !student.lng) return null;
 
     const color = getMarkerColor(student.instruments);
-    const size = isSelected ? 20 : 14;
+    // Scale effect for selection
+    const scale = isSelected ? 1.2 : 1;
+
+    // Dimensions for the "White Border" layer vs "Colored Content" layer
+    // We make the white layer slightly larger to create the border effect
+    const HEAD_SIZE = 36;
+    const BORDER_WIDTH = 2.5;
+    const INNER_HEAD_SIZE = HEAD_SIZE - BORDER_WIDTH * 2;
 
     return (
-        <Marker coordinate={{ latitude: student.lat, longitude: student.lng }} onPress={onPress} tracksViewChanges={false}>
+        <Marker
+            coordinate={{ latitude: student.lat, longitude: student.lng }}
+            onPress={onPress}
+            tracksViewChanges={false}
+            zIndex={isSelected ? 999 : 1}
+            // Anchor at (0.5, 1) puts the tip of the triangle at the coordinate
+            anchor={{ x: 0.5, y: 1 }}
+            centerOffset={{ x: 0, y: -(HEAD_SIZE / 2 + 6) }} // Adjust visual center slightly up if needed
+        >
             <View
                 style={{
-                    width: size,
-                    height: size,
-                    borderRadius: size / 2,
-                    backgroundColor: color,
-                    borderWidth: 2,
-                    borderColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transform: [{ scale }],
+                    // Add a shadow to the whole pin for depth (lifting it off the map)
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3,
+                    elevation: 5,
                 }}
-            />
+            >
+                {/* 1. THE HEAD (Circle) */}
+                <View
+                    style={{
+                        width: HEAD_SIZE,
+                        height: HEAD_SIZE,
+                        borderRadius: HEAD_SIZE / 2,
+                        backgroundColor: "white", // Acts as the border
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    {/* Inner Colored Circle */}
+                    <View
+                        style={{
+                            width: INNER_HEAD_SIZE,
+                            height: INNER_HEAD_SIZE,
+                            borderRadius: INNER_HEAD_SIZE / 2,
+                            backgroundColor: color,
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <Ionicons name="musical-notes" size={16} color="white" />
+                    </View>
+                </View>
+
+                {/* 2. THE TAIL (Triangle) */}
+                <View style={{ marginTop: -2, alignItems: "center" }}>
+                    {/* White Triangle (Border) */}
+                    <View
+                        style={{
+                            width: 0,
+                            height: 0,
+                            backgroundColor: "transparent",
+                            borderStyle: "solid",
+                            borderLeftWidth: 8,
+                            borderRightWidth: 8,
+                            borderTopWidth: 10,
+                            borderLeftColor: "transparent",
+                            borderRightColor: "transparent",
+                            borderTopColor: "white", // The border color
+                        }}
+                    />
+
+                    {/* Colored Triangle (Overlay) */}
+                    {/* We position this absolutely on top of the white one to leave a 'border' visible */}
+                    <View
+                        style={{
+                            position: "absolute",
+                            top: -2.5, // Shift up to cover the top part of the white triangle
+                            width: 0,
+                            height: 0,
+                            backgroundColor: "transparent",
+                            borderStyle: "solid",
+                            borderLeftWidth: 5.5, // Slightly narrower
+                            borderRightWidth: 5.5,
+                            borderTopWidth: 7.5, // Slightly shorter
+                            borderLeftColor: "transparent",
+                            borderRightColor: "transparent",
+                            borderTopColor: color,
+                        }}
+                    />
+                </View>
+            </View>
         </Marker>
     );
 }
