@@ -27,11 +27,10 @@ function getMarkerColor(instruments: string[]): string {
 }
 
 export default function FindStudents() {
+    // 1. ALLA HOOKS MÅSTE LIGGA HÄR I BÖRJAN
     const mapRef = useRef<MapView>(null);
     const [permissionDenied, setPermissionDenied] = useState(false);
     const [initializing, setInitializing] = useState(true);
-    
-    // UI State: 'list' (browsing) or 'detail' (viewing a student)
     const [isListVisible, setIsListVisible] = useState(true);
 
     const { students, loading, userLocation, fetchStudents, setUserLocation, selectStudent, selectedStudent } = useFindStudentsStore();
@@ -39,41 +38,42 @@ export default function FindStudents() {
     // --- ANIMATION LOGIC ---
     const animateToStudent = useCallback((student: StudentPublicDTO) => {
         if (!student.lat || !student.lng || !mapRef.current) return;
-
-        // OFFSET TRICK:
-        // Since the Detail Sheet (at Peek/25%) covers the bottom 1/4 of the screen,
-        // we want the marker to be centered in the remaining top 3/4.
-        // We shift the camera 'South' slightly so the marker appears 'North' (up).
-        const latitudeOffset = ANIMATE_DELTA * 0.15; 
-
-        mapRef.current.animateToRegion({
-            latitude: student.lat - latitudeOffset, 
-            longitude: student.lng,
-            latitudeDelta: ANIMATE_DELTA,
-            longitudeDelta: ANIMATE_DELTA,
-        }, 500);
+        const latitudeOffset = ANIMATE_DELTA * 0.15;
+        mapRef.current.animateToRegion(
+            {
+                latitude: student.lat - latitudeOffset,
+                longitude: student.lng,
+                latitudeDelta: ANIMATE_DELTA,
+                longitudeDelta: ANIMATE_DELTA,
+            },
+            500,
+        );
     }, []);
 
-    // 1. CLICK MARKER (The interaction you asked for!)
-    const handleMarkerPress = useCallback((student: StudentPublicDTO) => {
-        selectStudent(student);      // 1. Select student data
-        animateToStudent(student);   // 2. Pan map (with offset)
-        setIsListVisible(false);     // 3. Hide list -> Reveals Detail Sheet
-    }, [selectStudent, animateToStudent]);
+    const handleMarkerPress = useCallback(
+        (student: StudentPublicDTO) => {
+            selectStudent(student);
+            animateToStudent(student);
+            setIsListVisible(false);
+        },
+        [selectStudent, animateToStudent],
+    );
 
-    // 2. CLICK LIST ITEM
-    const handleListStudentPress = useCallback((student: StudentPublicDTO) => {
-        selectStudent(student);
-        animateToStudent(student);
-        setIsListVisible(false);
-    }, [selectStudent, animateToStudent]);
+    const handleListStudentPress = useCallback(
+        (student: StudentPublicDTO) => {
+            selectStudent(student);
+            animateToStudent(student);
+            setIsListVisible(false);
+        },
+        [selectStudent, animateToStudent],
+    );
 
-    // 3. CLOSE DETAIL / CLICK MAP
     const handleMapPress = useCallback(() => {
         selectStudent(null);
-        setIsListVisible(true); // Show list again
+        setIsListVisible(true);
     }, [selectStudent]);
 
+    // Initial Load Effect
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -82,7 +82,7 @@ export default function FindStudents() {
                 try {
                     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
                     location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                } catch { }
+                } catch {}
             } else {
                 setPermissionDenied(true);
             }
@@ -92,6 +92,55 @@ export default function FindStudents() {
         })();
     }, []);
 
+    // AUTO-ZOOM EFFECT
+    useEffect(() => {
+        if (initializing || !mapRef.current || students.length === 0) return;
+        if (selectedStudent) return;
+
+        const coordinates = students
+            .map((s) => {
+                if (typeof s.lat === "number" && typeof s.lng === "number") {
+                    return { latitude: s.lat, longitude: s.lng };
+                }
+                return null;
+            })
+            .filter((c): c is { latitude: number; longitude: number } => c !== null);
+
+        if (coordinates.length === 0) return;
+
+        const EDGE_PADDING = {
+            top: 100,
+            right: 50,
+            bottom: 300,
+            left: 50,
+        };
+
+        // --- SMART ZOOM LOGIC ---
+
+        // Scenario A: Only 1 student found (e.g. Julian in Lund)
+        // Don't use fitToCoordinates because it zooms to street level.
+        // Instead, center on that student but keep a "City View" zoom level.
+        if (coordinates.length === 1) {
+            mapRef.current.animateToRegion(
+                {
+                    latitude: coordinates[0].latitude,
+                    longitude: coordinates[0].longitude,
+                    latitudeDelta: 0.08, // 0.08 is roughly "City View" (approx 10-15km view)
+                    longitudeDelta: 0.08,
+                },
+                1000,
+            );
+        }
+        // Scenario B: Multiple students found
+        else {
+            mapRef.current.fitToCoordinates(coordinates, {
+                edgePadding: EDGE_PADDING,
+                animated: true,
+            });
+        }
+    }, [students, selectedStudent, initializing]);
+
+    // 2. HÄR KOMMER DIN CONDITIONAL RETURN
     if (initializing) {
         return (
             <View className="flex-1 items-center justify-center bg-brand-bg">
@@ -101,6 +150,7 @@ export default function FindStudents() {
         );
     }
 
+    // 3. SEN KOMMER RESTEN AV JSX
     const initialRegion: Region = {
         latitude: userLocation?.lat ?? STOCKHOLM.lat,
         longitude: userLocation?.lng ?? STOCKHOLM.lng,
@@ -137,16 +187,14 @@ export default function FindStudents() {
                 </View>
             )}
 
-            {/* LIST SHEET (Visible only when NO student selected) */}
-            <StudentListSheet 
-                onStudentPress={handleListStudentPress} 
-                visible={isListVisible && !selectedStudent} 
-                onClose={() => setIsListVisible(false)} 
+            <StudentListSheet
+                onStudentPress={handleListStudentPress}
+                visible={isListVisible && !selectedStudent}
+                onClose={() => setIsListVisible(false)}
             />
 
-            {/* RE-OPEN LIST BUTTON */}
             {!isListVisible && !selectedStudent && (
-                 <View className="absolute bottom-6 self-center">
+                <View className="absolute bottom-6 self-center">
                     <TouchableOpacity
                         onPress={() => setIsListVisible(true)}
                         activeOpacity={0.85}
@@ -158,13 +206,7 @@ export default function FindStudents() {
                 </View>
             )}
 
-            {/* DETAIL SHEET (Visible when student IS selected) */}
-            {selectedStudent && (
-                <StudentDetailModal 
-                    student={selectedStudent} 
-                    onClose={handleMapPress} // Clicking 'X' or dragging down deselects
-                />
-            )}
+            {selectedStudent && <StudentDetailModal student={selectedStudent} onClose={handleMapPress} />}
         </View>
     );
 }
@@ -196,15 +238,72 @@ function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
             anchor={{ x: 0.5, y: 1 }}
             centerOffset={{ x: 0, y: -(HEAD_SIZE / 2 + 6) }}
         >
-            <View style={{ alignItems: "center", justifyContent: "center", transform: [{ scale }], shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 3, elevation: 5 }}>
-                <View style={{ width: HEAD_SIZE, height: HEAD_SIZE, borderRadius: HEAD_SIZE / 2, backgroundColor: "white", alignItems: "center", justifyContent: "center" }}>
-                    <View style={{ width: INNER_HEAD_SIZE, height: INNER_HEAD_SIZE, borderRadius: INNER_HEAD_SIZE / 2, backgroundColor: color, alignItems: "center", justifyContent: "center" }}>
+            <View
+                style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transform: [{ scale }],
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3,
+                    elevation: 5,
+                }}
+            >
+                <View
+                    style={{
+                        width: HEAD_SIZE,
+                        height: HEAD_SIZE,
+                        borderRadius: HEAD_SIZE / 2,
+                        backgroundColor: "white",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <View
+                        style={{
+                            width: INNER_HEAD_SIZE,
+                            height: INNER_HEAD_SIZE,
+                            borderRadius: INNER_HEAD_SIZE / 2,
+                            backgroundColor: color,
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
                         <Ionicons name="musical-notes" size={16} color="white" />
                     </View>
                 </View>
                 <View style={{ marginTop: -2, alignItems: "center" }}>
-                    <View style={{ width: 0, height: 0, backgroundColor: "transparent", borderStyle: "solid", borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10, borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: "white" }} />
-                    <View style={{ position: "absolute", top: -2.5, width: 0, height: 0, backgroundColor: "transparent", borderStyle: "solid", borderLeftWidth: 5.5, borderRightWidth: 5.5, borderTopWidth: 7.5, borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: color }} />
+                    <View
+                        style={{
+                            width: 0,
+                            height: 0,
+                            backgroundColor: "transparent",
+                            borderStyle: "solid",
+                            borderLeftWidth: 8,
+                            borderRightWidth: 8,
+                            borderTopWidth: 10,
+                            borderLeftColor: "transparent",
+                            borderRightColor: "transparent",
+                            borderTopColor: "white",
+                        }}
+                    />
+                    <View
+                        style={{
+                            position: "absolute",
+                            top: -2.5,
+                            width: 0,
+                            height: 0,
+                            backgroundColor: "transparent",
+                            borderStyle: "solid",
+                            borderLeftWidth: 5.5,
+                            borderRightWidth: 5.5,
+                            borderTopWidth: 7.5,
+                            borderLeftColor: "transparent",
+                            borderRightColor: "transparent",
+                            borderTopColor: color,
+                        }}
+                    />
                 </View>
             </View>
         </Marker>

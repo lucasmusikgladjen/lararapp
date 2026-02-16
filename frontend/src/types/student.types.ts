@@ -62,3 +62,13 @@ export interface ApiResponse<T> {
     status: "success" | "fail";
     data: T[];
 }
+
+// Maps
+export interface SearchParams {
+    token: string;
+    lat: number;
+    lng: number;
+    radius: number;
+    instrument?: string;
+    searchQuery?: string;
+}

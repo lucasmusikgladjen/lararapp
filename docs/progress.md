@@ -47,6 +47,7 @@
     - Implementerat `GET /api/students/search` med Haversine-formel för avståndsberäkning.
     - Avancerad filtrering i Airtable (`SEARCH`-formler) för att hantera "Söker lärare" och array-fält (`Ort`).
     - Typsäker DTO (`StudentPublicDTO`) för att skydda elevdata.
+    - **FIX:** Implementerat paginering (`getAllRecords`) i Airtable-servicen för att säkerställa att ALLA elever hämtas, inte bara de första 100.
     
 - [x] **Frontend - Karta (Fas 1):**
     - Installation och konfiguration av `react-native-maps` och `expo-location` i `app.json`.
@@ -56,12 +57,14 @@
     - Prestandaoptimering av markörer (`tracksViewChanges={false}`) och färgkodning baserat på instrument.
 
 - [x] **Frontend - Karta (Fas 2): Filter & Sök:**
-    - Uppdaterat `student.service.ts` med `searchQuery`-parameter som skickas som `city` till backend.
-    - Utökat `findStudentsStore` med `searchQuery`-state, `setSearchQuery`-action och debounce-logik (500ms) för API-anrop.
-    - `setFilter` triggar omedelbar refetch; `setSearchQuery` debouncar för att undvika spam.
-    - Skapat `FilterChip`-komponent (`src/components/ui/FilterChip.tsx`) med pill-design: Vald = lila (#8B5CF6), Ovald = vit.
+    - Uppdaterat `student.service.ts` med objekt-parametrar för säkrare anrop.
+    - Utökat `findStudentsStore` med `searchQuery`-state och geocoding-logik via `expo-location`.
+    - Implementerat "Smart Zoom": Använder `animateToRegion` för enstaka träffar (City View) och `fitToCoordinates` för flera.
+    - Implementerat "Kontext-baserad Radie": 10-20km radie vid stadssökning, 30km vid GPS-sökning.
+    - Löst bugg där kartan återställdes till GPS vid filterbyte genom att införa `searchLocation` i store.
+    - Fixat UX-bugg där kartan flyttades vid rensning av sökfältet (X-knapp).
+    - Skapat `FilterChip`-komponent (`src/components/ui/FilterChip.tsx`) med pill-design.
     - Skapat `FilterBar`-komponent (`src/components/find-students/FilterBar.tsx`) med sökfält + horisontell chip-scroll.
-    - Integrerat `FilterBar` ovanpå kartan i `find-students.tsx` med safe area insets för korrekt notch-hantering.
 
 - [x] **Frontend - Karta (Fas 3): Lista & Interaktion (High Fidelity):**
     - Implementerat `@gorhom/bottom-sheet` för äkta native-känsla med gestures (flick, snap).
@@ -79,8 +82,13 @@
     - **Design:** Uppdaterad list-design ("Tiles" med grå mellanrum) för att matcha Google Maps exakt.
     - Rensat bort överflödig kod (`StudentInfoCard.tsx` borttagen).
 
+- [x] **Frontend - Karta (Fas 5): Fri Utforskning ("Search This Area"):**
+    - Implementerat "Sök i det här området"-knapp som dyker upp när användaren panorerar bort från sökresultatet.
+    - Utökat `findStudentsStore` med `searchInArea`-action som beräknar radie baserat på zoomnivå (delta).
+    - Kopplat `onRegionChangeComplete` i kartvyn för att detektera rörelse och visa knappen.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 
 ## Kommande 📅
-- [ ] Push-notifikationer.
+- [ ] Push-notifikationer

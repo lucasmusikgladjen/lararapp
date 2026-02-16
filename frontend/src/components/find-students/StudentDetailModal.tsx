@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { View, Text, TouchableOpacity, TextInput, Image, Alert, Keyboard, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StudentPublicDTO } from "../../types/student.types";
 
 interface StudentDetailSheetProps {
@@ -10,11 +10,11 @@ interface StudentDetailSheetProps {
 }
 
 const INSTRUMENT_ICONS: Record<string, string> = {
-    piano: "musical-notes",
-    gitarr: "guitar",
-    fiol: "musical-notes",
-    trummor: "disc",
-    sång: "mic",
+    piano: "piano",
+    gitarr: "guitar-acoustic",
+    fiol: "violin",
+    trummor: "drum",
+    sång: "microphone",
 };
 
 function getInstrumentIcon(instrument: string): string {
@@ -35,7 +35,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
         setGreeting("");
         // When a new student is selected, snap to the "Peek" position (index 0)
         // or "Full" (index 1) depending on preference. Google Maps usually peeks first.
-        sheetRef.current?.snapToIndex(0); 
+        sheetRef.current?.snapToIndex(0);
     }, [student]);
 
     if (!student) return null;
@@ -64,13 +64,12 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
             handleIndicatorStyle={styles.dragHandle}
         >
             <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-                
                 {/* Header / Close (Visible in Peek) */}
                 <View className="flex-row items-center justify-between px-5 pt-1 pb-2">
-                    <View className="w-8" /> 
+                    <View className="w-8" />
                     <Text className="text-lg font-bold text-slate-900">Elevprofil</Text>
                     <TouchableOpacity onPress={onClose} className="w-8 h-8 bg-slate-50 rounded-full items-center justify-center">
-                        <Ionicons name="close" size={20} color="#6B7280" />
+                        <MaterialCommunityIcons name={getInstrumentIcon(primaryInstrument) as any} size={16} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
 
@@ -79,19 +78,19 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
                     <View className="relative">
                         <Image source={{ uri: avatarUrl }} className="w-20 h-20 rounded-full bg-slate-100" />
                         <View className="absolute -right-1 top-0 w-8 h-8 rounded-full items-center justify-center bg-orange-500 border-2 border-white">
-                            <Ionicons name={getInstrumentIcon(primaryInstrument) as any} size={14} color="#FFFFFF" />
+                        <MaterialCommunityIcons name={getInstrumentIcon(primaryInstrument) as any} size={16} color="#FFFFFF" />
                         </View>
                     </View>
                     <Text className="text-2xl font-bold text-slate-900 mt-2">{student.name}</Text>
-                    <Text className="text-gray-500 text-sm font-medium">{student.city} • {student.instruments.join(", ")}</Text>
+                    <Text className="text-gray-500 text-sm font-medium">{student.instruments.join(", ")}</Text>
                 </View>
 
                 {/* Everything below here is revealed when swiping up to 90% */}
                 <View className="px-5 py-4 mt-2">
                     <Text className="text-lg font-bold text-slate-900 mb-2">Om eleven</Text>
                     <Text className="text-base text-gray-600 leading-6">
-                        {student.name} söker en lärare i {student.instruments.join(", ").toLowerCase()}. 
-                        Eleven vill utvecklas och söker en pedagogisk lärare.
+                        {student.name} söker en lärare i {student.instruments.join(", ").toLowerCase()}. Eleven vill utvecklas och söker en pedagogisk
+                        lärare.
                     </Text>
                 </View>
 
@@ -122,7 +121,6 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
                         <Text className="text-white font-bold text-lg">SKICKA ANSÖKAN</Text>
                     </TouchableOpacity>
                 </View>
-
             </BottomSheetScrollView>
         </BottomSheet>
     );

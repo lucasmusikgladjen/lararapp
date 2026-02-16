@@ -1,6 +1,6 @@
 // frontend/src/services/student.service.ts
 import axios from "axios";
-import { ApiResponse, SearchStudentsResponse, Student, StudentPublicDTO, UpdateStudentPayload } from "../types/student.types";
+import { ApiResponse, SearchParams, SearchStudentsResponse, Student, StudentPublicDTO, UpdateStudentPayload } from "../types/student.types";
 
 const API_URL = "http://localhost:3000/api";
 // Note: Use "http://10.0.2.2:3000/api" for Android Emulator
@@ -47,24 +47,19 @@ export const updateStudentInfo = async (token: string, studentId: string, payloa
     return response.data.data;
 };
 
-export const searchStudents = async (
-    token: string,
-    lat: number,
-    lng: number,
-    radius: number,
-    instrument?: string,
-    searchQuery?: string,
-): Promise<StudentPublicDTO[]> => {
+export const searchStudents = async ({ token, lat, lng, radius, instrument, searchQuery }: SearchParams): Promise<StudentPublicDTO[]> => {
     const params: Record<string, string> = {
         lat: String(lat),
         lng: String(lng),
         radius: String(radius),
     };
+
+    // Nu kan vi inte blanda ihop dem!
     if (instrument) {
         params.instrument = instrument;
     }
     if (searchQuery) {
-        params.city = searchQuery;
+        params.city = searchQuery; // Mappar 'searchQuery' till 'city' för backend
     }
 
     const response = await axios.get<SearchStudentsResponse>(`${API_URL}/students/search`, {

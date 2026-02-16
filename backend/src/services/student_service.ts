@@ -1,5 +1,5 @@
 import type { AirtableRecord, AirtableResponse, GetStudentsQuery, Student, StudentPublicDTO, UpdateStudentInput } from "../types/Student.types";
-import { get, patch } from "./airtable";
+import { get, getAllRecords, patch } from "./airtable";
 
 // Table: "Elev" | ID: tblAj4VVugqhdPWnR
 const TABLE_NAME = "tblAj4VVugqhdPWnR";
@@ -89,31 +89,22 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     // 1. Bygg filter-formel för Airtable
     const filters: string[] = [];
 
-    // VIKTIGT: Vi vill bara hitta elever som faktiskt söker lärare!
-    // Enligt din screenshot är statusen exakt "Söker lärare"
     filters.push("{Status} = 'Söker lärare'");
 
-    // Filter: Stad (Case insensitive)
-   if (query.city) {
-    // Vi lägger till & "" för att tvinga Airtable att göra om arrayen till en sträng
-    // Sen använder vi SEARCH som är mer förlåtande än likhetstecken
-    filters.push(`SEARCH('${query.city.toLowerCase()}', LOWER({Ort} & ""))`);
-}
+    if (query.city) {
+        filters.push(`SEARCH('${query.city.toLowerCase()}', LOWER({Ort} & ""))`);
+    }
 
-    // Filter: Instrument
     if (query.instrument) {
         filters.push(`FIND('${query.instrument.toLowerCase()}', LOWER({Instrument}))`);
     }
 
-    // Slå ihop alla filter med AND
     const filterFormula = `AND(${filters.join(",")})`;
 
-    // URL-encode formeln
-    // Vi tar bort "?view=Aktiva elever" för att vara säkra på att vi söker i hela tabellen
     const url = `/${TABLE_NAME}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
-    // Hämta från Airtable
-    const response = await get<{ records: AirtableRecord[] }>(url);
+    // Använd getAllRecords för att hämta ALLA sidor, inte bara de första 100
+    const response = await getAllRecords<{ records: AirtableRecord[] }>(url);
 
     // 2. Mappa datan och hantera Array-fälten
     let students: StudentPublicDTO[] = response.records.map((record) => {
@@ -150,7 +141,6 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
             return s.distance <= radius;
         });
 
-        // Sortera: Närmast först
         students.sort((a, b) => (a.distance || 0) - (b.distance || 0));
     }
 

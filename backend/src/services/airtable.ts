@@ -44,6 +44,33 @@ export const get = async <T>(endpoint: string) => {
     }
 };
 
+export const getAllRecords = async <T extends { records: any[] }>(endpoint: string): Promise<T> => {
+    try {
+        let allRecords: any[] = [];
+        let offset: string | undefined;
+
+        do {
+            // Lägg till offset i URL:en om det finns en
+            const separator = endpoint.includes("?") ? "&" : "?";
+            const url = offset ? `${endpoint}${separator}offset=${offset}` : endpoint;
+
+            const res = await instance.get<{ records: any[]; offset?: string }>(url);
+
+            allRecords = [...allRecords, ...res.data.records];
+
+            offset = res.data.offset;
+        } while (offset);
+
+        return { records: allRecords } as T;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error("Airtable Error:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.error?.message || "Failed to request Airtable");
+        }
+        throw error;
+    }
+};
+
 export const patch = async <T>(endpoint: string, fields: Record<string, any>) => {
     try {
         const res = await instance.patch<T>(endpoint, { fields: fields });

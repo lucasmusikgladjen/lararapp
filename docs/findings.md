@@ -7,6 +7,7 @@
 
 ## Backend: Validering & Utility
 - **Airtable Utility:** `airtable.ts` har nu stöd för `PATCH` via en generisk metod som tar emot `Record<string, any>` för fälten.
+    - **Pagination:** `getAllRecords` har implementerats för att hämta ALL data från Airtable genom att automatiskt loopa igenom sidor via `offset`. Detta löser problemet där sökningar endast returnerade de första 100 posterna.
 - **Valideringsmönster:** Vi använder `express-validator` med en inkapslad `validate`-funktion direkt i reglernas array (t.ex. `updateStudentRules`) för att hålla routen ren (DX).
 - **Fältmappning (Elev):**
     - `notes` (Frontend) <-> `kommentar` (API) <-> `Kommentar` (Airtable).
@@ -57,7 +58,7 @@
     - `src/components/students/GuardianCard.tsx`
     - `src/components/lessons/ExpandableLessonCard.tsx`
     - `src/components/ui/TabToggle.tsx` (Återanvändbar komponent för båda toggle-nivåerna).
-- **Prestanda:** Använd `FlatList` eller `FlashList` för lektionslistor då dessa kan bli långa (>50 poster). 
+- **Prestanda:** Använd `FlatList` eller `FlashList` för lektionslistor då dessa kan bli långa (>50 poster).
 
 ## Elevprofil: Data-mappning
 - **Senaste anteckningar:** Mappas till Airtable-fältet `Kommentar` i tabellen `Elev`.
@@ -70,13 +71,17 @@
 - **Kart-leverantör:** Vi använder plattformens standardkarta (Apple Maps på iOS, Google Maps på Android) för MVP. Detta minimerar konfiguration (API-nycklar) och ger bäst prestanda på respektive plattform.
 - **Native Modules i Expo:** Installation av bibliotek som `react-native-maps` kräver en omstart av simulatorn/appen (delete app + `npx expo start --clear`) för att ladda in native-koden korrekt.
 - **State Management (Karta):** All kartlogik (vilken elev som är vald, var användaren är, filter) ligger i `findStudentsStore` (Zustand). Vyn `find-students.tsx` är endast ansvarig för rendering, inte logik.
+    - **Geocoding & City Search:** Vi använder `expo-location` för att konvertera stadssökningar ("Malmö") till koordinater. Store sparar `searchLocation` separat från `userLocation` för att möjliggöra filtrering på vald plats.
+    - **Smart Zoom:** `fitToCoordinates` undviker maximal inzoomning vid enstaka träffar genom att använda `animateToRegion` med fast delta (0.08) för "City View".
+    - **"Sök i det här området":** Implementerat en "Google Maps"-liknande knapp som dyker upp när användaren panorerar bort från den ursprungliga sökplatsen. Detta möjliggör fri utforskning utan konstanta API-anrop.
+    - **Kontext-baserad Radie:** Sökning på stad tvingar en mindre radie (10-20km) för att exkludera grannstäder, medan GPS-sökning använder en större radie (30km).
 - **Prestanda (Markers):** För att undvika lagg vid rendering av många markörer använder vi `tracksViewChanges={false}` på `<Marker />` och enkla `View`-komponenter istället för tunga bilder.
 
 ## Filter & Sök (Karta Fas 2)
-- **Debounce-strategi:** Sökfältet (text) använder en 500ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop. Filter-chips triggar omedelbar refetch eftersom de är diskreta val (inte löpande inmatning).
+- **Debounce-strategi:** Sökfältet (text) använder en 1000ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop, och tillåter geocoding att hinna klart. Filter-chips triggar omedelbar refetch.
 - **Modul-level timer:** Debounce-timern (`debounceTimer`) lever utanför Zustand-storen som en modul-variabel. Detta undviker att timern nollställs vid varje state-uppdatering och fungerar korrekt med Zustandss `set/get`-mönster.
 - **Safe Area Overlay:** `FilterBar` använder `useSafeAreaInsets` från `react-native-safe-area-context` och positioneras absolut med `top: insets.top + 4` för att respektera notch/dynamic island på alla enheter.
-- **Backend-koppling (city):** Sökfältets text skickas som `city`-parameter till backend, som redan stöder filtrering på ort via `SEARCH()`-formler i Airtable.
+- **Backend-koppling (city):** Vi skickar inte längre `city`-strängen till backend. Istället geocodar vi staden i frontend och skickar de nya koordinaterna. Detta ger en renare geografisk sökning.
 
 ## Lista & Interaktion (Karta Fas 3 & 4)
 - **High Fidelity Google Maps UX:** Vi bytte från en enkel lista till en fullfjädrad `@gorhom/bottom-sheet` implementation.
