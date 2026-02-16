@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { useAuthStore } from "../../src/store/authStore";
+import { useAuthStore } from "../../../src/store/authStore"; 
 
 export default function Settings() {
     const logout = useAuthStore((state) => state.logout);

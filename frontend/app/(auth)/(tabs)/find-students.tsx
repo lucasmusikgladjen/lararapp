@@ -3,11 +3,11 @@ import * as Location from "expo-location";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
-import { FilterBar } from "../../src/components/find-students/FilterBar";
-import { StudentDetailModal } from "../../src/components/find-students/StudentDetailModal";
-import { StudentListSheet } from "../../src/components/find-students/StudentListSheet";
-import { useFindStudentsStore } from "../../src/store/findStudentsStore";
-import { StudentPublicDTO } from "../../src/types/student.types";
+import { FilterBar } from "../../../src/components/find-students/FilterBar";
+import { StudentDetailModal } from "../../../src/components/find-students/StudentDetailModal";
+import { StudentListSheet } from "../../../src/components/find-students/StudentListSheet";
+import { useFindStudentsStore } from "../../../src/store/findStudentsStore";
+import { StudentPublicDTO } from "../../../src/types/student.types";
 
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
 const DEFAULT_RADIUS_KM = 10;

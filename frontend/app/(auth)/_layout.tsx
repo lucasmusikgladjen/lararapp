@@ -1,67 +1,20 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
+import React from "react";
 
 export default function AuthLayout() {
     return (
-        <Tabs
-            screenOptions={{
-                headerShown: false,
-                tabBarActiveTintColor: "#F97316",
-                // tabBarInactiveTintColor: "#9CA3AF",
-                tabBarInactiveTintColor: "#4a4a4a",
-            }}
-        >
-            {/* 1. Dashboard */}
-            <Tabs.Screen
-                name="index"
-                options={{
-                    title: "Dashboard",
-                    tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />,
-                }}
-            />
+        <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-            {/* 2. Hitta elever (Map Icon) */}
-            <Tabs.Screen
-                name="find-students"
-                options={{
-                    title: "Hitta elever",
-                    tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" size={size} color={color} />,
-                }}
-            />
-
-            {/* 3. Elever (People Icon) */}
-            <Tabs.Screen
-                name="students"
-                options={{
-                    title: "Elever",
-                    tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />,
-                }}
-            />
-
-            {/* 4. Inställningar (Gear Icon) */}
-            <Tabs.Screen
-                name="settings"
-                options={{
-                    title: "Inställningar",
-                    tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />,
-                }}
-            />
-
-            <Tabs.Screen
+            <Stack.Screen
                 name="student/[id]"
                 options={{
-                    href: null,
+                    headerShown: false,
+                    presentation: "card", // Ger snygg native slide-in animation
                 }}
             />
 
-            {/* Onboarding – hidden from tab bar */}
-            <Tabs.Screen
-                name="onboarding/instruments"
-                options={{
-                    href: null,
-                    tabBarStyle: { display: "none" },
-                }}
-            />
-        </Tabs>
+            <Stack.Screen name="onboarding/instruments" options={{ headerShown: false }} />
+        </Stack>
     );
 }

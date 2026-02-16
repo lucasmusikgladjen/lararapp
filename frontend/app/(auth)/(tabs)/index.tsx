@@ -2,15 +2,15 @@ import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DashboardHeader } from "../../src/components/dashboard/DashboardHeader";
-import { EmptyStateDashboard } from "../../src/components/dashboard/EmptyStateDashboard";
-import { ReportBanner } from "../../src/components/dashboard/ReportBanner";
-import { ScheduleCard } from "../../src/components/dashboard/ScheduleCard";
-import { SchemaToggle, ToggleOption } from "../../src/components/dashboard/SchemaToggle";
-import { NextLessonCard } from "../../src/components/lessons/NextLessonCard";
-import { useStudents } from "../../src/hooks/useStudents";
-import { useAuthStore } from "../../src/store/authStore";
-import { findNextLesson, getAllLessonEvents } from "../../src/utils/lessonHelpers";
+import { DashboardHeader } from "../../../src/components/dashboard/DashboardHeader";
+import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
+import { ReportBanner } from "../../../src/components/dashboard/ReportBanner";
+import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
+import { SchemaToggle, ToggleOption } from "../../../src/components/dashboard/SchemaToggle";
+import { NextLessonCard } from "../../../src/components/lessons/NextLessonCard";
+import { useStudents } from "../../../src/hooks/useStudents";
+import { useAuthStore } from "../../../src/store/authStore";
+import { findNextLesson, getAllLessonEvents } from "../../../src/utils/lessonHelpers";
 
 export default function Dashboard() {
     const user = useAuthStore((state) => state.user);
