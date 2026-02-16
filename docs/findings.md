@@ -42,6 +42,7 @@
 - **Konsistens:** När stylingen är satt för Dashboard, låser vi den i `docs/style_guide.md` för att säkerställa visuell identitet i framtida vyer.
 - **Komponenter:** PascalCase (t.ex. `NextLessonCard.tsx`) och funktionsbaserade komponenter.
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
+- **Globala Komponenter:** `PageHeader.tsx` i `/src/components/ui` ersatte `DashboardHeader`. Den används som en enhetlig rubrikmodul för alla huvudflikar (Dashboard, Elever, Inställningar) och tar emot en `title`-prop för att vara dynamisk men bibehålla visuell konsistens.
 
 ## Autentisering & Säkerhet
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.
@@ -64,6 +65,13 @@
 - **Senaste anteckningar:** Mappas till Airtable-fältet `Kommentar` i tabellen `Elev`.
 - **Terminsmål:** Mappas till Airtable-fältet `Terminsmål` i tabellen `Elev`.
 - **Spara-logik:** Använder `PATCH /api/students/:id`. Backend verifierar att `teacherId` äger eleven innan uppdatering sker.
+
+## Navigation Architecture (Refactor)
+- **Stack over Tabs:** Vi använder en "Stack over Tabs"-arkitektur för att lösa navigeringshistoriken.
+    - **Struktur:** Huvudlayouten (`app/(auth)/_layout.tsx`) är en `Stack`. Inuti denna stack ligger en `Tabs`-grupp (`app/(auth)/(tabs)/_layout.tsx`).
+    - **Detaljvyer:** Detaljsidor som `student/[id]` ligger som syskon till `(tabs)` i den yttre Stacken.
+    - **Beteende:** När man navigerar från en lista (i en Tab) till en detaljvy, pushas detaljvyn *ovanpå* hela tabb-layouten. Detta gör att "Tillbaka"-knappen (native back eller `navigation.goBack()`) korrekt "poppar" vyn och återgår till listan, istället för att återställa till start-tabben.
+    - **Expo Router Groups:** Mappen för tabbar döptes om till `(tabs)` (med parenteser) för att agera som en "Group" som inte påverkar URL-strukturen, vilket säkerställer att `index` inuti gruppen fortfarande är root (`/`).
 
 ## Maps & Geospatial Architecture
 - **Backend-styrd logik:** Vi beräknar avstånd och filtrering i backend (Node.js) istället för att hämta alla elever till klienten. Detta sparar bandbredd och gör appen skalbar.

@@ -4,7 +4,7 @@ import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../store/authStore";
-import { DashboardHeader } from "./DashboardHeader";
+import { PageHeader } from "../ui/DashboardHeader";
 
 export const EmptyStateDashboard = () => {
     const user = useAuthStore((state) => state.user);
@@ -23,7 +23,7 @@ export const EmptyStateDashboard = () => {
         <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
                 {/* --- HEADER --- */}
-                <DashboardHeader />
+                <PageHeader title="Dashboard" />
 
                 {/* --- VÄLKOMMEN --- */}
                 <View className="mb-6 mt-2 items-center flex-row justify-center">

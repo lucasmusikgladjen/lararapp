@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DashboardHeader } from "../../../src/components/dashboard/DashboardHeader";
+import { PageHeader } from "../../../src/components/ui/DashboardHeader";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
 import { ReportBanner } from "../../../src/components/dashboard/ReportBanner";
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
@@ -57,7 +57,7 @@ export default function Dashboard() {
         <SafeAreaView className="flex-1 bg-brand-bg">
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
                 {/* --- HEADER --- */}
-                <DashboardHeader />
+                <PageHeader title="Dashboard" />
 
                 {/* --- VÄLKOMSTBOX --- */}
                 <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-3 items-center">

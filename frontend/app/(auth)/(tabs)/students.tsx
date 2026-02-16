@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useStudents } from "../../../src/hooks/useStudents";
 import { StudentCard } from "../../../src/components/students/StudentCard";
+import { PageHeader } from "../../../src/components/ui/DashboardHeader";
 
 export default function StudentsPage() {
     const router = useRouter();
@@ -36,20 +37,15 @@ export default function StudentsPage() {
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
             <View className="flex-1 px-4 pt-2">
+                <PageHeader title="Elever" />
                 <Text className="text-2xl font-bold text-brand-text mb-6 mt-4">Mina elever</Text>
 
                 <FlatList
                     data={students}
                     keyExtractor={(item) => item.id}
-                    // 2. FIX: Vi måste hämta 'index' för att veta om det är sista kortet
                     renderItem={({ item, index }) => (
                         <View>
-                            <StudentCard
-                                student={item}
-                                onPress={() => handleStudentPress(item.id)}
-                                // Här skickar vi isLast så att linjen längst ner försvinner på sista
-                                isLast={index === students.length - 1}
-                            />
+                            <StudentCard student={item} onPress={() => handleStudentPress(item.id)} isLast={index === students.length - 1} />
                         </View>
                     )}
                     contentContainerStyle={{ paddingBottom: 100 }}

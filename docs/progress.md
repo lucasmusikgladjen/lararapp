@@ -87,6 +87,16 @@
     - Utökat `findStudentsStore` med `searchInArea`-action som beräknar radie baserat på zoomnivå (delta).
     - Kopplat `onRegionChangeComplete` i kartvyn för att detektera rörelse och visa knappen.
 
+- [x] **Frontend - Mina Elever & Navigation Refactor:**
+    - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`) som listar inloggad lärares elever.
+    - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY och konsistens.
+    - Implementerat `FlatList` med `RefreshControl` (pull-to-refresh).
+    - **Architecture Refactor:** Flyttat om navigeringsstrukturen till "Stack over Tabs". Skapade en `(tabs)`-grupp för Dashboard/Karta/Lista och flyttade `student/[id]` till den yttre stacken. Detta löste problemet med "Tillbaka"-knappen som alltid gick till Dashboard.
+
+- [x] **Frontend - UI Refactor:**
+    - Skapade `PageHeader.tsx` i `src/components/ui` för att ersätta hårdkodade headers.
+    - Den är dynamisk via `title`-prop och används nu på Dashboard, Elever och Inställningar.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 
