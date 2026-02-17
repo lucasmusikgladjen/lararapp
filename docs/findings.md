@@ -23,6 +23,12 @@
 
 - **Språkstandard:** Alla valideringsmeddelanden och loggar i backend är standardiserade till engelska.
 
+## Backend: Teacher Profile & Settings
+- **Säkerhet (Read-only):** Fält som `Timlön`, `Skattesats` och `Status` (Aktiv/Slutat) kan inte uppdateras via API:et. Service-lagret (`teacher_service.ts`) använder en strikt "allow-list" och ignorerar tyst försök att ändra dessa fält.
+- **Dokument-säkerhet:** `Avtal` och `Jämkning` mappas till frontend, men `Belastningsregister` filtreras bort helt i `mapAirtableToTeacher`. Detta säkerställer att känsliga dokument aldrig lämnar backend-servern.
+- **Lösenords-hantering:** Vi måste explicit inkludera `password` i `mapAirtableToTeacher` för att `auth_controller` ska kunna verifiera inloggningen. Däremot tar `profile_controller` bort lösenordet från svaret innan det skickas till klienten.
+- **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress som ägs av en *annan* användare.
+
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.

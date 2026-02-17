@@ -97,6 +97,14 @@
     - Skapade `PageHeader.tsx` i `src/components/ui` för att ersätta hårdkodade headers.
     - Den är dynamisk via `title`-prop och används nu på Dashboard, Elever och Inställningar.
 
+- [x] **Backend - Lärarprofil & Inställningar:**
+    - Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
+    - Implementerat `GET /profile` som returnerar dokumentstrukturer men döljer `Belastningsregister`.
+    - Implementerat `PATCH /profile` med strikt "allow-list" för vilka fält som får uppdateras.
+    - **Säkerhet:** Read-only fält (Lön, Status) ignoreras tyst vid uppdateringsförsök.
+    - **Validering:** "Smart check" för e-post (tillåter egen, blockerar andras) och validering av nya fält.
+    - **Bugfix:** Åtgärdat inloggningsfel genom att inkludera lösenord i Airtable-mappningen.
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 
