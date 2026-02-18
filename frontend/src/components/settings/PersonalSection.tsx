@@ -18,7 +18,7 @@ export const PersonalSection = ({ user, formData, setFormData, handleSave, isSav
     };
 
     return (
-        <AccordionItem title="Personuppgifter" icon="person" iconColor="#2563EB" iconBgColor="bg-blue-100" defaultOpen={true}>
+        <AccordionItem title="Personuppgifter" icon="person" iconColor="#2563EB" iconBgColor="bg-blue-100" defaultOpen={false}>
             <View className="gap-3">
                 {/* NAMN */}
                 <InputGroup label="Namn" value={formData.name} onChangeText={(t: string) => updateField("name", t)} placeholder="Ditt namn" />
