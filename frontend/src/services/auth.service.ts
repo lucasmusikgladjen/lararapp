@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CreateTeacherData, LoginResponse, RegisterResponse, UpdateProfilePayload } from "../types/auth.types";
+import { CreateTeacherData, LoginResponse, RegisterResponse, UpdateProfilePayload, User } from "../types/auth.types";
 
 // ⚙️ API Configuration
 // For iOS Simulator: "http://localhost:3000/api"
@@ -23,12 +23,22 @@ export const authService = {
         return response.data;
     },
 
-    // Updates the authenticated teacher's profile (e.g. instruments).
-    updateProfile: async (token: string, data: UpdateProfilePayload): Promise<void> => {
-        await axios.patch(`${API_URL}/profile`, data, {
+    // Get the latest profile data
+    getProfile: async (token: string): Promise<User> => {
+        const response = await axios.get<{ status: string; data: User }>(`${API_URL}/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data.data;
+    },
+
+    // Updates the authenticated teacher's profile.
+    updateProfile: async (token: string, data: UpdateProfilePayload): Promise<User> => {
+        const response = await axios.patch<{ status: string; data: User }>(`${API_URL}/profile`, data, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
+        return response.data.data;
     },
+    
 };

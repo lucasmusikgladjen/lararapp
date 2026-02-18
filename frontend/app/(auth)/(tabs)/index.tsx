@@ -55,7 +55,7 @@ export default function Dashboard() {
 
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
-            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
                 {/* --- HEADER --- */}
                 <PageHeader title="Dashboard" />
 
