@@ -2,8 +2,10 @@
 import axios from "axios";
 import { ApiResponse, SearchParams, SearchStudentsResponse, Student, StudentPublicDTO, UpdateStudentPayload } from "../types/student.types";
 
-const API_URL = "http://localhost:3000/api";
 // Note: Use "http://10.0.2.2:3000/api" for Android Emulator
+// const API_URL = "http://localhost:3000/api";
+const API_URL = "http://192.168.20.20:3000/api";
+
 
 export const getMyStudents = async (token: string): Promise<Student[]> => {
     // 1. Fetch data from backend

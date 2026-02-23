@@ -47,8 +47,8 @@ export const ExpandableLessonCard = ({ lesson, onMarkCompleted, onReschedule, on
             <TouchableOpacity onPress={toggleExpand} className="flex-row items-center py-4 px-5" activeOpacity={0.7}>
                 {/* Date Column */}
                 <View className="w-16 items-center">
-                    <Text className="text-2xl font-bold text-brand-orange">{day}</Text>
-                    <Text className="text-xs text-gray-500">{month}</Text>
+                    <Text className="text-3xl font-bold text-brand-orange">{day}</Text>
+                    <Text className="text-xs text-gray-600">{month}</Text>
                 </View>
 
                 {/* Divider Line */}
@@ -58,7 +58,7 @@ export const ExpandableLessonCard = ({ lesson, onMarkCompleted, onReschedule, on
                 <View className="flex-1">
                     <Text className="text-base font-semibold text-slate-900">{lesson.studentName}</Text>
                     <Text className="text-sm font-semibold text-brand-orange">{lesson.time}</Text>
-                    <Text className="text-sm text-gray-500">{lesson.instrument}</Text>
+                    <Text className="text-sm text-gray-600">{lesson.instrument}</Text>
                 </View>
 
                 {/* Chevron */}

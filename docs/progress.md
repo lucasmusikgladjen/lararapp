@@ -105,6 +105,13 @@
     - **Validering:** "Smart check" för e-post (tillåter egen, blockerar andras) och validering av nya fält.
     - **Bugfix:** Åtgärdat inloggningsfel genom att inkludera lösenord i Airtable-mappningen.
 
+- [x] **Frontend - Inställningar & Native UI:**
+    - Omstrukturerad vy för Inställningar (`app/(auth)/(tabs)/settings.tsx`) till en iOS-inspirerad "Grouped List".
+    - Uppdelning i mindre, hanterbara komponenter (`PersonalSection`, `SalarySection`, `BioSection`, `DocumentsSection`, `SettingsUI`) för mycket bättre kodstruktur och läsbarhet.
+    - Implementerat `AccordionItem` med buttersmooth expandering (`LayoutAnimation`).
+    - Hantering av "stale cache" med en tyst `useEffect` auto-refresh av profildata när inställningssidan laddas.
+    - Fixat bugg med krasch vid tom `documents`-array genom säkra fallbacks (`documents || []`).
+
 ## Pågående 🚧
 - [ ] Rapporteringsflöde för lektioner.
 

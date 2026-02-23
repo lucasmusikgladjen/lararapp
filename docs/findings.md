@@ -16,11 +16,8 @@
 - **Airtable Skriv-operationer:** Vi har utökat `airtable.ts` med en generisk `post`-metod för att kunna skapa nya poster (t.ex. vid registrering).
 - **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable. Detta möjliggör flerval utan att bryta datamodellen.
 - **Säker Profiluppdatering:** `updateProfile`-controllern ignorerar `id` i URL-parametrar och använder istället strikt `req.user.id` från JWT-token. Detta förhindrar att en inloggad användare råkar (eller illvilligt) uppdatera någon annans profil.
-
 - **Clean Controllers:** Vi använder `matchedData` från `express-validator` i controllers för att garantera att endast validerad och sanerad data hanteras. Detta minskar risken för "mass assignment"-sårbarheter och håller controllern fri från valideringslogik.
-
 - **Asynkron Validering:** Unikhetskontroller (t.ex. att e-post inte redan finns) görs direkt i valideringslagret via custom validators (`custom(validateEmailDoesNotExist)`), vilket separerar affärsregler från request-hantering.
-
 - **Språkstandard:** Alla valideringsmeddelanden och loggar i backend är standardiserade till engelska.
 
 ## Backend: Teacher Profile & Settings
@@ -34,6 +31,7 @@
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.
 - **Datumhantering:** Jämförelser sker mot `new Date().toISOString().split('T')[0]` för att undvika tidszonsförskjutningar vid midnatt.
 - **Onboarding-navigering (Register -> Instruments -> Dashboard):** Navigeringen efter registrering styrs av auth-guarden i `app/_layout.tsx` via flaggan `needsOnboarding` i Zustand-store — **inte** via direkt `router.replace` i `useRegister`-hooken. Detta löser en race condition där auth-guarden (som reagerar på `isAuthenticated`-ändringen) och hook-navigeringen tävlade om att navigera användaren, vilket ledde till att Dashboard visades direkt istället för instrumentvalet. Flödet: `useRegister` sätter `needsOnboarding: true` → anropar `loginToStore` → auth-guard ser `isAuthenticated && needsOnboarding` → navigerar till `/(auth)/onboarding/instruments` → vid avslutad profilsparning sätts `needsOnboarding: false` och navigering sker till Dashboard.
+- **Stale State Management:** För vyer som förlitar sig på persistat Zustand-state (t.ex. användarprofil), görs en tyst "background refresh" (`authService.getProfile`) vid mount (`useEffect`) för att säkerställa att klienten har den senaste datamodellen från servern (löser problem vid tillägg av nya fält som arrayer/objekt).
 
 ## Empty State Dashboard
 - **Villkorsstyrd Dashboard:** `app/(auth)/index.tsx` kontrollerar `students.length` efter att `useStudents` har laddat klart. Om läraren saknar elever renderas `EmptyStateDashboard` istället för den vanliga dashboarden.
@@ -47,6 +45,8 @@
 - **System:** NativeWind (Tailwind CSS) används för all styling.
 - **Konsistens:** När stylingen är satt för Dashboard, låser vi den i `docs/style_guide.md` för att säkerställa visuell identitet i framtida vyer.
 - **Komponenter:** PascalCase (t.ex. `NextLessonCard.tsx`) och funktionsbaserade komponenter.
+- **Komponent-modularisering:** Stora vyer (som Inställningar) bryts ner i logiska sub-komponenter (t.ex. `PersonalSection`, `BioSection`) i egna mappar (`src/components/settings/`) för att hålla huvudfilen ren och underhållbar. Delade form-element samlas i t.ex. `SettingsUI.tsx`.
+- **Animerade komponenter:** Vi använder `LayoutAnimation` (React Native) inkapslat i en `AccordionItem`-komponent för smidiga expand/collapse-effekter (60fps) utan behov av tunga tredjepartsbibliotek.
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
 - **Globala Komponenter:** `PageHeader.tsx` i `/src/components/ui` ersatte `DashboardHeader`. Den används som en enhetlig rubrikmodul för alla huvudflikar (Dashboard, Elever, Inställningar) och tar emot en `title`-prop för att vara dynamisk men bibehålla visuell konsistens.
 

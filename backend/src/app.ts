@@ -11,7 +11,8 @@ app.use(morgan("dev"));
 // Middleware
 app.use(
     cors({
-        origin: process.env.CORS_ORIGIN || "http://localhost:8081",
+        // origin: process.env.CORS_ORIGIN || "http://localhost:8081",
+        origin: "*",
         credentials: true,
     }),
 );

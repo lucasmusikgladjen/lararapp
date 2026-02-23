@@ -37,7 +37,7 @@ export default function Dashboard() {
         return allLessons.filter((l) => l.daysLeft < 0).sort((a, b) => b.date.localeCompare(a.date));
     }, [allLessons, activeTab]);
 
-    const firstName = user?.name ? user.name.split(" ")[0] : "Non";
+    const firstName = user?.name ? user.name.split(" ")[0] : "No Name";
 
     // Visa laddningsindikator medan data hämtas
     if (isLoading) {
@@ -54,9 +54,9 @@ export default function Dashboard() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-brand-bg">
-            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
-                {/* --- HEADER --- */}
+        // LÖSNINGEN: edges={["top"]} tar bort blocket i botten
+        <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
+            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
                 <PageHeader title="Dashboard" />
 
                 {/* --- VÄLKOMSTBOX --- */}
@@ -89,7 +89,7 @@ export default function Dashboard() {
                     {error && <Text className="text-red-500 text-center mt-4">Kunde inte hämta schema.</Text>}
 
                     {!error && (
-                        <View className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <View className="bg-white rounded-3xl shadow-sm border border-gray-100">
                             {scheduleLessons.length > 0 ? (
                                 scheduleLessons.map((lesson, index) => (
                                     <ScheduleCard

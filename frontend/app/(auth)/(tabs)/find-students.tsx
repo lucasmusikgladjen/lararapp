@@ -10,7 +10,7 @@ import { useFindStudentsStore } from "../../../src/store/findStudentsStore";
 import { StudentPublicDTO } from "../../../src/types/student.types";
 
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
-const DEFAULT_RADIUS_KM = 10;
+const DEFAULT_RADIUS_KM = 10; // 15km 
 const DEFAULT_DELTA = 0.08;
 const ANIMATE_DELTA = 0.02;
 

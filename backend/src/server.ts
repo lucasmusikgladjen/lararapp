@@ -17,7 +17,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const server = http.createServer(app);
 
 // Listen on provided port, on all network interfaces.
-server.listen(PORT);
+server.listen(PORT, "0.0.0.0");
 
 // Event listener for HTTP server "error" event.
 server.on("error", (error: NodeJS.ErrnoException) => {
@@ -44,4 +44,5 @@ server.on("error", (error: NodeJS.ErrnoException) => {
 // Event listener for HTTP server "listening" event.
 server.on("listening", () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📱 Server available on network at http://0.0.0.0:${PORT}`);
 });
