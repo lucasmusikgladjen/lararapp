@@ -4,32 +4,29 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PageHeader } from "../../../src/components/ui/DashboardHeader";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
-import { ReportBanner } from "../../../src/components/dashboard/ReportBanner";
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
 import { SchemaToggle, ToggleOption } from "../../../src/components/dashboard/SchemaToggle";
 import { NextLessonCard } from "../../../src/components/lessons/NextLessonCard";
 import { useStudents } from "../../../src/hooks/useStudents";
 import { useAuthStore } from "../../../src/store/authStore";
 import { findNextLesson, getAllLessonEvents } from "../../../src/utils/lessonHelpers";
+import { NotificationStack } from "../../../src/components/dashboard/NotificationStack";
 
 export default function Dashboard() {
     const user = useAuthStore((state) => state.user);
     const { data: students, isLoading, error } = useStudents();
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
 
-    // Beräkna nästa lektion dynamiskt
     const nextLesson = useMemo(() => {
         if (!students) return null;
         return findNextLesson(students);
     }, [students]);
 
-    // Hämta alla lektionshändelser
     const allLessons = useMemo(() => {
         if (!students) return [];
         return getAllLessonEvents(students);
     }, [students]);
 
-    // Filtrera och sortera baserat på aktiv flik
     const scheduleLessons = useMemo(() => {
         if (activeTab === "kommande") {
             return allLessons.filter((l) => l.daysLeft >= 0).sort((a, b) => a.date.localeCompare(b.date));
@@ -39,7 +36,6 @@ export default function Dashboard() {
 
     const firstName = user?.name ? user.name.split(" ")[0] : "No Name";
 
-    // Visa laddningsindikator medan data hämtas
     if (isLoading) {
         return (
             <SafeAreaView className="flex-1 bg-brand-bg items-center justify-center">
@@ -48,26 +44,24 @@ export default function Dashboard() {
         );
     }
 
-    // Om läraren inte har några elever, visa Empty State Dashboard
     if (!students || students.length === 0) {
         return <EmptyStateDashboard />;
     }
 
     return (
-        // LÖSNINGEN: edges={["top"]} tar bort blocket i botten
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+                {/* --- HEADER --- */}
                 <PageHeader title="Dashboard" />
 
                 {/* --- VÄLKOMSTBOX --- */}
-                <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-3 items-center">
+                <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-6 items-center">
                     <Text className="text-lg font-semibold text-slate-800">Välkommen tillbaka, {firstName}!</Text>
                 </View>
 
-                {/* --- RAPPORT-BANNER --- */}
-                <ReportBanner onPress={() => console.log("Report pressed")} />
+                {/* --- NOTIFICATION STACK --- */}
+                <NotificationStack />
 
-                {/* --- NÄSTA LEKTION --- */}
                 <View className="mb-6">
                     <Text className="text-xl font-bold text-slate-900 mb-3">Nästa lektion</Text>
 
@@ -80,7 +74,6 @@ export default function Dashboard() {
                     )}
                 </View>
 
-                {/* --- DITT SCHEMA --- */}
                 <View className="mb-6">
                     <Text className="text-xl font-bold text-slate-900 mb-3">Ditt schema</Text>
 
