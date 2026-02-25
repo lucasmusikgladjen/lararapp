@@ -41,6 +41,13 @@
     - Hero Card med CTA "Hitta elever" som navigerar till find-students-tabben
     - Tomt schema-placeholder med streckad border
     - Villkorsstyrd rendering i `app/(auth)/index.tsx` baserat på `students.length`
+    
+- [x] **Frontend - Dashboard:**
+    - Implementerat en interaktiv 3D-stackad vertikal karusell (`NotificationStack`) för notiser.
+    - Detaljerad design matchande Figma (3 synliga kort i oändlig loop, "peeking" effekt med skalning).
+    - Optimerat Reanimated-logik (`customAnimation`) och åtgärdat kritiska iOS-krascher relaterade till decimaler i `zIndex` och ohanterad extrapolering (clamp).
+    - Balanserat visuell vikt på Dashboard med asymmetriska marginaler (`mt-3`, `mb-4`) för perfekt vertikal centrering.
+    
 - [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
 - [x] **Backend - Geospatial Sökning:**
@@ -109,11 +116,4 @@
     - Omstrukturerad vy för Inställningar (`app/(auth)/(tabs)/settings.tsx`) till en iOS-inspirerad "Grouped List".
     - Uppdelning i mindre, hanterbara komponenter (`PersonalSection`, `SalarySection`, `BioSection`, `DocumentsSection`, `SettingsUI`) för mycket bättre kodstruktur och läsbarhet.
     - Implementerat `AccordionItem` med buttersmooth expandering (`LayoutAnimation`).
-    - Hantering av "stale cache" med en tyst `useEffect` auto-refresh av profildata när inställningssidan laddas.
-    - Fixat bugg med krasch vid tom `documents`-array genom säkra fallbacks (`documents || []`).
-
-## Pågående 🚧
-- [ ] Rapporteringsflöde för lektioner.
-
-## Kommande 📅
-- [ ] Push-notifikationer
+    - Hantering av

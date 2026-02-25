@@ -50,6 +50,14 @@
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
 - **Globala Komponenter:** `PageHeader.tsx` i `/src/components/ui` ersatte `DashboardHeader`. Den används som en enhetlig rubrikmodul för alla huvudflikar (Dashboard, Elever, Inställningar) och tar emot en `title`-prop för att vara dynamisk men bibehålla visuell konsistens.
 
+## Avancerade UI-Animationer (Karusell)
+- **Verktyg:** Vi använder `react-native-reanimated-carousel` för att bygga en 3D-stackad vertikal kortlek (`NotificationStack`).
+- **Custom Interpolation:** Använder `worklet` och `interpolate` för att styra `translateY`, `scale`, `opacity` och `zIndex` dynamiskt baserat på scroll-värdet (`[-1, 0, 1, 2, 3]`), vilket exakt replikerar en fysisk kortlek (Figma-design).
+- **iOS Prestanda & Krasch-fix:** Förhindrade fatala iOS-krascher (segfaults) genom att:
+    1. Tvinga `zIndex` till heltal via `Math.round()`.
+    2. Konsekvent använda `'clamp'` vid all interpolering för att undvika ohanterade out-of-bounds värden vid snabba swipes.
+- **Infinite Loop Logik (`loop={true}`):** För att bibehålla en illusion av tre synliga kort i en oändlig loop, krävs minst 4 element i datamängden. Karusell-motorn reserverar alltid ett element på index `-1` (ovanför synfältet, opacity 0) för baklänges-scroll, vilket innebär att 3 dataobjekt i koden endast renderar som 2 synliga kort.
+
 ## Autentisering & Säkerhet
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.
 - **State Persistence:** Användarens grunddata (namn, e-post) sparas via Zustands `persist`-middleware i `AsyncStorage` för att möjliggöra omedelbar rendering av UI vid start.
