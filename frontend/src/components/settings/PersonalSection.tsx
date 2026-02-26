@@ -68,22 +68,6 @@ export const PersonalSection = ({ user, formData, setFormData, handleSave, isSav
                     </View>
                 </View>
 
-                {/* BANK */}
-                <View className="flex-row gap-3">
-                    <View className="flex-1">
-                        <InputGroup label="Bank" value={formData.bank} onChangeText={(t: string) => updateField("bank", t)} placeholder="Banknamn" />
-                    </View>
-                    <View className="flex-1">
-                        <InputGroup
-                            label="Kontonummer"
-                            value={formData.bankAccountNumber}
-                            onChangeText={(t: string) => updateField("bankAccountNumber", t)}
-                            placeholder="XXX-XXX-XXX"
-                            keyboardType="numeric"
-                        />
-                    </View>
-                </View>
-
                 <SaveButton onPress={handleSave} loading={isSaving} />
             </View>
         </AccordionItem>

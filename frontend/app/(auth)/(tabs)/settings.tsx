@@ -81,7 +81,7 @@ export default function SettingsPage() {
         ]);
     };
 
-    const handleSave = async (section: "personal" | "students" | "bio") => {
+    const handleSave = async (section: "personal" | "students" | "bio" | "salary") => {
         if (!token) return;
         setIsSaving(true);
 
@@ -95,6 +95,7 @@ export default function SettingsPage() {
                 payload.address = formData.address;
                 payload.zip = formData.zip;
                 payload.city = formData.city;
+            } else if (section === "salary") {
                 payload.bank = formData.bank;
                 payload.bankAccountNumber = formData.bankAccountNumber;
             } else if (section === "students") {
@@ -141,7 +142,7 @@ export default function SettingsPage() {
                     </View>
                 </View>
 
-                {/* --- GROUP 1: KONTO & UPPGIFTER --- */}
+                {/* ========== GROUP 1: KONTO & UPPGIFTER ========== */}
                 <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Konto & Uppgifter</Text>
                 <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
                     <PersonalSection
@@ -151,11 +152,18 @@ export default function SettingsPage() {
                         handleSave={() => handleSave("personal")}
                         isSaving={isSaving}
                     />
-                    <SalarySection user={user} />
+
+                    <SalarySection
+                        user={user}
+                        formData={formData}
+                        setFormData={setFormData}
+                        handleSave={() => handleSave("salary")}
+                        isSaving={isSaving}
+                    />
                     <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
                 </View>
 
-                {/* --- GROUP 2: INNEHÅLL --- */}
+                {/* ========== GROUP 2: INNEHÅLL ========== */}
                 <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Innehåll</Text>
                 <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
                     <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
@@ -164,10 +172,7 @@ export default function SettingsPage() {
 
                 {/* Logout Button */}
                 <View className="mb-4">
-                    <TouchableOpacity
-                        onPress={handleLogout}
-                        className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100"
-                    >
+                    <TouchableOpacity onPress={handleLogout} className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100" >
                         <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
                         <Text className="text-red-500 font-bold text-base">Logga ut</Text>
                     </TouchableOpacity>
