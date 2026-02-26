@@ -136,9 +136,11 @@ export default function SettingsPage() {
                         </View>
                     </View>
                     <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
+
                     <View className="mt-2 flex-row items-center bg-green-100 px-3 py-1 rounded-full">
-                        <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                        <Text className="text-green-700 text-xs font-bold uppercase">{user.status || "Aktiv"}</Text>
+                        <Text className="text-green-700 text-xs font-bold uppercase tracking-wider">
+                            {user.instruments && user.instruments.length > 0 ? user.instruments.join(" • ") : "Inga instrument valda"}
+                        </Text>
                     </View>
                 </View>
 
