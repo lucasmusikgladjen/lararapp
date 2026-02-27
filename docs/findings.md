@@ -26,6 +26,11 @@
 - **Lösenords-hantering:** Vi måste explicit inkludera `password` i `mapAirtableToTeacher` för att `auth_controller` ska kunna verifiera inloggningen. Däremot tar `profile_controller` bort lösenordet från svaret innan det skickas till klienten.
 - **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress som ägs av en *annan* användare.
 
+## Backend: Notifikationssystem Arkitektur
+- **Modulär design:** Notifikationssystemet bygger på en tvådelad arkitektur. `NotificationTemplates` definierar standardvärden och vilka element (text, formulär, bild) som ska visas. `Notifications` representerar individuella utskick till lärare som kan ärva eller överstyra (override) mallens data.
+- **Filtreringslogik:** Eftersom Airtables formler returnerar namn istället för ID:n för Linked Records, hämtar vi alla aktiva notiser i backend och filtrerar sedan fram inloggad lärares notiser via JavaScript `includes(teacherId)` innan datan returneras.
+- **Prioritering och Sortering:** För att kritiska notiser alltid ska visas överst i frontend, poängsätts fältet `Severity` via backend: `critical` (3), `warning` (2) och `info` (1). Om flera notiser har samma poäng sorteras de efter `Created At` (nyast först).
+
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.

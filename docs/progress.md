@@ -119,8 +119,14 @@
     - Hantering av "stale cache" med en tyst `useEffect` auto-refresh av profildata när inställningssidan laddas.
     - Fixat bugg med krasch vid tom `documents`-array genom säkra fallbacks (`documents || []`).
 
+- [x] **Backend - Notifikationssystem (Dynamiska actionsidor):**
+    - Uppdaterade Airtable-strukturen med `NotificationTemplates` (mallar) och `Notifications` (utskick).
+    - Implementerade `GET /api/notifications` som automatiskt slår ihop mallar med individuella override-värden.
+    - Byggde smart backend-sortering baserat på `Severity` (critical > warning > info) och skapelsedatum.
+    - Skapade endpointen `PATCH /api/notifications/:id/resolve` som möjliggör för lärare att svara på formulär och arkivera notiser.
+
 ## Pågående 🚧
-- [ ] Rapporteringsflöde för lektioner.
+- [ ] Implementera dynamiska Action-sidor i frontend baserat på notifikationsmallarna.
 
 ## Kommande 📅
 - [ ] Push-notifikationer

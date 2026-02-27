@@ -27,6 +27,8 @@
 | [Skickat avtal](#skickatavtal) | 4 |
 | [Veckorapport](#veckorapport) | 4 |
 | [Notiser](#notiser) | 10 |
+| [NotificationTemplates](#notificationtemplates) | 26 |
+| [Notifications](#notifications) | 32 |
 
 ---
 
@@ -696,3 +698,61 @@ Innan appen kan tas i bruk, säkerställ att följande är gjort:
 
 ---
 
+## NotificationTemplates
+
+- **Table ID:** `tblui1WgqdfGeLfjc`
+- **Beskrivning:** Mallar som bygger upp strukturen och "legobitarna" för notifikationer och deras actionsidor.
+
+| Field Name | Type | Information / Options |
+|------------|------|-----------------------|
+| **Template ID** (primary) | Single line text | Unik identifierare som koden refererar till |
+| Template Name | Single line text | Beskrivande namn för admin |
+| Default Card Title | Single line text | Default-rubrik på dashboarden |
+| Default Card Description | Long text | Default-beskrivning på dashboarden |
+| Default Severity | Single select | `critical`, `warning`, `info` (Styr sortering) |
+| Default Color | Single line text | Hex-färgkod (t.ex. #F59E0B) |
+| Show Text | Checkbox | Visa rubrik (H1) och brödtext? |
+| Show Image | Checkbox | Visa bild? |
+| Show Confirm & Question Buttons | Checkbox | Visa bekräfta/fråga-knappar? |
+| Show Lesson Report List | Checkbox | Visa lista med orapporterade lektioner? |
+| Show File Upload | Checkbox | Visa filuppladdning? |
+| Show Checklist | Checkbox | Visa checklista med progressbar? |
+| Show Form Field 1-4 | Checkbox | (4 separata fält) Visa formulärfält 1 till 4? |
+| Show Form Submit Button | Checkbox | Visa submit-knapp för formuläret? |
+| Default H1 | Single line text | Default-rubrik högst upp på actionsidan |
+| Default Body Text | Long text | Default-brödtext under H1 |
+| Default Checklist Items | Long text | Lista med items (en per rad) |
+| Default Form Field 1-4 Label | Single line text | (4 separata fält) Default-labels för formulärfält |
+| Default Form Submit Button Text | Single line text | Text på formulärets submit-knapp |
+| Default Confirm Button Text | Single line text | Text på bekräfta-knappen |
+
+---
+
+## Notifications
+
+- **Table ID:** `tblu5XzB4HAFPbNGh`
+- **Beskrivning:** De faktiska notiserna som skickas till enskilda lärare, inklusive deras status och formulärsvar.
+
+| Field Name | Type | Information / Options |
+|------------|------|-----------------------|
+| **Notification ID** (primary) | Auto number | Automatiskt genererat ID (1, 2, 3...) |
+| Teacher | Linked record | Länk till tabellen **Lärare** |
+| Template | Linked record | Länk till tabellen **NotificationTemplates** |
+| Status | Single select | `active`, `resolved` |
+| Created At | Created time | Sätts automatiskt när raden skapas |
+| Resolved At | Last modified time | Sätts automatiskt när status ändras till resolved |
+| Card Title | Single line text | Override av mallens Default Card Title |
+| Card Description | Long text | Override av mallens Default Card Description |
+| Severity | Single select | Override av mallens Default Severity (`critical`, `warning`,`info`) |
+| Color | Single line text | Override av mallens Default Color |
+| H1 | Single line text | Override av mallens Default H1 |
+| Body Text | Long text | Override av mallens Default Body Text |
+| Image | Attachment | Bild som visas på actionsidan |
+| Override Show Text | Checkbox | Overstyr mallens inställning |
+| Override Show Image | Checkbox | Overstyr mallens inställning |
+| Override Show Confirm... | Checkbox | Overstyr mallens inställning (Finns för alla legobitar) |
+| Lessons | Linked record | Länk till tabellen **Lektioner** |
+| Student | Linked record | Länk till tabellen **Elev** |
+| Document Type | Single select | `belastningsregister`, `jämkningsblankett` |
+| Form Field 1-4 Answer | Single line text | (4 separata fält) Lärarens svar, fylls i av appen |
+| Uploaded File | Attachment | Fil som läraren laddat upp, fylls i av appen |

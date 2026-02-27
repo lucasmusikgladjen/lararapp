@@ -4,6 +4,7 @@ import profileRoutes from "./profileRoutes";
 import { login, register } from "../controllers/auth_controller";
 import { validateAccessToken } from "../middlewares/auth/jwt";
 import { createTeacherRules } from "../validations/teacher_validation";
+import notificationRoutes from "./notificationRoutes";
 
 const router = express.Router();
 
@@ -46,6 +47,13 @@ router.use("/profile", validateAccessToken, profileRoutes);
  * Protected by authentication to ensure only teachers can view students.
  */
 router.use("/students", validateAccessToken, studentRoutes);
+
+// ---------- NOTIFICATION ROUTES ----------
+/**
+ * Routes for fetching and resolving notifications.
+ * Protected by authentication.
+ */
+router.use("/notifications", validateAccessToken, notificationRoutes);
 
 /**
  * Catch-all route handler for undefined routes.
