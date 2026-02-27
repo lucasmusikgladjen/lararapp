@@ -51,12 +51,14 @@
 - **Globala Komponenter:** `PageHeader.tsx` i `/src/components/ui` ersatte `DashboardHeader`. Den används som en enhetlig rubrikmodul för alla huvudflikar (Dashboard, Elever, Inställningar) och tar emot en `title`-prop för att vara dynamisk men bibehålla visuell konsistens.
 
 ## Avancerade UI-Animationer (Karusell)
-- **Verktyg:** Vi använder `react-native-reanimated-carousel` för att bygga en 3D-stackad vertikal kortlek (`NotificationStack`).
-- **Custom Interpolation:** Använder `worklet` och `interpolate` för att styra `translateY`, `scale`, `opacity` och `zIndex` dynamiskt baserat på scroll-värdet (`[-1, 0, 1, 2, 3]`), vilket exakt replikerar en fysisk kortlek (Figma-design).
-- **iOS Prestanda & Krasch-fix:** Förhindrade fatala iOS-krascher (segfaults) genom att:
-    1. Tvinga `zIndex` till heltal via `Math.round()`.
-    2. Konsekvent använda `'clamp'` vid all interpolering för att undvika ohanterade out-of-bounds värden vid snabba swipes.
-- **Infinite Loop Logik (`loop={true}`):** För att bibehålla en illusion av tre synliga kort i en oändlig loop, krävs minst 4 element i datamängden. Karusell-motorn reserverar alltid ett element på index `-1` (ovanför synfältet, opacity 0) för baklänges-scroll, vilket innebär att 3 dataobjekt i koden endast renderar som 2 synliga kort.
+- **Verktyg:** Efter stabilitetstester föll valet tillbaka på `react-native-reanimated-carousel` för att bygga notifikationsstacken (`NotificationStack`).
+- **Strategi:** Istället för att bygga anpassade worklets eller komplexa `PanResponder`-gestures som krockade fatalt med Dashboardens nativa vertikala `ScrollView`, utnyttjar vi karusellens inbyggda `mode="parallax"`.
+- **Konfiguration:**
+    - Vertikal orientering kopplad till en exakt `CARD_HEIGHT`.
+    - `overflow: "visible"` tillåter korten bakom (offset) att visas utanför huvudcontainern.
+    - Avstängd `loop` och `overscrollEnabled={false}` ger känslan av en fysisk, begränsad kortlek utan studs ("rubber-banding").
+    - Anpassning av `parallaxScrollingScale` och `parallaxScrollingOffset` ger exakt rätt överlappning enligt Figma-design.
+- **Bredd-synk:** Karusellen är dynamiskt breddanpassad till `width - 40` för att linjera med övriga element inuti en `px-5`-wrapper, och varje kort har lagts till med `w-full` för att undvika ihoptryckt innehåll.
 
 ## Autentisering & Säkerhet
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.
