@@ -36,7 +36,7 @@
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.
 - **Datumhantering:** Jämförelser sker mot `new Date().toISOString().split('T')[0]` för att undvika tidszonsförskjutningar vid midnatt.
 - **Onboarding-navigering (Register -> Instruments -> Dashboard):** Navigeringen efter registrering styrs av auth-guarden i `app/_layout.tsx` via flaggan `needsOnboarding` i Zustand-store — **inte** via direkt `router.replace` i `useRegister`-hooken. Detta löser en race condition där auth-guarden (som reagerar på `isAuthenticated`-ändringen) och hook-navigeringen tävlade om att navigera användaren, vilket ledde till att Dashboard visades direkt istället för instrumentvalet. Flödet: `useRegister` sätter `needsOnboarding: true` → anropar `loginToStore` → auth-guard ser `isAuthenticated && needsOnboarding` → navigerar till `/(auth)/onboarding/instruments` → vid avslutad profilsparning sätts `needsOnboarding: false` och navigering sker till Dashboard.
-- **Stale State Management:** För vyer som förlitar sig på persistat Zustand-state (t.ex. användarprofil), görs en tyst "background refresh" (`authService.getProfile`) vid mount (`useEffect`) för att säkerställa att klienten har den senaste datamodellen från servern (löser problem vid tillägg av nya fält som arrayer/objekt).
+- **Stale State Management (Cachning):** För att undvika onödiga API-anrop till Airtable använder vi `staleTime` (t.ex. 2 minuter) i React Query. Detta, kombinerat med `useFocusEffect` och `RefreshControl` (Pull-to-refresh), minimerar "blinkande" gränssnitt och UX-glitchar vid sidnavigering, samtidigt som appen förblir skalbar för tusentals lärare utan att bryta Airtables hastighetsbegränsningar (5 requests/sek).
 
 ## Empty State Dashboard
 - **Villkorsstyrd Dashboard:** `app/(auth)/index.tsx` kontrollerar `students.length` efter att `useStudents` har laddat klart. Om läraren saknar elever renderas `EmptyStateDashboard` istället för den vanliga dashboarden.
@@ -64,6 +64,7 @@
     - Avstängd `loop` och `overscrollEnabled={false}` ger känslan av en fysisk, begränsad kortlek utan studs ("rubber-banding").
     - Anpassning av `parallaxScrollingScale` och `parallaxScrollingOffset` ger exakt rätt överlappning enligt Figma-design.
 - **Bredd-synk:** Karusellen är dynamiskt breddanpassad till `width - 40` för att linjera med övriga element inuti en `px-5`-wrapper, och varje kort har lagts till med `w-full` för att undvika ihoptryckt innehåll.
+- **Fallback för enstaka element:** Karusellen kraschar animeringsmässigt om den bara har ett element. Vi implementerade en specifik "bypass" som renderar ett statiskt kort (`length === 1`) för att bevara UI-stabilitet.
 
 ## Autentisering & Säkerhet
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.

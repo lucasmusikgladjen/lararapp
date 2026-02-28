@@ -1,6 +1,6 @@
-import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import React, { useMemo, useState, useCallback } from "react";
+import { ActivityIndicator, ScrollView, Text, View, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PageHeader } from "../../../src/components/ui/DashboardHeader";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
@@ -11,11 +11,32 @@ import { useStudents } from "../../../src/hooks/useStudents";
 import { useAuthStore } from "../../../src/store/authStore";
 import { findNextLesson, getAllLessonEvents } from "../../../src/utils/lessonHelpers";
 import { NotificationStack } from "../../../src/components/dashboard/NotificationStack";
+import { useNotifications } from "../../../src/hooks/useNotifications";
 
 export default function Dashboard() {
     const user = useAuthStore((state) => state.user);
-    const { data: students, isLoading, error } = useStudents();
+
+    const { data: students, isLoading: isStudentsLoading, error, refetch: refetchStudents } = useStudents();
+    const { refetch: refetchNotifications } = useNotifications();
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Funktion som körs när användaren "drar ner" skärmen
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        // Hämta både nya notiser och uppdaterade elever parallellt
+        await Promise.all([refetchStudents(), refetchNotifications()]);
+        setRefreshing(false);
+    }, [refetchStudents, refetchNotifications]);
+
+    // AUTO-REFRESH (Refetch on Focus)
+    // Körs tyst i bakgrunden VARJE gång skärmen blir aktiv/synlig (när man tex byter till denna tab)
+    useFocusEffect(
+        useCallback(() => {
+            refetchStudents();
+            refetchNotifications();
+        }, [refetchStudents, refetchNotifications]),
+    );
 
     const nextLesson = useMemo(() => {
         if (!students) return null;
@@ -36,7 +57,7 @@ export default function Dashboard() {
 
     const firstName = user?.name ? user.name.split(" ")[0] : "No Name";
 
-    if (isLoading) {
+    if (isStudentsLoading) {
         return (
             <SafeAreaView className="flex-1 bg-brand-bg items-center justify-center">
                 <ActivityIndicator size="large" color="#F97316" />
@@ -50,7 +71,19 @@ export default function Dashboard() {
 
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
-            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+            <ScrollView
+                className="flex-1 px-5"
+                showsVerticalScrollIndicator={false}
+                // 6. Lägg till RefreshControl på ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor="#F97316" // Orange laddnings-spinner (iOS)
+                        colors={["#F97316"]} // Orange laddnings-spinner (Android)
+                    />
+                }
+            >
                 {/* --- HEADER --- */}
                 <PageHeader title="Dashboard" />
 

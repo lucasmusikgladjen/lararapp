@@ -125,8 +125,13 @@
     - Byggde smart backend-sortering baserat på `Severity` (critical > warning > info) och skapelsedatum.
     - Skapade endpointen `PATCH /api/notifications/:id/resolve` som möjliggör för lärare att svara på formulär och arkivera notiser.
 
+- [x] **Frontend - Notifikationssystem (Dynamiska actionsidor):**
+    - Implementerade dynamiska Action-sidor i frontend baserat på notifikationsmallarna.
+    - Konfigurerade React Query med `staleTime`, Pull-to-Refresh och `useFocusEffect` för snabb och skalbar uppdatering.
+    - Löste render-buggar i karusellen för hantering av enstaka notiser (Bypass logik).
+
 ## Pågående 🚧
-- [ ] Implementera dynamiska Action-sidor i frontend baserat på notifikationsmallarna.
+- [ ] Rapporteringsflöde för lektioner.
 
 ## Kommande 📅
 - [ ] Push-notifikationer

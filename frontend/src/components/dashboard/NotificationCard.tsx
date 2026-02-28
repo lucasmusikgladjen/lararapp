@@ -1,40 +1,41 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { NotificationDTO } from "../../types/notification.types";
 
-export interface NotificationData {
-    id: string;
-    title: string;
-    message: string;
-    type: "alert" | "success" | "info";
-    icon: keyof typeof Ionicons.glyphMap;
-}
-
-interface Props {
-    item: NotificationData;
+interface NotificationCardProps {
+    item: NotificationDTO;
     onPress?: () => void;
 }
 
-export const NotificationCard = ({ item, onPress }: Props) => {
-    const colors = {
-        alert: "bg-[#EA4335]",
-        success: "bg-[#58CC02]",
-        info: "bg-[#4B96F8]",
+export const NotificationCard = ({ item, onPress }: NotificationCardProps) => {
+    // Välj ikon baserat på severity (critical, warning, info)
+    const getIcon = (): keyof typeof Ionicons.glyphMap => {
+        switch (item.card.severity) {
+            case "critical":
+                return "megaphone-outline";
+            case "warning":
+                return "document-text-outline";
+            case "info":
+            default:
+                return "information-circle-outline";
+        }
     };
 
     return (
         <TouchableOpacity
             activeOpacity={0.9}
             onPress={onPress}
-            className={`${colors[item.type]} rounded-[24px] p-5 flex-row items-center h-full w-full`}
+            className="rounded-[24px] p-5 flex-row items-center h-full w-full"
+            style={{ backgroundColor: item.card.color || "#4B96F8" }}
         >
             <View className="mr-4">
-                <Ionicons name={item.icon} size={32} color="white" />
+                <Ionicons name={getIcon()} size={32} color="white" />
             </View>
             <View className="flex-1">
-                <Text className="text-white font-extrabold text-lg leading-tight mb-1">{item.title}</Text>
+                <Text className="text-white font-extrabold text-lg leading-tight mb-1">{item.card.title}</Text>
                 <Text className="text-white font-medium text-sm" numberOfLines={1}>
-                    {item.message}
+                    {item.card.description}
                 </Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="white" />
