@@ -13,8 +13,8 @@ export default function NotificationActionPage() {
 
     const notification = notifications?.find((n) => n.id === id);
     const [answers, setAnswers] = useState<Record<string, string>>({});
+    const [checkedItems, setCheckedItems] = useState<number[]>([]);
 
-    // --- LADDNINGS- OCH FELHANTERING ---
     if (isLoading) {
         return (
             <SafeAreaView className="flex-1 bg-brand-bg items-center justify-center">
@@ -103,16 +103,41 @@ export default function NotificationActionPage() {
                         ========================================= */}
                         {actionPage.showChecklist && content.checklistItems.length > 0 && (
                             <View className="mb-8 bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                                <Text className="font-bold text-slate-400 mb-4 text-xs uppercase tracking-widest">Att göra</Text>
-                                {content.checklistItems.map((item, index) => (
-                                    <View key={index} className="flex-row items-start mb-4 last:mb-0">
-                                        <View className="w-6 h-6 rounded-full border-2 border-slate-300 bg-white mr-4 mt-0.5" />
+                                <Text className="font-bold text-slate-700 mb-4 text-xs uppercase tracking-widest">Att göra</Text>
+                                {content.checklistItems.map((item, index) => {
+                                    const isChecked = checkedItems.includes(index);
 
-                                        <Text className="text-slate-700 flex-1 text-base leading-relaxed font-medium">
-                                            {item.replace(/^[-*•]\s*/, "")}
-                                        </Text>
-                                    </View>
-                                ))}
+                                    return (
+                                        <TouchableOpacity
+                                            key={index}
+                                            activeOpacity={0.7}
+                                            className="flex-row items-start mb-4 last:mb-0"
+                                            onPress={() => {
+                                                setCheckedItems((prev) =>
+                                                    prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+                                                );
+                                            }}
+                                        >
+                                            {/* Rutan / Cirkeln */}
+                                            <View
+                                                className={`w-6 h-6 rounded-full border-2 mr-4 mt-0.5 items-center justify-center ${
+                                                    isChecked ? "bg-brand-green border-brand-green" : "border-slate-300 bg-white"
+                                                }`}
+                                            >
+                                                {isChecked && <Ionicons name="checkmark" size={16} color="white" />}
+                                            </View>
+
+                                            {/* Texten (stryks över när den är klar) */}
+                                            <Text
+                                                className={`flex-1 text-base leading-relaxed font-medium ${
+                                                    isChecked ? "text-slate-400 line-through" : "text-slate-700"
+                                                }`}
+                                            >
+                                                {item.replace(/^[-*•]\s*/, "")}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
                             </View>
                         )}
 
@@ -174,8 +199,12 @@ export default function NotificationActionPage() {
                             <View className="mt-8 gap-y-4">
                                 <TouchableOpacity
                                     onPress={handleSubmit}
-                                    disabled={isPending}
-                                    className={`py-4 rounded-2xl items-center shadow-sm ${isPending ? "bg-orange-300" : "bg-brand-orange"}`}
+                                    disabled={isPending || (actionPage.showChecklist && checkedItems.length !== content.checklistItems.length)}
+                                    className={`py-4 rounded-2xl items-center shadow-sm ${
+                                        isPending || (actionPage.showChecklist && checkedItems.length !== content.checklistItems.length)
+                                            ? "bg-slate-300"
+                                            : "bg-brand-orange"
+                                    }`}
                                 >
                                     {isPending ? (
                                         <ActivityIndicator color="white" />
