@@ -47,7 +47,7 @@ export const NotificationStack = () => {
 
     if (notifications.length === 1) {
         return (
-            <View className="w-full mt-3 mb-4 items-center" style={{ height: CONTAINER_HEIGHT }}>
+            <View className="w-full mt-3 mb-6 items-center">
                 <View style={{ height: CARD_HEIGHT, width: width - 40 }}>
                     <NotificationCard item={notifications[0]} onPress={() => router.push(`/(auth)/notification/${notifications[0].id}`)} />
                 </View>
@@ -61,6 +61,7 @@ export const NotificationStack = () => {
         <View className="w-full mt-3 mb-4" style={{ height: CONTAINER_HEIGHT }}>
             <View className="w-full overflow-hidden" style={{ height: 135 }}>
                 <Carousel
+                    key={`carousel-${notifications.length}`}
                     loop={shouldLoop}
                     vertical={true}
                     width={width - 40}
@@ -73,7 +74,6 @@ export const NotificationStack = () => {
                     }}
                     customAnimation={(value: number) => {
                         "worklet";
-
                         const translateY = interpolate(value, [-1, 0, 1, 2, 3], [-CARD_HEIGHT, 0, 26, 50, 50], "clamp");
                         const scale = interpolate(value, [-1, 0, 1, 2, 3], [1, 1, 0.92, 0.84, 0.84], "clamp");
                         const opacity = interpolate(value, [-1, 0, 1, 2, 3], [0, 1, 1, 1, 0], "clamp");
