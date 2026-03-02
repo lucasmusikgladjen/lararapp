@@ -60,7 +60,6 @@ export default function NotificationActionPage() {
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
             {/* --- PREMIUM HEADER / BACK BUTTON --- */}
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-                {/* Dynamisk rubrik baserad på kortets titel */}
                 <PageHeader title="Notifikation" />
 
                 <View className="px-1 py-2 mb-2 flex-row items-center">
@@ -92,7 +91,7 @@ export default function NotificationActionPage() {
                         ========================================= */}
                         {actionPage.showText && (
                             <View className="mb-8">
-                                {content.h1 ? <Text className="text-3xl font-black text-slate-900 mb-3 tracking-tight">{content.h1}</Text> : null}
+                                {content.h1 ? <Text className="text-2xl font-black text-slate-900 mb-3 tracking-tight">{content.h1}</Text> : null}
                                 {content.bodyText ? (
                                     <Text className="text-base text-slate-600 leading-relaxed font-medium">{content.bodyText}</Text>
                                 ) : null}
