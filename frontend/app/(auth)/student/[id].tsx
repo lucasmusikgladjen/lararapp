@@ -180,7 +180,7 @@ export default function StudentProfile() {
                     className="flex-row items-center bg-brand-orange rounded-full px-3 py-1.5 self-start"
                     activeOpacity={0.8}
                 >
-                    <Ionicons name="arrow-back" size={16} color="white" />
+                    <Ionicons name="arrow-back" size={18} color="white" />
                     <Text className="text-white text-xs font-semibold ml-1">Tillbaka</Text>
                 </TouchableOpacity>
             </View>
