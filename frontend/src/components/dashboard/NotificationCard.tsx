@@ -26,7 +26,7 @@ export const NotificationCard = ({ item, onPress }: NotificationCardProps) => {
         <TouchableOpacity
             activeOpacity={0.9}
             onPress={onPress}
-            className="rounded-[24px] p-5 flex-row items-center h-full w-full"
+            className="rounded-[24px] p-5 flex-row items-center h-full w-full border-[1.5px] border-white/30 shadow-sm"
             style={{ backgroundColor: item.card.color || "#4B96F8" }}
         >
             <View className="mr-4">
