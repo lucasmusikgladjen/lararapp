@@ -111,6 +111,9 @@
 | Matchningsförslag | Link to **Matchningsförslag** |
 | Matchningar | Link to **Matchningar** |
 | Lektionstider | Lookup to **Lektioner** |
+| Standard Upplägg | Single select: `45-60 min`, `90 min`, `120 min` |
+| Lektionsdag | Single select: `Måndag`, `Tisdag`, `Onsdag`, `Torsdag`, `Fredag`, `Lördag`, `Söndag` |
+| Lektionstid_HHMM | Single line text |
 
 ---
 
@@ -241,6 +244,9 @@
 | Närmast elev just nu avstånd km | Number |
 | Matchningsförslag | Link to **Matchningsförslag** |
 | Matchningar | Link to **Matchningar** |
+| Elever Upplägg | Lookup values |
+| Elever Dagar | Lookup values |
+| Elever Tider | Lookup values |
 
 ---
 
