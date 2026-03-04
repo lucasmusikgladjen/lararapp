@@ -78,9 +78,6 @@ export const update = async (req: Request, res: Response) => {
         const updatedStudent = await updateStudent(id, {
             kommentar,
             terminsmal,
-            standardLayout,
-            lessonDay,
-            lessonTimeHHMM,
         });
 
         res.send({

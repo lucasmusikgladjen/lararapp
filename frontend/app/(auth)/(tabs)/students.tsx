@@ -5,12 +5,11 @@ import { useRouter } from "expo-router";
 import { useStudents } from "../../../src/hooks/useStudents";
 import { StudentCard } from "../../../src/components/students/StudentCard";
 import { PageHeader } from "../../../src/components/ui/DashboardHeader";
+import { ScheduleEntryCard } from "../../../src/components/dashboard/ScheduleEntryCard"; // LÄGG TILL IMPORTEN
 
 export default function StudentsPage() {
     const router = useRouter();
-
     const { data: students = [], isLoading: loading, error, refetch } = useStudents();
-
     const [refreshing, setRefreshing] = useState(false);
 
     const handleStudentPress = (studentId: string) => {
@@ -38,11 +37,16 @@ export default function StudentsPage() {
         <SafeAreaView className="flex-1 bg-brand-bg">
             <View className="flex-1 px-5">
                 <PageHeader title="Elever" />
-                <Text className="text-2xl font-bold text-brand-text mb-6 mt-4">Mina elever</Text>
 
                 <FlatList
                     data={students}
                     keyExtractor={(item) => item.id}
+                    ListHeaderComponent={
+                        <View>
+                            <ScheduleEntryCard />
+                            <Text className="text-2xl font-bold text-brand-text mb-6">Mina elever</Text>
+                        </View>
+                    }
                     renderItem={({ item, index }) => (
                         <View>
                             <StudentCard student={item} onPress={() => handleStudentPress(item.id)} isLast={index === students.length - 1} />
@@ -50,7 +54,7 @@ export default function StudentsPage() {
                     )}
                     contentContainerStyle={{ paddingBottom: 100 }}
                     showsVerticalScrollIndicator={false}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" colors={["#F97316"]} />}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" />}
                     ListEmptyComponent={
                         !loading ? (
                             <View className="mt-10 items-center">

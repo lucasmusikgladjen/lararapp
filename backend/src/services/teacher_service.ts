@@ -63,7 +63,8 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         taxRate: field.Skattesats,
         documents: docs,
 
-        termEnd: field.Terminsslut,
+        // termEnd: field.Terminsslut,
+        termEnd: Array.isArray(field.Terminsslut) ? field.Terminsslut[0] : field.Terminsslut || undefined,
     };
 };
 

@@ -37,7 +37,8 @@
         {
           "locationWhenInUsePermission": "Musikglädjen behöver din plats för att visa elever i ditt område."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ]
   }
 }

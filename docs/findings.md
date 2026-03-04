@@ -25,6 +25,7 @@
 - **Dokument-säkerhet:** `Avtal` och `Jämkning` mappas till frontend, men `Belastningsregister` filtreras bort helt i `mapAirtableToTeacher`. Detta säkerställer att känsliga dokument aldrig lämnar backend-servern.
 - **Lösenords-hantering:** Vi måste explicit inkludera `password` i `mapAirtableToTeacher` för att `auth_controller` ska kunna verifiera inloggningen. Däremot tar `profile_controller` bort lösenordet från svaret innan det skickas till klienten.
 - **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress som ägs av en *annan* användare.
+- **Airtable fälttyper (Datum):** Vissa datumfält (t.ex. `Terminsslut`) kan ibland returneras som en array av strängar istället för en enkel sträng från Airtable. Tjänsten hanterar nu detta säkert via t.ex. `Array.isArray(field.Terminsslut) ? field.Terminsslut[0] : field.Terminsslut` för att garantera att frontend och inloggnings-payload får rätt format.
 
 ## Backend: Notifikationssystem Arkitektur
 - **Modulär design:** Notifikationssystemet bygger på en tvådelad arkitektur. `NotificationTemplates` definierar standardvärden och vilka element (text, formulär, bild) som ska visas. `Notifications` representerar individuella utskick till lärare som kan ärva eller överstyra (override) mallens data.
@@ -46,6 +47,14 @@
 - **Onboarding-navigering (Register -> Instruments -> Dashboard):** Navigeringen efter registrering styrs av auth-guarden i `app/_layout.tsx` via flaggan `needsOnboarding` i Zustand-store — **inte** via direkt `router.replace` i `useRegister`-hooken. Detta löser en race condition där auth-guarden (som reagerar på `isAuthenticated`-ändringen) och hook-navigeringen tävlade om att navigera användaren, vilket ledde till att Dashboard visades direkt istället för instrumentvalet. Flödet: `useRegister` sätter `needsOnboarding: true` → anropar `loginToStore` → auth-guard ser `isAuthenticated && needsOnboarding` → navigerar till `/(auth)/onboarding/instruments` → vid avslutad profilsparning sätts `needsOnboarding: false` och navigering sker till Dashboard.
 - **Stale State Management (Cachning):** För att undvika onödiga API-anrop till Airtable använder vi `staleTime` (t.ex. 2 minuter) i React Query. Detta, kombinerat med `useFocusEffect` och `RefreshControl` (Pull-to-refresh), minimerar "blinkande" gränssnitt och UX-glitchar vid sidnavigering, samtidigt som appen förblir skalbar för tusentals lärare utan att bryta Airtables hastighetsbegränsningar (5 requests/sek).
 
+## Hantera Lektionsschema (Schedule Management UX)
+- **Entry Card Pattern:** För att hålla appens bottenmeny ren och undvika kognitiv överbelastning, placerades "Hantera lektionsschema" som ett `ListHeaderComponent`-kort högst upp i Elever-listan. Detta skapar en tydlig och Apple-esque hierarki.
+- **Bulk Update vs Single Update:** Tydlig separering av avsikter:
+    - **Justera (Bulk):** Ändrar elevens återkommande schema för *resten av terminen*. Ett textblock har lagts till i UI:t för att minska risken för missförstånd.
+    - **Boka om (Single):** Ligger kvar på individuell lektionsnivå inne på elevprofilen för att endast ändra *ett* specifikt tillfälle.
+- **Skapa Lektion:** Stödjer både enstaka strö-lektioner och rullande lektioner. Vid rullande lektioner används lärarens `termEnd` (hämtas via `authStore`) för att veta hur långt fram schemat ska byggas.
+- **Avsluta (Destructive Action):** Designad för att vara tydlig och oåterkallelig. Kräver att läraren bockar i en specifik bekräftelse-checkbox för att låsa upp "Ta bort"-knappen, samt visar en native iOS/Android `Alert` som en sista säkerhetsspärr innan radering.
+
 ## Empty State Dashboard
 - **Villkorsstyrd Dashboard:** `app/(auth)/index.tsx` kontrollerar `students.length` efter att `useStudents` har laddat klart. Om läraren saknar elever renderas `EmptyStateDashboard` istället för den vanliga dashboarden.
 - **Komponent:** `src/components/dashboard/EmptyStateDashboard.tsx` — en fristående vy med välkomsthälsning, profilstatus, hero card med CTA och tomt schema-placeholder.
@@ -60,6 +69,9 @@
 - **Komponenter:** PascalCase (t.ex. `NextLessonCard.tsx`) och funktionsbaserade komponenter.
 - **Komponent-modularisering:** Stora vyer (som Inställningar) bryts ner i logiska sub-komponenter (t.ex. `PersonalSection`, `BioSection`) i egna mappar (`src/components/settings/`) för att hålla huvudfilen ren och underhållbar. Delade form-element samlas i t.ex. `SettingsUI.tsx`.
 - **Animerade komponenter:** Vi använder `LayoutAnimation` (React Native) inkapslat i en `AccordionItem`-komponent för smidiga expand/collapse-effekter (60fps) utan behov av tunga tredjepartsbibliotek.
+- **Native Formulärkomponenter:** För att efterlikna Apples och Garmins nativa UI-känsla undviker vi fullskärmsmodaler för enkla val.
+    - `SelectField` använder `@react-native-picker/picker` för nativa inbyggda rullhjul som expanderar "inline".
+    - `TimePickerField` och `DatePickerField` använder `@react-native-community/datetimepicker` som utnyttjar iOS inbyggda "spinner" respektive "inline" kalender. För att inte bryta appens flow används transparent bakgrund (inte dimmad svart) med subtila skuggor (`shadow-lg`) för action-sheet-visningen.
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
 - **Globala Komponenter:** `PageHeader.tsx` i `/src/components/ui` ersatte `DashboardHeader`. Den används som en enhetlig rubrikmodul för alla huvudflikar (Dashboard, Elever, Inställningar) och tar emot en `title`-prop för att vara dynamisk men bibehålla visuell konsistens.
 
@@ -76,7 +88,7 @@
 
 ## Autentisering & Säkerhet
 - **Token-lagring:** JWT-tokens sparas i `expo-secure-store` (iOS Keychain / Android Keystore) och ALDRIG i AsyncStorage.
-- **State Persistence:** Användarens grunddata (namn, e-post) sparas via Zustands `persist`-middleware i `AsyncStorage` för att möjliggöra omedelbar rendering av UI vid start.
+- **State Persistence:** Användarens grunddata (namn, e-post, termEnd) sparas via Zustands `persist`-middleware i `AsyncStorage` för att möjliggöra omedelbar rendering av UI vid start.
 - **Routing:** Vi använder `useSegments` och `router.replace` i root-layouten för att hantera autentiserings-boarding.
 - **Lösenordshantering:** Lösenord hashas med `bcrypt` i controllern *innan* de skickas till Airtable. Vi lagrar aldrig klartextlösenord.
 - **Registreringsflöde:** Vid lyckad registrering genereras en JWT-token omedelbart (Auto-login) så användaren slipper logga in separat direkt efter.

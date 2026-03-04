@@ -35,6 +35,8 @@ export type User = {
 
     // Documents (Read-only)
     documents: TeacherDocument[];
+
+    termEnd?: string;
 };
 
 export type LoginResponse = {

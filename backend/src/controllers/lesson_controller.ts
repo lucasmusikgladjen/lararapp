@@ -24,7 +24,7 @@ export const create = async (req: Request, res: Response) => {
                 layout,
             });
 
-            currentDate.setDate(currentDate.getDate() + 7);
+            currentDate.setUTCDate(currentDate.getUTCDate() + 7);
         }
 
         const createdRecords = await createLessonsBatch(lessonsToCreate);
@@ -105,7 +105,9 @@ export const adjustFutureLessons = async (req: Request, res: Response) => {
                     Upplägg: layout || lesson.fields.Upplägg,
                 },
             };
-            currentDate.setDate(currentDate.getDate() + 7);
+
+            currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+
             return updateDoc;
         });
 

@@ -138,9 +138,17 @@
     - **DELETE /lessons/future:** Raderar lektioner för en elev från ett valt datum (perfekt vid uppehåll eller när en elev slutar).
     - Löst sökproblematik i Airtable API genom att tillämpa `SEARCH('{studentName}')` på ett dedikerat textfält i Lektioner-tabellen.
 
+- [x] **Frontend - Hantera lektionsschema (Schedule Management UX):**
+    - Skapat nytt "Entry Card" (`ScheduleEntryCard`) högst upp i Elever-listan som en `ListHeaderComponent` för ren hierarki.
+    - Byggt dynamisk 3-vägs `TabToggle` för valen Justera, Skapa lektion, och Avsluta.
+    - Implementerat native-känsla på formulärfält (`SelectField` inline, `TimePickerField` action sheet, `DatePickerField` inline kalender).
+    - **Justera-flöde:** Väljer elev, upplägg, veckodag och tid. Visar tydlig info-ruta om att detta är en Bulk Update för hela terminen.
+    - **Skapa-flöde:** Möjlighet att skapa enstaka lektioner eller rullande schema via en kryssruta. Appen hämtar automatiskt lärarens `termEnd` från `authStore` vid repetering.
+    - **Avsluta-flöde:** Destructive action med röd varning, en bekräftelse-checkbox för att aktivera knappen, och en sista `Alert`-prompt.
+    - **Integration:** Kopplat alla flöden till backend via TanStack Query (`useLessonMutation`) med automatisk cachenollställning (`invalidateQueries`) för att UI ska uppdateras blixtsnabbt.
+
 ## Pågående 🚧
-- [ ] Frontend: "Hantera lektionsschema" (UI för Justera, Skapa lektion, Avsluta).
+- [ ] Rapporteringsflöde för lektioner.
 
 ## Kommande 📅
-- [ ] Rapporteringsflöde för lektioner.
 - [ ] Push-notifikationer
