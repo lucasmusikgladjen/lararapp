@@ -244,9 +244,7 @@
 | Närmast elev just nu avstånd km | Number |
 | Matchningsförslag | Link to **Matchningsförslag** |
 | Matchningar | Link to **Matchningar** |
-| Elever Upplägg | Lookup values |
-| Elever Dagar | Lookup values |
-| Elever Tider | Lookup values |
+| Terminsslut | Date |
 
 ---
 

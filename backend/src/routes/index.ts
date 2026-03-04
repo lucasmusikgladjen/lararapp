@@ -5,6 +5,7 @@ import { login, register } from "../controllers/auth_controller";
 import { validateAccessToken } from "../middlewares/auth/jwt";
 import { createTeacherRules } from "../validations/teacher_validation";
 import notificationRoutes from "./notificationRoutes";
+import lessonRoutes from "./lessonRoutes";
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.post("/login", login);
  */
 router.post("/register", createTeacherRules, register);
 
+
 // ---------- PROFILE ROUTES ----------
 
 /**
@@ -39,6 +41,7 @@ router.post("/register", createTeacherRules, register);
  * Actions for fetching the logged-in teacher's profile.
  */
 router.use("/profile", validateAccessToken, profileRoutes);
+
 
 // ---------- STUDENT ROUTES ----------
 
@@ -48,12 +51,21 @@ router.use("/profile", validateAccessToken, profileRoutes);
  */
 router.use("/students", validateAccessToken, studentRoutes);
 
+
+// ---------- LESSON ROUTES ----------
+/**
+ * Routes for managing lessons.
+ */
+router.use("/lessons", validateAccessToken, lessonRoutes);
+
+
 // ---------- NOTIFICATION ROUTES ----------
 /**
  * Routes for fetching and resolving notifications.
  * Protected by authentication.
  */
 router.use("/notifications", validateAccessToken, notificationRoutes);
+
 
 /**
  * Catch-all route handler for undefined routes.

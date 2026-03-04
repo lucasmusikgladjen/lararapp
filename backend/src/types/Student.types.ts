@@ -65,22 +65,20 @@ export type Student = {
     guardianPhone?: string;
 };
 
-// Det avskalade objektet som frontend får se (inte hela elev-objektet)
 export interface StudentPublicDTO {
     id: string;
-    name: string; 
+    name: string;
     instruments: string[];
     city: string;
     lat?: number;
     lng?: number;
-    distance?: number; 
+    distance?: number;
 }
 
-// Parametrarna vi kan ta emot i URL:en (t.ex. ?city=Stockholm&radius=10)
 export interface GetStudentsQuery {
     city?: string;
     instrument?: string;
     lat?: string;
     lng?: string;
-    radius?: string; // km
+    radius?: string; 
 }

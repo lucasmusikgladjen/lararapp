@@ -31,6 +31,14 @@
 - **Filtreringslogik:** Eftersom Airtables formler returnerar namn istället för ID:n för Linked Records, hämtar vi alla aktiva notiser i backend och filtrerar sedan fram inloggad lärares notiser via JavaScript `includes(teacherId)` innan datan returneras.
 - **Prioritering och Sortering:** För att kritiska notiser alltid ska visas överst i frontend, poängsätts fältet `Severity` via backend: `critical` (3), `warning` (2) och `info` (1). Om flera notiser har samma poäng sorteras de efter `Created At` (nyast först).
 
+## Backend: Lektionshantering & Schemaläggning (Transaktions-metoden)
+- **Designmönster:** Istället för att spara en "mall" (standardtid, dag, upplägg) på elev-objektet används en transaktionsbaserad modell där sanningen enbart ligger i tabellen `Lektioner`. Detta eliminerar behovet av datasynkronisering mellan tabeller. Om tiden ändras på en lektion, stämmer det överallt direkt.
+- **Batch-operationer:** För att respektera Airtables API-gräns (max 10 rader per request) är skapande, radering och uppdatering av lektioner implementerade med en "chunking"-strategi i `lesson_service.ts`. Arrayer delas upp i grupper om 10 via loopar innan anrop görs.
+- **Skapa Lektioner (POST):** Kontrollern beräknar automatiskt datum (+7 dagar per iteration) från `startDate` fram till ett valfritt `repeatUntil`-datum och rullar ut lektionerna i en batch. Om `repeatUntil` saknas skapas endast en enstaka lektion.
+- **Justera Lektioner (PATCH):** Bulk Update-funktion som letar upp en elevs framtida lektioner (från ett givet datum) och uppdaterar dem. Kontrollern sorterar hämtade lektioner i datumordning och applicerar det nya startdatumet, tiden och upplägget successivt på de befintliga raderna.
+- **Rensa Schema (DELETE):** För att radera framtida lektioner (vid uppehåll/avslut) används `axios.delete` i en batch-funktion där ID:n formateras i query-strängen (`records[]={ID}`).
+- **Sökning med Linked Records:** För att hitta framtida lektioner kopplade till en specifik elev används formeln `AND(SEARCH('{studentName}', {Elev Namn} & ''), IS_AFTER({Datum}, '{fromDate}'))`. Sökning sker på *Elev Namn* (Lookup-fält i Lektioner-tabellen) snarare än Record ID, då Airtables API ibland maskerar ID:n i länkade array-fält vilket leder till att sökningar misslyckas.
+
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.

@@ -28,8 +28,8 @@ export type AirtableTeacherRecord = {
         Elev?: string[];
         Profilbild?: AirtableImage[];
         Timlön?: number;
-        Skattesats?: number; // Calculated in Airtable (0.3 etc)
-        Slutar?: string; // Status
+        Skattesats?: number; 
+        Slutar?: string; 
         Adress?: string;
         Postnummer?: string;
         Ort?: string;
@@ -41,10 +41,10 @@ export type AirtableTeacherRecord = {
         Bankkontonummer?: string;
         Biografi?: string;
         "Önskat antal elever"?: number;
-        // Documents
         Avtal?: AirtableAttachment[];
         Jämkning?: AirtableAttachment[];
         Belastningsregister?: AirtableAttachment[];
+        Terminsslut?: string;
     };
 };
 
@@ -54,7 +54,6 @@ export type TeacherDocument = {
     type: "contract" | "tax-adjustment" | "criminal-record";
 };
 
-// Our clean DTO (Data Transfer Object)
 export type Teacher = {
     id: string;
     name: string;
@@ -74,13 +73,10 @@ export type Teacher = {
     bankAccountNumber?: string;
     bio?: string;
     desiredStudentCount?: number;
-
-    // Read-only financial info
     hourlyWage?: number;
     taxRate?: number;
-
-    // Documents (Only allowed ones)
     documents: TeacherDocument[];
+    termEnd?: string;
 };
 
 export type CreateTeacherData = {
@@ -99,7 +95,7 @@ export type UpdateTeacherData = {
     address?: string;
     zip?: string;
     city?: string;
-    birthYear?: string; // Added back as requested
+    birthYear?: string; 
     instruments?: string[];
     phone?: string;
     bank?: string;

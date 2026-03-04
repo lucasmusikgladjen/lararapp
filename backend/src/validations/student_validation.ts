@@ -8,9 +8,9 @@ const validate = (req: Request, res: Response, next: NextFunction) => {
         return res.status(400).json({
             status: "fail",
             data: {
-                message: "Valideringsfel",
-                errors: errors.array()
-            }
+                message: "Validation error",
+                errors: errors.array(),
+            },
         });
     }
     next();
@@ -18,15 +18,11 @@ const validate = (req: Request, res: Response, next: NextFunction) => {
 
 // Vi exporterar hela paketet (regler + validate) som en enda array
 export const updateStudentRules = [
-    body("kommentar")
-        .optional()
-        .isString().withMessage("Kommentar måste vara en sträng")
-        .trim(),
-    
-    body("terminsmal")
-        .optional()
-        .isString().withMessage("Terminsmål måste vara en sträng")
-        .trim(),
+    body("kommentar").optional().isString().withMessage("Kommentar måste vara en sträng").trim(),
+    body("terminsmal").optional().isString().withMessage("Terminsmål måste vara en sträng").trim(),
+    body("standardLayout").optional().isString().withMessage("Layout must be a string"),
+    body("lessonDay").optional().isString().withMessage("Lesson Day must be a string"),
+    body("lessonTimeHHMM").optional().isString().withMessage("Lesson Time must be a string"),
 
-    validate 
+    validate,
 ];

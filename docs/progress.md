@@ -130,8 +130,17 @@
     - Konfigurerade React Query med `staleTime`, Pull-to-Refresh och `useFocusEffect` för snabb och skalbar uppdatering.
     - Löste render-buggar i karusellen för hantering av enstaka notiser (Bypass logik).
 
+- [x] **Backend - Schemaläggning & Hantering av Lektioner:**
+    - Skapat `Lesson.types.ts` och robusta DTO:er för att validera inkommande data från läraren.
+    - Byggt `lesson_service.ts` som implementerar "Chunking" (batch-operationer) mot Airtable för att respektera gränsen på 10 rader per request vid Bulk Updates.
+    - **POST /lessons:** Logik för att loopa datumveckor (+7 dagar) och rulla ut hela terminer av lektioner tills `termEnd` nås, eller skapa enskilda instanser om repeat saknas.
+    - **PATCH /lessons/adjust:** Endpoint för att "Justera" schema. Hittar alla framtida lektioner, sorterar dem i datumordning och applicerar ny tid/dag/upplägg utan att störa historik.
+    - **DELETE /lessons/future:** Raderar lektioner för en elev från ett valt datum (perfekt vid uppehåll eller när en elev slutar).
+    - Löst sökproblematik i Airtable API genom att tillämpa `SEARCH('{studentName}')` på ett dedikerat textfält i Lektioner-tabellen.
+
 ## Pågående 🚧
-- [ ] Rapporteringsflöde för lektioner.
+- [ ] Frontend: "Hantera lektionsschema" (UI för Justera, Skapa lektion, Avsluta).
 
 ## Kommande 📅
+- [ ] Rapporteringsflöde för lektioner.
 - [ ] Push-notifikationer

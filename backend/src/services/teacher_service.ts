@@ -61,8 +61,9 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         // Read-only financial info
         hourlyWage: field.Timlön,
         taxRate: field.Skattesats,
-
         documents: docs,
+
+        termEnd: field.Terminsslut,
     };
 };
 
