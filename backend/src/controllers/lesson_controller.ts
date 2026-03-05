@@ -1,6 +1,12 @@
 import Debug from "debug";
 import { Request, Response } from "express";
-import { createLessonsBatch, deleteLessonsBatch, getFutureLessonsForStudent, updateLessonsBatch } from "../services/lesson_service";
+import {
+    createLessonsBatch,
+    deleteLessonsBatch,
+    getFutureLessonsForStudent,
+    updateLessonsBatch,
+    updateSingleLesson,
+} from "../services/lesson_service";
 import { CreateLessonDTO } from "../types/Lessons.types";
 
 const debug = Debug("musikgladjen:lessonController");
@@ -45,7 +51,6 @@ export const create = async (req: Request, res: Response) => {
 
 export const deleteFutureLessons = async (req: Request, res: Response) => {
     try {
-        const { studentId } = req.params as { studentId: string };
         const { fromDate, studentName } = req.body;
 
         debug(`Clearing future lessons for student ${studentName} from ${fromDate}`);
@@ -74,7 +79,6 @@ export const deleteFutureLessons = async (req: Request, res: Response) => {
 
 export const adjustFutureLessons = async (req: Request, res: Response) => {
     try {
-        const { studentId } = req.params as { studentId: string };
         const { studentName, fromDate, newStartDate, timeHHMM, layout } = req.body;
 
         debug(`Adjusting future lessons for ${studentName}. New start: ${newStartDate} at ${timeHHMM}`);
@@ -124,5 +128,90 @@ export const adjustFutureLessons = async (req: Request, res: Response) => {
             message: "Error adjusting lessons",
             error: (error as Error).message,
         });
+    }
+};
+
+/**
+ * Mark a lesson as completed (Genomförd)
+ */
+export const completeLesson = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params as { id: string };
+        const { notes, homework } = req.body;
+
+        debug(`Marking lesson ${id} as completed`);
+
+        const updatedRecord = await updateSingleLesson(id, {
+            Genomförd: true,
+            Lektionsanteckning: notes || "",
+            Läxa: homework || "",
+        });
+
+        res.send({
+            status: "success",
+            message: "Lesson marked as completed",
+            data: updatedRecord,
+        });
+    } catch (error) {
+        debug("Error completing lesson: %O", error);
+        res.status(500).send({ message: "Error completing lesson", error: (error as Error).message });
+    }
+};
+
+/**
+ * Reschedule a lesson (Boka om)
+ */
+export const rescheduleLesson = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params as { id: string };
+        const { newDate, newTime, reason } = req.body;
+
+        debug(`Rescheduling lesson ${id} to ${newDate}`);
+
+        const fieldsToUpdate: any = {
+            Datum: newDate,
+            "Anledning ombokning": reason,
+        };
+
+        if (newTime) {
+            fieldsToUpdate.Klockslag = newTime;
+        }
+
+        const updatedRecord = await updateSingleLesson(id, fieldsToUpdate);
+
+        res.send({
+            status: "success",
+            message: "Lesson rescheduled successfully",
+            data: updatedRecord,
+        });
+    } catch (error) {
+        debug("Error rescheduling lesson: %O", error);
+        res.status(500).send({ message: "Error rescheduling lesson", error: (error as Error).message });
+    }
+};
+
+/**
+ * Cancel a lesson (Ställ in)
+ */
+export const cancelLesson = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params as { id: string };
+        const { cancelledBy, reason } = req.body;
+
+        debug(`Cancelling lesson ${id}. Initiated by: ${cancelledBy}`);
+
+        const updatedRecord = await updateSingleLesson(id, {
+            Inställd: true,
+            "Anledning inställd": `${cancelledBy} ställer in: ${reason}`,
+        });
+
+        res.send({
+            status: "success",
+            message: "Lesson cancelled successfully",
+            data: updatedRecord,
+        });
+    } catch (error) {
+        debug("Error cancelling lesson: %O", error);
+        res.status(500).send({ message: "Error cancelling lesson", error: (error as Error).message });
     }
 };

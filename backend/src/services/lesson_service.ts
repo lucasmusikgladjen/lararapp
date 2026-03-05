@@ -79,3 +79,21 @@ export const updateLessonsBatch = async (updates: { id: string; fields: Partial<
 
     return updatedRecords;
 };
+
+export const updateSingleLesson = async (id: string, fields: Partial<AirtableLessonFields>): Promise<AirtableLessonRecord> => {
+    const API_KEY = process.env.AIRTABLE_API_KEY;
+    const BASE_ID = process.env.AIRTABLE_BASE_ID;
+
+    const body = {
+        records: [{ id, fields }],
+    };
+
+    const response = await axios.patch<{ records: AirtableLessonRecord[] }>(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, body, {
+        headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+        },
+    });
+
+    return response.data.records[0];
+};

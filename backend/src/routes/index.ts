@@ -55,6 +55,7 @@ router.use("/students", validateAccessToken, studentRoutes);
 // ---------- LESSON ROUTES ----------
 /**
  * Routes for managing lessons.
+ * Protected by authentication.
  */
 router.use("/lessons", validateAccessToken, lessonRoutes);
 

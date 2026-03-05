@@ -8,6 +8,8 @@ export type AirtableLessonFields = {
     Inställd?: boolean;
     Lektionsanteckning?: string;
     Läxa?: string;
+    "Anledning ombokning"?: string;
+    "Anledning inställd"?: string;
 };
 
 export type AirtableLessonRecord = {
@@ -21,5 +23,5 @@ export type CreateLessonDTO = {
     studentId: string;
     date: string;       // YYYY-MM-DD
     timeHHMM: string;   // "15:30"
-    layout: string;     // "45-60 min" etc.
+    layout: string;     // "45-60 min"
 };
