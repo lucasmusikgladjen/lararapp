@@ -35,10 +35,15 @@
 ## Backend: Lektionshantering & Schemaläggning (Transaktions-metoden)
 - **Designmönster:** Istället för att spara en "mall" (standardtid, dag, upplägg) på elev-objektet används en transaktionsbaserad modell där sanningen enbart ligger i tabellen `Lektioner`. Detta eliminerar behovet av datasynkronisering mellan tabeller. Om tiden ändras på en lektion, stämmer det överallt direkt.
 - **Batch-operationer:** För att respektera Airtables API-gräns (max 10 rader per request) är skapande, radering och uppdatering av lektioner implementerade med en "chunking"-strategi i `lesson_service.ts`. Arrayer delas upp i grupper om 10 via loopar innan anrop görs.
+- **Tidszons-hantering (UTC):** För att undvika buggar kopplade till sommartid (Daylight Saving Time) när lektioner repeteras framåt i tiden används strikt `setUTCDate` istället för `setDate` vid loopar. Detta säkerställer att lektioner alltid landar på exakt samma veckodag, oavsett om klockan ställts om lokalt.
 - **Skapa Lektioner (POST):** Kontrollern beräknar automatiskt datum (+7 dagar per iteration) från `startDate` fram till ett valfritt `repeatUntil`-datum och rullar ut lektionerna i en batch. Om `repeatUntil` saknas skapas endast en enstaka lektion.
 - **Justera Lektioner (PATCH):** Bulk Update-funktion som letar upp en elevs framtida lektioner (från ett givet datum) och uppdaterar dem. Kontrollern sorterar hämtade lektioner i datumordning och applicerar det nya startdatumet, tiden och upplägget successivt på de befintliga raderna.
 - **Rensa Schema (DELETE):** För att radera framtida lektioner (vid uppehåll/avslut) används `axios.delete` i en batch-funktion där ID:n formateras i query-strängen (`records[]={ID}`).
 - **Sökning med Linked Records:** För att hitta framtida lektioner kopplade till en specifik elev används formeln `AND(SEARCH('{studentName}', {Elev Namn} & ''), IS_AFTER({Datum}, '{fromDate}'))`. Sökning sker på *Elev Namn* (Lookup-fält i Lektioner-tabellen) snarare än Record ID, då Airtables API ibland maskerar ID:n i länkade array-fält vilket leder till att sökningar misslyckas.
+- **Enskilda Lektionsåtgärder (Single Lesson Actions):** Istället för en stor generell uppdaterings-endpoint skapades specifika endpoints för varje domänhändelse (`PATCH /:id/complete`, `PATCH /:id/reschedule`, `PATCH /:id/cancel`). Detta ger:
+    - Tydligare intent och renare controller-logik.
+    - Strikt, åtgärdsspecifik validering (t.ex. säkerställer att `cancelledBy` endast kan vara "Läraren" eller "Vårdnadshavaren").
+    - Direktuppdatering av specifikt Record ID via en dedikerad `updateSingleLesson`-funktion.
 
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.

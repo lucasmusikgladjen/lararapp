@@ -147,8 +147,14 @@
     - **Avsluta-flöde:** Destructive action med röd varning, en bekräftelse-checkbox för att aktivera knappen, och en sista `Alert`-prompt.
     - **Integration:** Kopplat alla flöden till backend via TanStack Query (`useLessonMutation`) med automatisk cachenollställning (`invalidateQueries`) för att UI ska uppdateras blixtsnabbt.
 
+- [x] **Backend - Enskilda Lektionsåtgärder (Single Lesson Actions):**
+    - Skapat funktionen `updateSingleLesson` i `lesson_service.ts` för att rikta uppdateringar mot specifika Record ID:n.
+    - Etablerat tre nya endpoints (`PATCH /:id/complete`, `PATCH /:id/reschedule`, `PATCH /:id/cancel`) med dedikerad affärslogik.
+    - Implementerat strikt indata-validering via `express-validator` (t.ex. att `cancelledBy` måste vara "Läraren" eller "Vårdnadshavaren").
+    - Byggt automatisk formatering av strängar i backend (t.ex. "Vårdnadshavaren ställer in: [anledning]") för att hålla frontend "dumb and beautiful".
+
 ## Pågående 🚧
-- [ ] Rapporteringsflöde för lektioner.
+- [ ] Frontend - Rapporteringsflöde för enskilda lektioner (Genomförd, Boka om, Ställ in) via Bottom Sheet Modal.
 
 ## Kommande 📅
 - [ ] Push-notifikationer
