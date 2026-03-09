@@ -16,6 +16,7 @@ export type AirtableStudentFields = {
     "Lead score"?: string;
     "Närmaste lärare"?: string[];
     Önskar?: string[];
+    ÖnskaKommentar?: string;
     Lektionstider?: string[];
     Lektioner?: string[];
     Kommentar?: string;
@@ -82,5 +83,11 @@ export interface GetStudentsQuery {
     instrument?: string;
     lat?: string;
     lng?: string;
-    radius?: string; 
+    radius?: string;
 }
+
+export type RequestToTeachInput = {
+    teacherId: string;
+    teacherName: string;
+    message?: string;
+};

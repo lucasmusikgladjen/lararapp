@@ -1,6 +1,6 @@
 import Debug from "debug";
 import { Request, Response } from "express";
-import { findStudents, getAllStudents, getStudentsByTeacher, updateStudent } from "../services/student_service";
+import { findStudents, getAllStudents, getStudentsByTeacher, requestToTeachStudent, updateStudent } from "../services/student_service";
 import { GetStudentsQuery } from "../types/Student.types";
 
 const debug = Debug("musikgladjen:studentController");
@@ -89,6 +89,40 @@ export const update = async (req: Request, res: Response) => {
         res.status(500).send({
             message: "Error updating student",
             error: (error as Error).message,
+        });
+    }
+};
+
+export const requestToTeach = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params as { id: string };
+        const { message } = req.body;
+
+        // Extract teacher details from the JWT token injected by the auth middleware
+        const teacherId = req.user?.id;
+        const teacherName = req.user?.name || "Unknown Teacher";
+
+        if (!teacherId) {
+            return res.status(401).send({ status: "fail", message: "Unauthorized: Missing teacher ID in token" });
+        }
+
+        debug(`Teacher ${teacherName} (${teacherId}) applying for student ${id}`);
+
+        const updatedStudent = await requestToTeachStudent(id, { teacherId, teacherName, message });
+
+        res.send({
+            status: "success",
+            data: updatedStudent,
+        });
+    } catch (error) {
+        const msg = (error as Error).message;
+        debug("Error when applying for student: %O", error);
+
+        // Return a 400 Bad Request if they already applied, otherwise 500
+        res.status(msg === "Already applied for this student" ? 400 : 500).send({
+            status: "fail",
+            message: msg === "Already applied for this student" ? msg : "Error applying for student",
+            error: msg,
         });
     }
 };

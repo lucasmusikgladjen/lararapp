@@ -1,4 +1,12 @@
-import type { AirtableRecord, AirtableResponse, GetStudentsQuery, Student, StudentPublicDTO, UpdateStudentInput } from "../types/Student.types";
+import type {
+    AirtableRecord,
+    AirtableResponse,
+    GetStudentsQuery,
+    Student,
+    StudentPublicDTO,
+    UpdateStudentInput,
+    RequestToTeachInput,
+} from "../types/Student.types";
 import { get, getAllRecords, patch } from "./airtable";
 
 // Table: "Elev" | ID: tblAj4VVugqhdPWnR
@@ -146,4 +154,36 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     }
 
     return students;
+};
+
+// This function handles the logic of adding a teacher to a student's 'Önskar' list
+export const requestToTeachStudent = async (studentId: string, data: RequestToTeachInput): Promise<Student> => {
+    // 1. Fetch current student to get existing 'Önskar' array
+    const currentStudentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${studentId}`);
+    const currentFields = currentStudentRecord.fields;
+
+    const currentRequests = currentFields.Önskar || [];
+
+    // Safety check: Prevent duplicate requests from the same teacher
+    if (currentRequests.includes(data.teacherId)) {
+        throw new Error("You have already sent a request for this student");
+    }
+
+    // 2. Append the new teacher ID to the list
+    const updatedRequests = [...currentRequests, data.teacherId];
+
+    // 3. Append the comment to 'ÖnskaKommentar'
+    let updatedComment = currentFields.ÖnskaKommentar || "";
+    if (data.message) {
+        const dateStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
+        updatedComment += `\n[${dateStr}] ${data.teacherName}: ${data.message}`;
+    }
+
+    // 4. Update Airtable
+    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
+        Önskar: updatedRequests,
+        ÖnskaKommentar: updatedComment.trim(),
+    });
+
+    return mapAirtableToStudent(updatedRecord);
 };

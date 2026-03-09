@@ -26,3 +26,8 @@ export const updateStudentRules = [
 
     validate,
 ];
+
+export const requestToTeachRules = [
+    body("message").optional().isString().withMessage("Message must be a string").trim(),
+    validate,
+];
