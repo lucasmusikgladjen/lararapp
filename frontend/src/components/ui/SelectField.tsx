@@ -57,8 +57,8 @@ export const SelectField = ({ label, placeholder, value, options, onSelect }: Se
                         selectedValue={value}
                         onValueChange={(itemValue) => {
                             onSelect(itemValue);
-                            // OBS: Vi stänger INTE expandern automatiskt här. 
-                            // På ett iOS-scrollhjul vill användaren kunna snurra fritt 
+                            // OBS: Vi stänger INTE expandern automatiskt här.
+                            // På ett iOS-scrollhjul vill användaren kunna snurra fritt
                             // och stänger rullgardinen manuellt när de är klara.
                         }}
                         // itemStyle styr utseendet på iOS-scrollhjulet
@@ -66,7 +66,7 @@ export const SelectField = ({ label, placeholder, value, options, onSelect }: Se
                     >
                         {/* Om inget är valt kan det vara bra att ha en osynlig/tom rad i toppen */}
                         {!value && <Picker.Item label={`-- Välj --`} value="" color="#94a3b8" />}
-                        
+
                         {options.map((item) => (
                             <Picker.Item key={item.value} label={item.label} value={item.value} />
                         ))}

@@ -9,17 +9,17 @@
 - [x] Backend-stöd för uppdatering av elevprofil (Notes/Goals) med validering.
 - [x] Robust felhantering och typning i Airtable-tjänsten.
 - [x] Komplett Elevprofil-vy (`app/(auth)/student/[id].tsx`):
-- [x] Header med vinyl-logotyp, titel och tillbaka-knapp
-- [x] Elevinfo med namn och profilbild
-- [x] GuardianCard för vårdnadshavarens information
-- [x] Återanvändbar TabToggle-komponent (pill/underline variants)
-- [x] Översikt-flik med nästa lektion, anteckningar och terminsmål
-- [x] NoteCard med textarea och Spara-knapp (useMutation)
-- [x] Lektioner-flik med Kommande/Senaste under-toggles
-- [x] ExpandableLessonCard med animerad expandering och actions (Genomförd, Boka om, Ställ in)
-- [x] StaticLessonCard för tidigare lektioner
-- [x] FlatList för prestandaoptimerad rendering
-- [x] Fast "Boka lektion" CTA-knapp
+    - [x] Header med vinyl-logotyp, titel och tillbaka-knapp
+    - [x] Elevinfo med namn och profilbild
+    - [x] GuardianCard för vårdnadshavarens information
+    - [x] Återanvändbar TabToggle-komponent (pill/underline variants)
+    - [x] Översikt-flik med nästa lektion, anteckningar och terminsmål
+    - [x] NoteCard med textarea och Spara-knapp (useMutation)
+    - [x] Lektioner-flik med Kommande/Senaste under-toggles
+    - [x] ExpandableLessonCard med animerad expandering och actions (Genomförd, Boka om, Ställ in)
+    - [x] StaticLessonCard för tidigare lektioner
+    - [x] FlatList för prestandaoptimerad rendering
+    - [x] Fast "Boka lektion" CTA-knapp
 - [x] Navigation från Dashboard till Elevprofil
 - [x] Implementering av Lookups för Vårdnadshavare-info i Backend & Airtable.
 - [x] UX-förbättring: "Kommande" på Elevprofil expanderar direkt istället för redirect.
@@ -153,8 +153,16 @@
     - Implementerat strikt indata-validering via `express-validator` (t.ex. att `cancelledBy` måste vara "Läraren" eller "Vårdnadshavaren").
     - Byggt automatisk formatering av strängar i backend (t.ex. "Vårdnadshavaren ställer in: [anledning]") för att hålla frontend "dumb and beautiful".
 
+- [x] **Frontend - Enskilda Lektionsåtgärder (Modaler):**
+    - Implementerat Bottom Sheet-modaler för "Genomförd", "Boka om" och "Ställ in".
+    - Löst komplex bugg gällande `NavigationContainer` och Portals genom att placera `BottomSheetModalProvider` korrekt i `app/(auth)/_layout.tsx`.
+    - Löst NativeWind-krasch vid dynamisk styling inuti modaler genom att använda statiska `className` kombinerat med dynamisk `style`-prop.
+    - Integrerat DatePicker och TimePicker (återanvända komponenter) i "Boka om"-modalen.
+    - Byggt en native iOS-liknande Segmented Control (Läraren/Vårdnadshavaren) för "Ställ in"-modalen.
+    - Kopplat allt till `useLessonMutation` för omedelbar cache-invalidering och UI-uppdatering.
+    - Korrigerat `student.types.ts` och backend-mappning för att skicka ner faktiska `lessonIds` från Airtable (Linked Records) istället för frontend-genererade ID:n, vilket möjliggör korrekta API-anrop.
+
 ## Pågående 🚧
-- [ ] Frontend - Rapporteringsflöde för enskilda lektioner (Genomförd, Boka om, Ställ in) via Bottom Sheet Modal.
 
 ## Kommande 📅
 - [ ] Push-notifikationer

@@ -28,6 +28,7 @@ export interface Student {
     lessonPrice: number;
     upcomingLessons: string[];
     upcomingLessonTimes: string[];
+    upcomingLessonIds?: string[];
     notes: string | null;
     goals: string | null;
     guardian?: Guardian;

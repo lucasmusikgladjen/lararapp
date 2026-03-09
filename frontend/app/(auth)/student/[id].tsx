@@ -1,17 +1,21 @@
-import React, { useState, useMemo } from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, Alert, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useStudents } from "../../../src/hooks/useStudents";
-import { useUpdateStudent } from "../../../src/hooks/useStudentMutation";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ExpandableLessonCard } from "../../../src/components/lessons/ExpandableLessonCard";
+import { StaticLessonCard } from "../../../src/components/lessons/StaticLessonCard";
 import { GuardianCard } from "../../../src/components/students/GuardianCard";
 import { NoteCard } from "../../../src/components/students/NoteCard";
 import { TabToggle } from "../../../src/components/ui/TabToggle";
-import { ExpandableLessonCard } from "../../../src/components/lessons/ExpandableLessonCard";
-import { StaticLessonCard } from "../../../src/components/lessons/StaticLessonCard";
-// OverviewLessonCard behövs inte längre här
-import { Student, Guardian } from "../../../src/types/student.types";
+import { useUpdateStudent } from "../../../src/hooks/useStudentMutation";
+import { useStudents } from "../../../src/hooks/useStudents";
+import { Guardian } from "../../../src/types/student.types";
+import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
+import { CompleteLessonSheet } from "../../../src/components/lessons/actions/CompleteLessonSheet";
+import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/RescheduleLessonSheet"; 
+import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 
 type MainTab = "oversikt" | "lektioner";
 type LessonTab = "kommande" | "senaste";
@@ -33,6 +37,40 @@ export default function StudentProfile() {
     const [lessonTab, setLessonTab] = useState<LessonTab>("kommande");
     const [savingNotes, setSavingNotes] = useState(false);
     const [savingGoals, setSavingGoals] = useState(false);
+
+    // --- BOTTOM SHEET REFS & STATES ---
+    const completeSheetRef = useRef<BottomSheetModal>(null);
+    const rescheduleSheetRef = useRef<BottomSheetModal>(null);
+    const cancelSheetRef = useRef<BottomSheetModal>(null);
+    const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+
+    // --- MUTATIONS ---
+    const completeMutation = useCompleteLesson({
+        studentId: id as string,
+        onSuccess: () => {
+            completeSheetRef.current?.dismiss();
+            setSelectedLessonId(null);
+            Alert.alert("Klart!", "Lektionen har markerats som genomförd.");
+        },
+    });
+
+    const rescheduleMutation = useRescheduleLesson({
+        studentId: id as string,
+        onSuccess: () => {
+            rescheduleSheetRef.current?.dismiss();
+            setSelectedLessonId(null);
+            Alert.alert("Klart!", "Lektionen har bokats om.");
+        },
+    });
+
+    const cancelMutation = useCancelLesson({
+        studentId: id as string,
+        onSuccess: () => {
+            cancelSheetRef.current?.dismiss();
+            setSelectedLessonId(null);
+            Alert.alert("Klart!", "Lektionen har ställts in.");
+        },
+    });
 
     // Fetch student data from the existing students query
     const { data: students, isLoading } = useStudents();
@@ -76,8 +114,11 @@ export default function StudentProfile() {
         const lessons: LessonData[] = [];
 
         student.upcomingLessons?.forEach((date, index) => {
+            const realId = student.upcomingLessonIds?.[index];
+            const fallbackId = `${student.id}-${date}-${index}`;
+
             lessons.push({
-                id: `${student.id}-${date}-${index}`,
+                id: realId || fallbackId,
                 date,
                 time: student.upcomingLessonTimes?.[index] || "Tid saknas",
                 studentName: student.name,
@@ -108,15 +149,55 @@ export default function StudentProfile() {
     };
 
     const handleMarkCompleted = (lessonId: string) => {
-        Alert.alert("Markera som genomförd", "Denna funktion kommer snart.");
+        setSelectedLessonId(lessonId);
+
+        // Let React state commit before animating the bottom sheet
+        setTimeout(() => {
+            completeSheetRef.current?.present();
+        }, 10);
+    };
+
+    // Function that runs when the user clicks "Bekräfta" inside the modal
+    const handleConfirmComplete = (notes: string, homework: string) => {
+        if (!selectedLessonId) return;
+        completeMutation.mutate({
+            lessonId: selectedLessonId,
+            payload: { notes, homework },
+        });
     };
 
     const handleReschedule = (lessonId: string) => {
-        Alert.alert("Boka om", "Denna funktion kommer snart.");
+        setSelectedLessonId(lessonId);
+
+        setTimeout(() => {
+            rescheduleSheetRef.current?.present();
+        }, 10);
+    };
+
+    // Function that runs when the user clicks "Bekräfta" inside the reschedule modal
+    const handleConfirmReschedule = (newDate: string, newTime: string, reason: string) => {
+        if (!selectedLessonId) return;
+        rescheduleMutation.mutate({
+            lessonId: selectedLessonId,
+            payload: { newDate, newTime, reason },
+        });
     };
 
     const handleCancel = (lessonId: string) => {
-        Alert.alert("Ställ in", "Denna funktion kommer snart.");
+        setSelectedLessonId(lessonId);
+
+        // Timeout to allow state to settle before animating
+        setTimeout(() => {
+            cancelSheetRef.current?.present();
+        }, 10);
+    };
+
+    const handleConfirmCancel = (cancelledBy: "Läraren" | "Vårdnadshavaren", reason: string) => {
+        if (!selectedLessonId) return;
+        cancelMutation.mutate({
+            lessonId: selectedLessonId,
+            payload: { cancelledBy, reason },
+        });
     };
 
     const handleBookLesson = () => {
@@ -321,6 +402,28 @@ export default function StudentProfile() {
                     <Text className="text-white font-bold text-lg">Boka lektion</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* ========== MODALS ========== */}
+            <CompleteLessonSheet
+                ref={completeSheetRef}
+                onClose={() => completeSheetRef.current?.dismiss()}
+                onConfirm={handleConfirmComplete}
+                isPending={completeMutation.isPending}
+            />
+
+            <RescheduleLessonSheet
+                ref={rescheduleSheetRef}
+                onClose={() => rescheduleSheetRef.current?.dismiss()}
+                onConfirm={handleConfirmReschedule}
+                isPending={rescheduleMutation.isPending}
+            />
+
+            <CancelLessonSheet
+                ref={cancelSheetRef}
+                onClose={() => cancelSheetRef.current?.dismiss()}
+                onConfirm={handleConfirmCancel}
+                isPending={cancelMutation.isPending}
+            />
         </View>
     );
 }

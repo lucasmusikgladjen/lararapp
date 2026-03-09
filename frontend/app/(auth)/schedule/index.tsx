@@ -12,7 +12,6 @@ import { useAdjustLessons, useCreateLessons, useDeleteFutureLessons } from "../.
 import { useAuthStore } from "../../../src/store/authStore";
 import { DatePickerField } from "../../../src/components/ui/DatePickerField";
 import { PageHeader } from "../../../src/components/ui/DashboardHeader";
-import React from "react";
 
 type ScheduleTab = "justera" | "skapa" | "avsluta";
 

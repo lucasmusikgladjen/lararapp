@@ -2,9 +2,12 @@ import axios from "axios";
 import {
     AdjustLessonPayload,
     AdjustLessonResponse,
+    CancelLessonPayload,
+    CompleteLessonPayload,
     CreateLessonPayload,
     CreateLessonResponse,
     DeleteFutureLessonsPayload,
+    RescheduleLessonPayload,
 } from "../types/lesson.types";
 
 const API_URL = "http://localhost:3000/api";
@@ -38,6 +41,33 @@ export const deleteFutureLessons = async (
             Authorization: `Bearer ${token}`,
         },
         data: payload,
+    });
+    return response.data;
+};
+
+export const completeLesson = async (token: string, lessonId: string, payload: CompleteLessonPayload): Promise<any> => {
+    const response = await axios.patch(`${API_URL}/lessons/${lessonId}/complete`, payload, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const rescheduleLesson = async (token: string, lessonId: string, payload: RescheduleLessonPayload): Promise<any> => {
+    const response = await axios.patch(`${API_URL}/lessons/${lessonId}/reschedule`, payload, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+};
+
+export const cancelLesson = async (token: string, lessonId: string, payload: CancelLessonPayload): Promise<any> => {
+    const response = await axios.patch(`${API_URL}/lessons/${lessonId}/cancel`, payload, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
     return response.data;
 };
