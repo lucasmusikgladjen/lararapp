@@ -1,13 +1,20 @@
 // frontend/src/services/student.service.ts
 import axios from "axios";
-import { ApiResponse, SearchParams, SearchStudentsResponse, Student, StudentPublicDTO, UpdateStudentPayload } from "../types/student.types";
+import {
+    ApiResponse,
+    RequestToTeachPayload,
+    SearchParams,
+    SearchStudentsResponse,
+    Student,
+    StudentPublicDTO,
+    UpdateStudentPayload,
+} from "../types/student.types";
 
 // Note: Use "http://10.0.2.2:3000/api" for Android Emulator
 const API_URL = "http://localhost:3000/api";
 
 // FOR DEMOS
 // const API_URL = "http://192.168.20.20:3000/api";
-
 
 export const getMyStudents = async (token: string): Promise<Student[]> => {
     // 1. Fetch data from backend
@@ -73,5 +80,15 @@ export const searchStudents = async ({ token, lat, lng, radius, instrument, sear
         params,
     });
 
+    return response.data.data;
+};
+
+export const requestToTeachStudent = async (token: string, studentId: string, payload: RequestToTeachPayload): Promise<Student> => {
+    // Note: Using the exact endpoint defined in your backend
+    const response = await axios.post<{ status: string; data: Student }>(`${API_URL}/students/${studentId}/request`, payload, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     return response.data.data;
 };

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Image, Alert, Keyboard, StyleS
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StudentPublicDTO } from "../../types/student.types";
+import { useRequestToTeach } from "../../hooks/useStudentMutation";
 
 interface StudentDetailSheetProps {
     student: StudentPublicDTO | null;
@@ -31,6 +32,21 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
     // 90% = "Full" (See reviews, photos, etc.)
     const snapPoints = useMemo(() => ["25%", "90%"], []);
 
+    const requestMutation = useRequestToTeach({
+        studentId: student?.id || "",
+        onSuccess: () => {
+            Alert.alert("Ansökan skickad!", "Vi hör av oss så snart som möjligt.");
+            setGreeting(""); // Clear input on success
+            onClose(); // Close the modal
+        },
+        onError: (error: any) => {
+            // Safely extract the backend error message if it exists (e.g. "You have already sent a request for this student")
+            const backendMsg = error.response?.data?.error || error.response?.data?.message || "Något gick fel. Försök igen.";
+
+            Alert.alert("Hoppsan!", backendMsg);
+        },
+    });
+
     useEffect(() => {
         setGreeting("");
         // When a new student is selected, snap to the "Peek" position (index 0)
@@ -45,12 +61,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
 
     const handleApply = () => {
         Keyboard.dismiss();
-        setSubmitting(true);
-        setTimeout(() => {
-            setSubmitting(false);
-            Alert.alert("Ansökan skickad!", "Vi hör av oss.");
-            onClose();
-        }, 300);
+        requestMutation.mutate({ message: greeting.trim() });
     };
 
     return (
@@ -78,7 +89,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
                     <View className="relative">
                         <Image source={{ uri: avatarUrl }} className="w-20 h-20 rounded-full bg-slate-100" />
                         <View className="absolute -right-1 top-0 w-8 h-8 rounded-full items-center justify-center bg-orange-500 border-2 border-white">
-                        <MaterialCommunityIcons name={getInstrumentIcon(primaryInstrument) as any} size={16} color="#FFFFFF" />
+                            <MaterialCommunityIcons name={getInstrumentIcon(primaryInstrument) as any} size={16} color="#FFFFFF" />
                         </View>
                     </View>
                     <Text className="text-2xl font-bold text-slate-900 mt-2">{student.name}</Text>
@@ -98,15 +109,22 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
 
                 <View className="px-5 py-4">
                     <Text className="text-lg font-bold text-slate-900 mb-3">Skicka ansökan</Text>
-                    <View className="bg-green-50 rounded-2xl p-4 border border-green-100">
+                    <View
+                        className={`rounded-2xl p-4 border ${student.hasApplied ? "bg-slate-100 border-slate-200" : "bg-green-50 border-green-100"}`}
+                    >
                         <TextInput
-                            className="bg-white rounded-xl p-3 text-base text-slate-900 min-h-[100px] border border-gray-200"
-                            placeholder="Hej! Jag hjälper dig gärna..."
+                            className={`rounded-xl p-3 text-base min-h-[100px] border ${
+                                student.hasApplied ? "bg-slate-50 text-slate-500 border-slate-200" : "bg-white text-slate-900 border-gray-200"
+                            }`}
+                            placeholder={
+                                student.hasApplied ? "Du har redan skickat en ansökan till den här eleven." : "Hej! Jag hjälper dig gärna..."
+                            }
                             placeholderTextColor="#9CA3AF"
                             multiline
                             textAlignVertical="top"
                             value={greeting}
                             onChangeText={setGreeting}
+                            editable={!student.hasApplied && !requestMutation.isPending}
                         />
                     </View>
                 </View>
@@ -114,11 +132,17 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
                 <View className="px-5 pt-2">
                     <TouchableOpacity
                         onPress={handleApply}
-                        disabled={submitting}
-                        className="rounded-full py-4 items-center bg-green-500 shadow-sm"
-                        style={{ opacity: submitting ? 0.7 : 1 }}
+                        disabled={requestMutation.isPending || student.hasApplied} // Disable button if applied!
+                        className="rounded-full py-4 items-center shadow-sm"
+                        style={{
+                            // Grey if applied, light green if loading, bright green if ready
+                            backgroundColor: student.hasApplied ? "#94A3B8" : requestMutation.isPending ? "#86efac" : "#22c55e",
+                            opacity: requestMutation.isPending || student.hasApplied ? 0.7 : 1,
+                        }}
                     >
-                        <Text className="text-white font-bold text-lg">SKICKA ANSÖKAN</Text>
+                        <Text className="text-white font-bold text-lg">
+                            {student.hasApplied ? "ANSÖKAN SKICKAD" : requestMutation.isPending ? "SKICKAR..." : "SKICKA ANSÖKAN"}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </BottomSheetScrollView>

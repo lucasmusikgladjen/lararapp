@@ -76,6 +76,7 @@ export interface StudentPublicDTO {
     lat?: number;
     lng?: number;
     distance?: number;
+    hasApplied?: boolean;
 }
 
 export interface GetStudentsQuery {
@@ -84,6 +85,7 @@ export interface GetStudentsQuery {
     lat?: string;
     lng?: string;
     radius?: string;
+    teacherId?: string;
 }
 
 export type RequestToTeachInput = {

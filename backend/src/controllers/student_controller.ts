@@ -41,6 +41,9 @@ export const index = async (req: Request, res: Response) => {
 
 export const search = async (req: Request, res: Response) => {
     try {
+        // Extract teacher ID from the JWT token
+        const teacherId = req.user?.id;
+
         // Typsäkra parametrarna från URL:en
         const query: GetStudentsQuery = {
             city: req.query.city as string,
@@ -48,6 +51,7 @@ export const search = async (req: Request, res: Response) => {
             lat: req.query.lat as string,
             lng: req.query.lng as string,
             radius: req.query.radius as string,
+            teacherId: teacherId,
         };
 
         // debug(`Searching students with params: %O`, query);
@@ -108,20 +112,31 @@ export const requestToTeach = async (req: Request, res: Response) => {
 
         debug(`Teacher ${teacherName} (${teacherId}) applying for student ${id}`);
 
-        const updatedStudent = await requestToTeachStudent(id, { teacherId, teacherName, message });
+        const result = await requestToTeachStudent(id, {
+            teacherId,
+            teacherName: teacherName || "Unknown Teacher",
+            message,
+        });
 
         res.send({
             status: "success",
-            data: updatedStudent,
+            data: result,
         });
     } catch (error) {
         const msg = (error as Error).message;
         debug("Error when applying for student: %O", error);
 
-        // Return a 400 Bad Request if they already applied, otherwise 500
-        res.status(msg === "Already applied for this student" ? 400 : 500).send({
+        if (msg === "You have already sent a request for this student") {
+            return res.status(400).send({
+                status: "fail",
+                message: msg,
+                error: msg,
+            });
+        }
+
+        res.status(500).send({
             status: "fail",
-            message: msg === "Already applied for this student" ? msg : "Error applying for student",
+            message: "Error applying for student",
             error: msg,
         });
     }

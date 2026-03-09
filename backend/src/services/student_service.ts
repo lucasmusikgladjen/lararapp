@@ -131,6 +131,10 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
             distance = getDistanceFromLatLonInKm(userLat, userLng, lat, lng);
         }
 
+        // EVALUATE IF APPLIED
+        const onskarArray = fields.Önskar || [];
+        const hasApplied = query.teacherId ? onskarArray.includes(query.teacherId) : false;
+
         return {
             id: record.id,
             name: fields.Förnamn || fields.Namn || "Anonym",
@@ -139,6 +143,7 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
             lat: lat,
             lng: lng,
             distance: distance ? parseFloat(distance.toFixed(1)) : undefined,
+            hasApplied: hasApplied,
         };
     });
 

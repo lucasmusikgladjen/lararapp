@@ -1,21 +1,21 @@
-export interface Guardian {
+export type Guardian = {
     name: string;
     address: string;
     city: string;
     postalCode: string;
     email: string;
     phone: string;
-}
+};
 
-export interface Lesson {
+export type Lesson = {
     id: string;
     date: string;
     time: string;
     completed: boolean;
     cancelled: boolean;
-}
+};
 
-export interface Student {
+export type Student = {
     id: string;
     name: string;
     status: string;
@@ -36,9 +36,9 @@ export interface Student {
     guardianName?: string;
     guardianEmail?: string;
     guardianPhone?: string;
-}
+};
 
-export interface StudentPublicDTO {
+export type StudentPublicDTO = {
     id: string;
     name: string;
     instruments: string[];
@@ -46,30 +46,35 @@ export interface StudentPublicDTO {
     lat?: number;
     lng?: number;
     distance?: number;
-}
+    hasApplied?: boolean;
+};
 
-export interface SearchStudentsResponse {
+export type SearchStudentsResponse = {
     status: "success" | "fail";
     count: number;
     data: StudentPublicDTO[];
-}
+};
 
-export interface UpdateStudentPayload {
+export type UpdateStudentPayload = {
     notes?: string;
     goals?: string;
-}
+};
 
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
     status: "success" | "fail";
     data: T[];
-}
+};
 
 // Maps
-export interface SearchParams {
+export type SearchParams = {
     token: string;
     lat: number;
     lng: number;
     radius: number;
     instrument?: string;
     searchQuery?: string;
-}
+};
+
+export type RequestToTeachPayload = {
+    message?: string;
+};
