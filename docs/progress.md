@@ -94,6 +94,12 @@
     - Utökat `findStudentsStore` med `searchInArea`-action som beräknar radie baserat på zoomnivå (delta).
     - Kopplat `onRegionChangeComplete` i kartvyn för att detektera rörelse och visa knappen.
 
+- [x] **Karta Fas 6: Ansökningsflöde (Request to Teach)**
+    - Backend: Implementerat `POST /api/students/:id/request` med deduplicering (`400 Bad Request`). Säker hantering av array-data för Linked Records i Airtable (append, ej overwrite).
+    - Backend/Frontend: Skapat dynamisk `hasApplied`-flagga på `StudentPublicDTO` via mapsökningen.
+    - Frontend: Byggt `useRequestToTeach`-hook med felhantering och cache-invalidering för omedelbar UI-uppdatering.
+    - Frontend: Premium UX i `StudentDetailModal` där knappar och textfält gråas ut och inaktiveras om läraren redan ansökt ("ANSÖKAN SKICKAD").
+
 - [x] **Frontend - Mina Elever & Navigation Refactor:**
     - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`) som listar inloggad lärares elever.
     - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY och konsistens.
