@@ -94,3 +94,39 @@ export const updateProfile = async (req: Request, res: Response) => {
         });
     }
 };
+
+/**
+ * POST /push-token
+ * Register or update the Expo Push Token for the authenticated teacher.
+ */
+export const updatePushToken = async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401).json({ status: "fail", message: "Unauthorized" });
+        return;
+    }
+
+    const userId = req.user.id;
+    const { pushToken } = req.body;
+
+    if (!pushToken) {
+        res.status(400).json({ status: "fail", message: "Push token is required" });
+        return;
+    }
+
+    debug(`Registering push token for user ID: ${userId}`);
+
+    try {
+        await updateTeacher(userId, { pushToken });
+
+        res.status(200).json({
+            status: "success",
+            message: "Push token registered successfully",
+        });
+    } catch (error) {
+        debug("Error registering push token: %O", error);
+        res.status(500).json({
+            status: "error",
+            message: "Could not register push token",
+        });
+    }
+};

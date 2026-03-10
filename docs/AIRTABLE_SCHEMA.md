@@ -244,7 +244,11 @@
 | Närmast elev just nu avstånd km | Number |
 | Matchningsförslag | Link to **Matchningsförslag** |
 | Matchningar | Link to **Matchningar** |
+| Notifications | Single line text |
+| Notifications 2 | Link to **Notifications** |
 | Terminsslut | Date |
+| PushToken | Single line text |
+
 
 ---
 
@@ -760,3 +764,5 @@ Innan appen kan tas i bruk, säkerställ att följande är gjort:
 | Document Type | Single select | `belastningsregister`, `jämkningsblankett` |
 | Form Field 1-4 Answer | Single line text | (4 separata fält) Lärarens svar, fylls i av appen |
 | Uploaded File | Attachment | Fil som läraren laddat upp, fylls i av appen |
+
+---

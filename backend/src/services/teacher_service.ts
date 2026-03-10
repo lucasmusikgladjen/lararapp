@@ -65,6 +65,7 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
 
         // termEnd: field.Terminsslut,
         termEnd: Array.isArray(field.Terminsslut) ? field.Terminsslut[0] : field.Terminsslut || undefined,
+        pushToken: field.PushToken,
     };
 };
 
@@ -108,12 +109,13 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.address !== undefined) fields.Adress = data.address;
     if (data.zip !== undefined) fields.Postnummer = data.zip;
     if (data.city !== undefined) fields.Ort = data.city;
-    if (data.birthYear !== undefined) fields.Födelseår = data.birthYear; 
+    if (data.birthYear !== undefined) fields.Födelseår = data.birthYear;
     if (data.phone !== undefined) fields.Telefon = data.phone;
     if (data.bank !== undefined) fields.Bank = data.bank;
     if (data.bankAccountNumber !== undefined) fields.Bankkontonummer = data.bankAccountNumber;
     if (data.bio !== undefined) fields.Biografi = data.bio;
     if (data.desiredStudentCount !== undefined) fields["Önskat antal elever"] = data.desiredStudentCount;
+    if (data.pushToken !== undefined) fields.PushToken = data.pushToken;
 
     if (data.instruments) {
         fields.Instrument = data.instruments.join(", ");
