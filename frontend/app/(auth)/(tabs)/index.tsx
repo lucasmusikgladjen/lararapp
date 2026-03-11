@@ -119,7 +119,7 @@ export default function Dashboard() {
                             {scheduleLessons.length > 0 ? (
                                 scheduleLessons.map((lesson, index) => (
                                     <ScheduleCard
-                                        key={`${lesson.student.id}-${lesson.date}`}
+                                        key={`${lesson.student.id}-${lesson.date}-${lesson.time}-${index}`}
                                         lesson={lesson}
                                         onPress={() => router.push(`/(auth)/student/${lesson.student.id}`)}
                                         isLast={index === scheduleLessons.length - 1}
