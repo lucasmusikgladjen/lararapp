@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
-import { authService } from "../src/services/auth.service"; // Import the service
+import { authService } from "../src/services/auth.service";
 import { useAuthStore } from "../src/store/authStore";
 
 const queryClient = new QueryClient();
@@ -129,7 +129,7 @@ export default function RootLayout() {
                 }
             });
         }
-    }, [authToken, isLoading]); // Re-run if auth token changes (e.g., they log in)
+    }, [authToken, isLoading]); // Re-run if auth token changes (ex: they log in)
 
     if (isLoading) {
         return (

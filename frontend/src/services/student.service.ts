@@ -10,14 +10,11 @@ import {
     UpdateStudentPayload,
 } from "../types/student.types";
 
-// Note: Use "http://10.0.2.2:3000/api" for Android Emulator
-// const API_URL = "http://localhost:3000/api";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-// FOR DEMOS | MUSIKGLÄDJEN OFFICE
-//const API_URL = "http://192.168.20.20:3000/api";
-
-// MY HOME (Malmö)
-const API_URL = "http://192.168.50.206:3000/api";
+if (!API_URL) {
+    console.warn("⚠️ API_URL is not defined in .env! Check your EXPO_PUBLIC_API_URL variable.");
+}
 
 export const getMyStudents = async (token: string): Promise<Student[]> => {
     // 1. Fetch data from backend

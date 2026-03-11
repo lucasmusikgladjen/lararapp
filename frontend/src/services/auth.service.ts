@@ -1,18 +1,11 @@
 import axios from "axios";
 import { CreateTeacherData, LoginResponse, RegisterResponse, UpdateProfilePayload, User } from "../types/auth.types";
 
-// ⚙️ API Configuration
-// For iOS Simulator: "http://localhost:3000/api"
-// For Android Emulator: "http://10.0.2.2:3000/api"
-// For Physical Device: Use your computer's IP, "http://192.168.1.X:3000/api"
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-//const API_URL = "http://localhost:3000/api";
-
-// FOR DEMOS | MUSIKGLÄDJEN OFFICE
-//const API_URL = "http://192.168.20.20:3000/api";
-
-// MY HOME (Malmö)
-const API_URL = "http://192.168.50.206:3000/api";
+if (!API_URL) {
+    console.warn("⚠️ API_URL is not defined in .env! Check your EXPO_PUBLIC_API_URL variable.");
+}
 
 export const authService = {
     // Sends login credentials to the backend. Returns the access token and user data if successful.

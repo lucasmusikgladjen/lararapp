@@ -10,8 +10,11 @@ import {
     RescheduleLessonPayload,
 } from "../types/lesson.types";
 
-const API_URL = "http://localhost:3000/api";
-// För demo: const API_URL = "http://192.168.20.20:3000/api";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+if (!API_URL) {
+    console.warn("⚠️ API_URL is not defined in .env! Check your EXPO_PUBLIC_API_URL variable.");
+}
 
 export const adjustFutureLessons = async (token: string, studentId: string, payload: AdjustLessonPayload): Promise<AdjustLessonResponse> => {
     const response = await axios.patch<AdjustLessonResponse>(`${API_URL}/lessons/adjust/${studentId}`, payload, {
