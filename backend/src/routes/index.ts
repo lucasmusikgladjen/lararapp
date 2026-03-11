@@ -62,10 +62,10 @@ router.use("/lessons", validateAccessToken, lessonRoutes);
 
 // ---------- NOTIFICATION ROUTES ----------
 /**
- * Routes for fetching and resolving notifications.
- * Protected by authentication.
+ * Routes for fetching and resolving notifications, plus the Airtable Webhook.
+ * Auth is handled individually inside the router file.
  */
-router.use("/notifications", validateAccessToken, notificationRoutes);
+router.use("/notifications", notificationRoutes);
 
 
 /**

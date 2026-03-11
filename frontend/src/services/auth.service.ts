@@ -5,10 +5,14 @@ import { CreateTeacherData, LoginResponse, RegisterResponse, UpdateProfilePayloa
 // For iOS Simulator: "http://localhost:3000/api"
 // For Android Emulator: "http://10.0.2.2:3000/api"
 // For Physical Device: Use your computer's IP, "http://192.168.1.X:3000/api"
-const API_URL = "http://localhost:3000/api";
 
-// FOR DEMOS
+//const API_URL = "http://localhost:3000/api";
+
+// FOR DEMOS | MUSIKGLÄDJEN OFFICE
 //const API_URL = "http://192.168.20.20:3000/api";
+
+// MY HOME (Malmö)
+const API_URL = "http://192.168.50.206:3000/api";
 
 export const authService = {
     // Sends login credentials to the backend. Returns the access token and user data if successful.
@@ -42,5 +46,17 @@ export const authService = {
             },
         });
         return response.data.data;
+    },
+
+    // Register Push Token
+    registerPushToken: async (token: string, pushToken: string): Promise<{ status: string; message: string }> => {
+        const response = await axios.post<{ status: string; message: string }>(
+            `${API_URL}/profile/push-token`,
+            { pushToken },
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            },
+        );
+        return response.data;
     },
 };

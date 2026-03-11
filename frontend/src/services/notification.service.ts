@@ -1,9 +1,12 @@
 import axios from "axios";
 import { NotificationApiResponse, NotificationDTO } from "../types/notification.types";
 
-const API_URL = "http://localhost:3000/api";
+// const API_URL = "http://localhost:3000/api";
 // const API_URL = "http://10.0.2.2:3000/api"; // For Android
-// const API_URL = "http://192.168.20.20:3000/api"; // For Demos
+
+
+// MY HOME (Malmö)
+const API_URL = "http://192.168.50.206:3000/api";
 
 /**
  * Hämtar alla aktiva notiser för inloggad lärare.

@@ -168,7 +168,13 @@
     - Kopplat allt till `useLessonMutation` för omedelbar cache-invalidering och UI-uppdatering.
     - Korrigerat `student.types.ts` och backend-mappning för att skicka ner faktiska `lessonIds` från Airtable (Linked Records) istället för frontend-genererade ID:n, vilket möjliggör korrekta API-anrop.
 
+- [x] **Push-notifikationer & Webhook Integration:**
+    - **Frontend:** Konfigurerat `expo-notifications` och `expo-device`. Initierat EAS-projekt för att säkra ett `projectId`. Implementerat logik i `_layout.tsx` som vid inloggning ber om OS-behörighet, hämtar Push Token och skickar det tyst till backend.
+    - **Backend (Token-lagring):** Adderat `PushToken` till typningarna och skapat `POST /api/profile/push-token` för att spara enhetens unika adress i Airtable ("Lärare"-tabellen).
+    - **Backend (Webhook):** Byggt `POST /api/notifications/push-webhook` med `expo-server-sdk`. Validerar inkommande triggers via en statisk `x-webhook-secret` (frikopplad från JWT) och pushar meddelanden till Apple/Google.
+    - **Airtable Automation:** Etablerat en Automation med villkoret `Status is active`. Konfigurerat "Run a script" för att skicka Record ID, titel och meddelande via POST till webhooken. Använt `localtunnel` med `Bypass-Tunnel-Reminder` header för att testa och bekräfta live-funktionalitet från databas till mobiltelefonens låsskärm.
+
 ## Pågående 🚧
 
 ## Kommande 📅
-- [ ] Push-notifikationer
+*(Listan är för närvarande tom. Dags att planera nästa stora funktion!)*
