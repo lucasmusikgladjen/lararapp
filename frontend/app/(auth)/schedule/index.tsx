@@ -11,7 +11,7 @@ import { Alert, ActivityIndicator } from "react-native";
 import { useAdjustLessons, useCreateLessons, useDeleteFutureLessons } from "../../../src/hooks/useLessonMutation";
 import { useAuthStore } from "../../../src/store/authStore";
 import { DatePickerField } from "../../../src/components/ui/DatePickerField";
-import { PageHeader } from "../../../src/components/ui/DashboardHeader";
+import { PageHeader } from "../../../src/components/ui/PageHeader";
 
 type ScheduleTab = "justera" | "skapa" | "avsluta";
 

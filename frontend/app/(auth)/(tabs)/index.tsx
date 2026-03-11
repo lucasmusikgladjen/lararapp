@@ -2,7 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import React, { useMemo, useState, useCallback } from "react";
 import { ActivityIndicator, ScrollView, Text, View, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PageHeader } from "../../../src/components/ui/DashboardHeader";
+import { PageHeader } from "../../../src/components/ui/PageHeader";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
 import { SchemaToggle, ToggleOption } from "../../../src/components/dashboard/SchemaToggle";

@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PageHeader } from "../../../src/components/ui/DashboardHeader";
+import { PageHeader } from "../../../src/components/ui/PageHeader"; 
 import { authService } from "../../../src/services/auth.service";
 import { useAuthStore } from "../../../src/store/authStore";
 import { UpdateProfilePayload } from "../../../src/types/auth.types";
@@ -174,7 +174,10 @@ export default function SettingsPage() {
 
                 {/* Logout Button */}
                 <View className="mb-4">
-                    <TouchableOpacity onPress={handleLogout} className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100" >
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100"
+                    >
                         <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
                         <Text className="text-red-500 font-bold text-base">Logga ut</Text>
                     </TouchableOpacity>

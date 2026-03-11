@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useStudents } from "../../../src/hooks/useStudents";
 import { StudentCard } from "../../../src/components/students/StudentCard";
-import { PageHeader } from "../../../src/components/ui/DashboardHeader";
+import { PageHeader } from "../../../src/components/ui/PageHeader";
 import { ScheduleEntryCard } from "../../../src/components/dashboard/ScheduleEntryCard"; // LÄGG TILL IMPORTEN
 
 export default function StudentsPage() {

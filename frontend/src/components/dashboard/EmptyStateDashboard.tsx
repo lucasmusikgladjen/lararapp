@@ -4,7 +4,7 @@ import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../store/authStore";
-import { PageHeader } from "../ui/DashboardHeader";
+import { PageHeader } from "../ui/PageHeader";
 
 export const EmptyStateDashboard = () => {
     const user = useAuthStore((state) => state.user);

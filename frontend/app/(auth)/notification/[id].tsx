@@ -4,7 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, ActivityInd
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNotifications, useResolveNotification } from "../../../src/hooks/useNotifications";
-import { PageHeader } from "../../../src/components/ui/DashboardHeader";
+import { PageHeader } from "../../../src/components/ui/PageHeader";
 
 export default function NotificationActionPage() {
     const { id } = useLocalSearchParams<{ id: string }>();
