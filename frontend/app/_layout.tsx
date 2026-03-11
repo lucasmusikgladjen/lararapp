@@ -4,12 +4,15 @@ import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Slot, useRouter, useSegments } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { ActivityIndicator, Platform, View } from "react-native";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
 import { authService } from "../src/services/auth.service";
 import { useAuthStore } from "../src/store/authStore";
+
+SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
@@ -107,21 +110,30 @@ function useProtectedRoute() {
 export default function RootLayout() {
     const { isLoading, loadUser, token: authToken } = useAuthStore();
 
-    // 1. Load the user from secure storage
+    // 1. Load user from storage on mount
     useEffect(() => {
         loadUser();
     }, []);
 
-    // 2. Handle Authentication Routing
+    // 2. Handle protected routing logic
     useProtectedRoute();
 
-    // 3. Setup Push Notifications when authenticated
+    // 3. Robust Splash Screen Hiding
     useEffect(() => {
-        // Only attempt to get a push token if the user is fully logged in
+        const hideSplash = async () => {
+            if (!isLoading) {
+                // The splash screen from assets/splash.png stays visible until this line is executed.
+                await SplashScreen.hideAsync();
+            }
+        };
+        hideSplash();
+    }, [isLoading]);
+
+    // 4. Register Push Notifications
+    useEffect(() => {
         if (authToken && !isLoading) {
             registerForPushNotificationsAsync().then((pushToken) => {
                 if (pushToken) {
-                    // Send it to your backend
                     authService
                         .registerPushToken(authToken, pushToken)
                         .then(() => console.log("Successfully saved Push Token to backend"))
@@ -129,15 +141,7 @@ export default function RootLayout() {
                 }
             });
         }
-    }, [authToken, isLoading]); // Re-run if auth token changes (ex: they log in)
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <ActivityIndicator size="large" color="#F97316" />
-            </View>
-        );
-    }
+    }, [authToken, isLoading]);
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
