@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useRouter } from "expo-router";
+import { router, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TabToggle, TabOption } from "../../../src/components/ui/TabToggle";
 import { SelectField, SelectOption } from "../../../src/components/ui/SelectField";
@@ -89,6 +89,19 @@ export default function SchedulePage() {
     // --- State för AVSLUTA ---
     const [deleteStudent, setDeleteStudent] = useState("");
     const [understandDeletion, setUnderstandDeletion] = useState(false);
+
+    // Retrieve navigation parameters to allow deep-linking to specific actions
+    const params = useLocalSearchParams<{ action?: string; studentId?: string }>();
+
+    useEffect(() => {
+        if (params.action === "skapa") {
+            setActiveTab("skapa");
+        }
+
+        if (params.studentId) {
+            setCreateStudent(params.studentId);
+        }
+    }, [params.action, params.studentId]);
 
     const tabs: TabOption<ScheduleTab>[] = [
         { label: "Justera", value: "justera" },

@@ -202,7 +202,13 @@ export default function StudentProfile() {
     };
 
     const handleBookLesson = () => {
-        Alert.alert("Boka lektion", "Denna funktion kommer snart.");
+        router.push({
+            pathname: "/(auth)/schedule",
+            params: {
+                action: "skapa",
+                studentId: id,
+            },
+        });
     };
 
     if (isLoading) {
@@ -243,7 +249,7 @@ export default function StudentProfile() {
             {/* Header */}
 
             <View className="px-5">
-                <PageHeader title="Inställningar" />
+                <PageHeader title="Elev" />
             </View>
 
             {/* Back Button */}
