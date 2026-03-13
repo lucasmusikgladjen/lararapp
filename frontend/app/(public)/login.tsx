@@ -83,7 +83,7 @@ export default function LoginScreen() {
                                     }}
                                     render={({ field: { onChange, onBlur, value } }) => (
                                         <TextInput
-                                            className={`bg-white px-4 py-3 rounded-xl border ${
+                                            className={`bg-white px-4 h-[52px] rounded-xl border ${
                                                 errors.email ? "border-red-500" : "border-slate-200"
                                             } text-slate-800 text-base`}
                                             placeholder="namn@email.com"
@@ -108,16 +108,15 @@ export default function LoginScreen() {
                                     name="password"
                                     rules={{ required: "Lösenord krävs" }}
                                     render={({ field: { onChange, onBlur, value } }) => (
-                                        // --- NEW: Wrapper View for relative positioning ---
                                         <View className="relative justify-center">
                                             <TextInput
-                                                // Note the added 'pr-12' to give space for the icon
-                                                className={`bg-white pl-4 pr-12 py-3 rounded-xl border ${
+                                                // CHANGED: Replaced 'py-3' with 'h-[52px]'
+                                                className={`bg-white pl-4 pr-12 h-[52px] rounded-xl border ${
                                                     errors.password ? "border-red-500" : "border-slate-200"
                                                 } text-slate-800 text-base`}
                                                 placeholder="Lösenord"
                                                 placeholderTextColor="#94a3b8"
-                                                secureTextEntry={!showPassword} // Toggles based on state
+                                                secureTextEntry={!showPassword}
                                                 onBlur={onBlur}
                                                 onChangeText={onChange}
                                                 value={value}
