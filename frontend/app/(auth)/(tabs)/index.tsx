@@ -88,8 +88,13 @@ export default function Dashboard() {
                 <PageHeader title="Dashboard" />
 
                 {/* --- VÄLKOMSTBOX --- */}
-                <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-6 items-center">
+                {/*  <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-6 items-center">
                     <Text className="text-lg font-semibold text-slate-800">Välkommen tillbaka, {firstName}!</Text>
+                </View> */}
+
+                {/* TEST */}
+                <View className="py-4 px-6 mb-3 items-center">
+                    <Text className="text-3xl font-bold text-slate-800">Hej, {firstName}!</Text>
                 </View>
 
                 {/* --- NOTIFICATION STACK --- */}

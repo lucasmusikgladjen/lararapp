@@ -19,7 +19,7 @@ export const TimePickerField = ({ label, placeholder, value, onSelect }: TimePic
         dateValue.setHours(parseInt(hours, 10));
         dateValue.setMinutes(parseInt(minutes, 10));
     } else {
-        dateValue.setHours(15, 0, 0, 0); 
+        dateValue.setHours(15, 0, 0, 0);
     }
 
     const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -43,9 +43,7 @@ export const TimePickerField = ({ label, placeholder, value, onSelect }: TimePic
                 onPress={() => setShowPicker(true)}
                 className="flex-row items-center justify-between bg-white border border-slate-300 px-4 py-3.5 rounded-xl"
             >
-                <Text className={`text-[16px] ${value ? "text-slate-900" : "text-slate-500"}`}>
-                    {value || placeholder}
-                </Text>
+                <Text className={`text-[16px] ${value ? "text-slate-900" : "text-slate-500"}`}>{value || placeholder}</Text>
                 <Ionicons name="time-outline" size={20} color="#64748b" />
             </TouchableOpacity>
 
@@ -59,14 +57,11 @@ export const TimePickerField = ({ label, placeholder, value, onSelect }: TimePic
                                 <View className="bg-white rounded-t-3xl pb-10 shadow-lg shadow-black/20 border-t border-slate-100">
                                     <View className="flex-row justify-between items-center p-4 border-b border-slate-100">
                                         <Text className="text-lg font-bold text-slate-900 ml-2">Välj {label.toLowerCase()}</Text>
-                                        <TouchableOpacity 
-                                            onPress={() => setShowPicker(false)}
-                                            className="bg-brand-green px-4 py-2 rounded-full"
-                                        >
+                                        <TouchableOpacity onPress={() => setShowPicker(false)} className="bg-brand-green px-4 py-2 rounded-full">
                                             <Text className="text-white font-bold">Klar</Text>
                                         </TouchableOpacity>
                                     </View>
-                                    
+
                                     <View className="py-4 justify-center items-center">
                                         <DateTimePicker
                                             value={dateValue}
@@ -76,6 +71,7 @@ export const TimePickerField = ({ label, placeholder, value, onSelect }: TimePic
                                             onChange={onChange}
                                             locale="sv-SE"
                                             textColor="#0f172a"
+                                            themeVariant="light"
                                         />
                                     </View>
                                 </View>
@@ -85,14 +81,7 @@ export const TimePickerField = ({ label, placeholder, value, onSelect }: TimePic
                 </Modal>
             ) : (
                 showPicker && (
-                    <DateTimePicker
-                        value={dateValue}
-                        mode="time"
-                        display="spinner"
-                        is24Hour={true}
-                        minuteInterval={5}
-                        onChange={onChange}
-                    />
+                    <DateTimePicker value={dateValue} mode="time" display="spinner" is24Hour={true} minuteInterval={5} onChange={onChange} />
                 )
             )}
         </View>

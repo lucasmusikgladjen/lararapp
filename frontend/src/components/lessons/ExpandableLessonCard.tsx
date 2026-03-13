@@ -48,7 +48,7 @@ export const ExpandableLessonCard = ({ lesson, onMarkCompleted, onReschedule, on
                 {/* Date Column */}
                 <View className="w-16 items-center">
                     <Text className="text-3xl font-bold text-brand-orange">{day}</Text>
-                    <Text className="text-xs text-gray-600">{month}</Text>
+                    <Text className="text-sm text-gray-600">{month}</Text>
                 </View>
 
                 {/* Divider Line */}

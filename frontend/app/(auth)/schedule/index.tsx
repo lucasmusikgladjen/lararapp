@@ -132,7 +132,7 @@ export default function SchedulePage() {
         });
     };
 
-    // LÄGG TILL CREATE HOOK
+    // CREATE HOOK
     const { mutate: createLessonMutation, isPending: isCreating } = useCreateLessons({
         onSuccess: () => {
             Alert.alert("Klart!", "Lektionerna har skapats framgångsrikt.");
@@ -162,7 +162,7 @@ export default function SchedulePage() {
         });
     };
 
-    // LÄGG TILL DELETE HOOK
+    // DELETE HOOK
     const { mutate: deleteLessonsMutation, isPending: isDeleting } = useDeleteFutureLessons({
         onSuccess: () => {
             Alert.alert("Klart!", "De framtida lektionerna har raderats.");

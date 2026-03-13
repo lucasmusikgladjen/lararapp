@@ -1,5 +1,4 @@
-import React from "react";
-import { ActivityIndicator, Dimensions, View } from "react-native";
+import { ActivityIndicator, Dimensions, Text, View } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 import { router } from "expo-router";
 import Animated, { interpolate, SharedValue, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
@@ -8,7 +7,6 @@ import { NotificationCard } from "./NotificationCard";
 
 const { width } = Dimensions.get("window");
 
-// 2. Skapa en ny underkomponent som lever HELT på UI-tråden
 const PaginationDot = ({ index, progress, total }: { index: number; progress: SharedValue<number>; total: number }) => {
     const animatedStyle = useAnimatedStyle(() => {
         let activeIndex = Math.round(progress.value) % total;
@@ -31,25 +29,29 @@ export const NotificationStack = () => {
     const progress = useSharedValue(0);
 
     const CARD_HEIGHT = 90;
-    const CONTAINER_HEIGHT = 160;
 
     if (isLoading) {
         return (
-            <View className="w-full mt-3 mb-4 items-center justify-center" style={{ height: CONTAINER_HEIGHT }}>
+            <View className="w-full mt-3 mb-6 items-center justify-center" style={{ height: 160 }}>
                 <ActivityIndicator size="small" color="#F97316" />
             </View>
         );
     }
 
+    // If 0 notifications, return null (Title and cards disappear completely)
     if (!notifications || notifications.length === 0) {
         return null;
     }
 
+    // FIX 1: Added Title to the Single Notification View
     if (notifications.length === 1) {
         return (
-            <View className="w-full mt-3 mb-6 items-center">
-                <View style={{ height: CARD_HEIGHT, width: width - 40 }}>
-                    <NotificationCard item={notifications[0]} onPress={() => router.push(`/(auth)/notification/${notifications[0].id}`)} />
+            <View className="w-full mt-3 mb-6">
+                <Text className="text-xl font-bold text-slate-900 mb-3">Notifikationer</Text>
+                <View className="w-full items-center">
+                    <View style={{ height: CARD_HEIGHT, width: width - 40 }}>
+                        <NotificationCard item={notifications[0]} onPress={() => router.push(`/(auth)/notification/${notifications[0].id}`)} />
+                    </View>
                 </View>
             </View>
         );
@@ -58,7 +60,9 @@ export const NotificationStack = () => {
     const shouldLoop = notifications.length >= 4;
 
     return (
-        <View className="w-full mt-3 mb-4" style={{ height: CONTAINER_HEIGHT }}>
+        <View className="w-full mt-3 mb-6">
+            <Text className="text-xl font-bold text-slate-900 mb-3">Notifikationer</Text>
+
             <View className="w-full overflow-hidden" style={{ height: 135 }}>
                 <Carousel
                     key={`carousel-${notifications.length}`}

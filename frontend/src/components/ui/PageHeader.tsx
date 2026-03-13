@@ -8,7 +8,7 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title }: PageHeaderProps) => {
     return (
-        <View className="flex-row items-center justify-between py-3 mb-1">
+        <View className="flex-row items-center justify-between py-3 mb-2">
             {/* Vinyl Record Logo */}
             <Image source={require("../../../assets/vinyl.png")} className="w-10 h-10 rounded-full" resizeMode="contain" />
 
@@ -16,7 +16,7 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
 
             {/* Notification Bell */}
             <View className="w-10 h-10 items-center justify-center">
-                <Ionicons name="notifications-outline" size={24} color="#1E293B" />
+                <Ionicons name="help-circle" size={34} color="#1E293B" />
             </View>
         </View>
     );

@@ -65,7 +65,9 @@ export const DatePickerField = ({ label, placeholder, value, onSelect }: DatePic
                     </TouchableWithoutFeedback>
                 </Modal>
             ) : (
-                showPicker && <DateTimePicker value={dateValue} mode="date" display="default" onChange={onChange} />
+                showPicker && (
+                    <DateTimePicker value={dateValue} mode="date" display="inline" onChange={onChange} locale="sv-SE" themeVariant="light" />
+                )
             )}
         </View>
     );

@@ -4,6 +4,7 @@
     "slug": "musikgladjen",
     "version": "1.0.0",
     "icon": "./assets/vinyl.png",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
