@@ -249,7 +249,7 @@ export default function StudentProfile() {
             {/* Header */}
 
             <View className="px-5">
-                <PageHeader title="Elev" />
+                <PageHeader />
             </View>
 
             {/* Back Button */}

@@ -60,7 +60,7 @@ export default function NotificationActionPage() {
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
             {/* --- PREMIUM HEADER / BACK BUTTON --- */}
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-                <PageHeader title="Notifikation" />
+                <PageHeader />
 
                 <View className="px-1 py-2 mb-2 flex-row items-center">
                     <TouchableOpacity

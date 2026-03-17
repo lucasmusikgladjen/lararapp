@@ -74,7 +74,7 @@ export default function Dashboard() {
             <ScrollView
                 className="flex-1 px-5"
                 showsVerticalScrollIndicator={false}
-                // 6. Lägg till RefreshControl på ScrollView
+                // Lägg till RefreshControl på ScrollView
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -85,14 +85,9 @@ export default function Dashboard() {
                 }
             >
                 {/* --- HEADER --- */}
-                <PageHeader title="Dashboard" />
+                <PageHeader />
 
-                {/* --- VÄLKOMSTBOX --- */}
-                {/*  <View className="bg-white rounded-2xl py-4 px-6 shadow-sm mb-6 items-center">
-                    <Text className="text-lg font-semibold text-slate-800">Välkommen tillbaka, {firstName}!</Text>
-                </View> */}
-
-                {/* TEST */}
+                {/* --- VÄLKOMSTEXT --- */}
                 <View className="py-4 px-6 mb-3 items-center">
                     <Text className="text-3xl font-bold text-slate-800">Hej, {firstName}!</Text>
                 </View>

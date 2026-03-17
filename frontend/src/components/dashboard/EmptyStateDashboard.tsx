@@ -23,7 +23,7 @@ export const EmptyStateDashboard = () => {
         <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
                 {/* --- HEADER --- */}
-                <PageHeader title="Dashboard" />
+                <PageHeader />
 
                 {/* --- VÄLKOMMEN --- */}
                 <View className="mb-6 mt-2 items-center flex-row justify-center">

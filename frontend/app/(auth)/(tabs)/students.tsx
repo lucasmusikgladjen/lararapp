@@ -36,7 +36,7 @@ export default function StudentsPage() {
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
             <View className="flex-1 px-5">
-                <PageHeader title="Elever" />
+                <PageHeader />
 
                 <FlatList
                     data={students}

@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PageHeader } from "../../../src/components/ui/PageHeader"; 
+import { PageHeader } from "../../../src/components/ui/PageHeader";
 import { authService } from "../../../src/services/auth.service";
 import { useAuthStore } from "../../../src/store/authStore";
 import { UpdateProfilePayload } from "../../../src/types/auth.types";
@@ -114,14 +114,31 @@ export default function SettingsPage() {
         }
     };
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <View className="flex-1 items-center justify-center bg-brand-bg px-5">
+                <Text className="text-gray-500 mb-6">Laddar inställningar...</Text>
+
+                {/* NÖDKNAPP FÖR ATT RENSA KORRUPT STATE I SIMULATORN */}
+                <TouchableOpacity
+                    onPress={async () => {
+                        await logout();
+                        router.replace("/(public)/login");
+                    }}
+                    className="bg-red-500 px-6 py-3 rounded-2xl shadow-sm"
+                >
+                    <Text className="text-white font-bold">Tvinga utloggning</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     const avatarUrl = user.profileImageUrl || `https://api.dicebear.com/7.x/avataaars/png?seed=${user.id}`;
 
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
             <View className="px-5">
-                <PageHeader title="Inställningar" />
+                <PageHeader />
             </View>
 
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>

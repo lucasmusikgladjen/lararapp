@@ -1,17 +1,16 @@
-import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { TabToggle, TabOption } from "../../../src/components/ui/TabToggle";
-import { SelectField, SelectOption } from "../../../src/components/ui/SelectField";
-import { useStudents } from "../../../src/hooks/useStudents";
-import { TimePickerField } from "../../../src/components/ui/TimePickerField";
-import { Alert, ActivityIndicator } from "react-native";
-import { useAdjustLessons, useCreateLessons, useDeleteFutureLessons } from "../../../src/hooks/useLessonMutation";
-import { useAuthStore } from "../../../src/store/authStore";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { DatePickerField } from "../../../src/components/ui/DatePickerField";
 import { PageHeader } from "../../../src/components/ui/PageHeader";
+import { SelectField, SelectOption } from "../../../src/components/ui/SelectField";
+import { TabOption, TabToggle } from "../../../src/components/ui/TabToggle";
+import { TimePickerField } from "../../../src/components/ui/TimePickerField";
+import { useAdjustLessons, useCreateLessons, useDeleteFutureLessons } from "../../../src/hooks/useLessonMutation";
+import { useStudents } from "../../../src/hooks/useStudents";
+import { useAuthStore } from "../../../src/store/authStore";
 
 type ScheduleTab = "justera" | "skapa" | "avsluta";
 
@@ -218,7 +217,7 @@ export default function SchedulePage() {
     return (
         <SafeAreaView className="flex-1 bg-brand-bg">
             <View className="px-5 pt-2 flex-1">
-                <PageHeader title="Lektioner" />
+                <PageHeader />
 
                 {/* Sub-header & Tab Toggle */}
                 <Text className="text-lg font-bold text-slate-900 mb-4">Hantera lektionsschema</Text>
