@@ -1,36 +1,110 @@
 import { router, useFocusEffect } from "expo-router";
-import React, { useMemo, useState, useCallback } from "react";
-import { ActivityIndicator, ScrollView, Text, View, RefreshControl } from "react-native";
+import { useCallback, useMemo, useState, useRef } from "react";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PageHeader } from "../../../src/components/ui/PageHeader";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
+import { NotificationStack } from "../../../src/components/dashboard/NotificationStack";
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
 import { SchemaToggle, ToggleOption } from "../../../src/components/dashboard/SchemaToggle";
-import { NextLessonCard } from "../../../src/components/lessons/NextLessonCard";
+import { PageHeader } from "../../../src/components/ui/PageHeader";
+import { useNotifications } from "../../../src/hooks/useNotifications";
 import { useStudents } from "../../../src/hooks/useStudents";
 import { useAuthStore } from "../../../src/store/authStore";
-import { findNextLesson, getAllLessonEvents } from "../../../src/utils/lessonHelpers";
-import { NotificationStack } from "../../../src/components/dashboard/NotificationStack";
-import { useNotifications } from "../../../src/hooks/useNotifications";
+import { getAllLessonEvents } from "../../../src/utils/lessonHelpers";
+
+import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
+import { CompleteLessonSheet } from "../../../src/components/lessons/actions/CompleteLessonSheet";
+import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/RescheduleLessonSheet";
+import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 
 export default function Dashboard() {
     const user = useAuthStore((state) => state.user);
-
     const { data: students, isLoading: isStudentsLoading, error, refetch: refetchStudents } = useStudents();
     const { refetch: refetchNotifications } = useNotifications();
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
     const [refreshing, setRefreshing] = useState(false);
 
-    // Funktion som körs när användaren "drar ner" skärmen
+    // --- MODAL STATE ---
+    const completeSheetRef = useRef<BottomSheetModal>(null);
+    const rescheduleSheetRef = useRef<BottomSheetModal>(null);
+    const cancelSheetRef = useRef<BottomSheetModal>(null);
+    const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+    const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+
+    // --- MUTATIONS ---
+    const completeMutation = useCompleteLesson({
+        studentId: selectedStudentId || "",
+        onSuccess: () => {
+            completeSheetRef.current?.dismiss();
+            setSelectedLessonId(null);
+            refetchStudents();
+            Alert.alert("Klart!", "Lektionen har markerats som genomförd.");
+        },
+    });
+
+    const rescheduleMutation = useRescheduleLesson({
+        studentId: selectedStudentId || "",
+        onSuccess: () => {
+            rescheduleSheetRef.current?.dismiss();
+            setSelectedLessonId(null);
+            refetchStudents();
+            Alert.alert("Klart!", "Lektionen har bokats om.");
+        },
+    });
+
+    const cancelMutation = useCancelLesson({
+        studentId: selectedStudentId || "",
+        onSuccess: () => {
+            cancelSheetRef.current?.dismiss();
+            setSelectedLessonId(null);
+            refetchStudents();
+            Alert.alert("Klart!", "Lektionen har ställts in.");
+        },
+    });
+
+    // --- HANDLERS FÖR ATT ÖPPNA MODALER ---
+    const handleMarkCompleted = (lessonId: string, studentId: string) => {
+        setSelectedLessonId(lessonId);
+        setSelectedStudentId(studentId);
+        setTimeout(() => completeSheetRef.current?.present(), 10);
+    };
+
+    const handleReschedule = (lessonId: string, studentId: string) => {
+        setSelectedLessonId(lessonId);
+        setSelectedStudentId(studentId);
+        setTimeout(() => rescheduleSheetRef.current?.present(), 10);
+    };
+
+    const handleCancel = (lessonId: string, studentId: string) => {
+        setSelectedLessonId(lessonId);
+        setSelectedStudentId(studentId);
+        setTimeout(() => cancelSheetRef.current?.present(), 10);
+    };
+
+    // --- HANDLERS FÖR ATT BEKRÄFTA INUTI MODALER ---
+    const handleConfirmComplete = (notes: string, homework: string) => {
+        if (!selectedLessonId) return;
+        completeMutation.mutate({ lessonId: selectedLessonId, payload: { notes, homework } });
+    };
+
+    const handleConfirmReschedule = (newDate: string, newTime: string, reason: string) => {
+        if (!selectedLessonId) return;
+        rescheduleMutation.mutate({ lessonId: selectedLessonId, payload: { newDate, newTime, reason } });
+    };
+
+    const handleConfirmCancel = (cancelledBy: "Läraren" | "Vårdnadshavaren", reason: string) => {
+        if (!selectedLessonId) return;
+        cancelMutation.mutate({ lessonId: selectedLessonId, payload: { cancelledBy, reason } });
+    };
+
+    // --- DATA FETCHING ---
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        // Hämta både nya notiser och uppdaterade elever parallellt
         await Promise.all([refetchStudents(), refetchNotifications()]);
         setRefreshing(false);
     }, [refetchStudents, refetchNotifications]);
 
-    // AUTO-REFRESH (Refetch on Focus)
-    // Körs tyst i bakgrunden VARJE gång skärmen blir aktiv/synlig (när man tex byter till denna tab)
     useFocusEffect(
         useCallback(() => {
             refetchStudents();
@@ -38,28 +112,30 @@ export default function Dashboard() {
         }, [refetchStudents, refetchNotifications]),
     );
 
-    const nextLesson = useMemo(() => {
-        if (!students) return null;
-        return findNextLesson(students);
-    }, [students]);
-
     const allLessons = useMemo(() => {
         if (!students) return [];
         return getAllLessonEvents(students);
     }, [students]);
 
+    // FILTRERA FÖRSENADE LEKTIONER
+    const delayedLessons = useMemo(() => {
+        return allLessons.filter((l) => l.daysLeft < 0 && !l.isCompleted).sort((a, b) => a.date.localeCompare(b.date));
+    }, [allLessons]);
+
+    // FILTRERA SCHEMAT (Kommande vs Senaste)
     const scheduleLessons = useMemo(() => {
         if (activeTab === "kommande") {
             return allLessons.filter((l) => l.daysLeft >= 0).sort((a, b) => a.date.localeCompare(b.date));
         }
-        return allLessons.filter((l) => l.daysLeft < 0).sort((a, b) => b.date.localeCompare(a.date));
+
+        return allLessons.filter((l) => l.daysLeft < 0 && l.isCompleted).sort((a, b) => b.date.localeCompare(a.date));
     }, [allLessons, activeTab]);
 
     const firstName = user?.name ? user.name.split(" ")[0] : "No Name";
 
     if (isStudentsLoading) {
         return (
-            <SafeAreaView className="flex-1 bg-brand-bg items-center justify-center">
+            <SafeAreaView className="flex-1 items-center justify-center">
                 <ActivityIndicator size="large" color="#F97316" />
             </SafeAreaView>
         );
@@ -70,59 +146,60 @@ export default function Dashboard() {
     }
 
     return (
-        <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
+        <SafeAreaView edges={["top"]} className="flex-1">
             <ScrollView
                 className="flex-1 px-5"
                 showsVerticalScrollIndicator={false}
-                // Lägg till RefreshControl på ScrollView
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        tintColor="#F97316" // Orange laddnings-spinner (iOS)
-                        colors={["#F97316"]} // Orange laddnings-spinner (Android)
-                    />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" colors={["#F97316"]} />}
             >
-                {/* --- HEADER --- */}
                 <PageHeader />
 
-                {/* --- VÄLKOMSTEXT --- */}
                 <View className="py-4 px-6 mb-3 items-center">
                     <Text className="text-3xl font-bold text-slate-800">Hej, {firstName}!</Text>
                 </View>
 
-                {/* --- NOTIFICATION STACK --- */}
                 <NotificationStack />
 
-                <View className="mb-6">
-                    <Text className="text-xl font-bold text-slate-900 mb-3">Nästa lektion</Text>
-
-                    {nextLesson ? (
-                        <NextLessonCard lesson={nextLesson} onPress={() => router.push(`/(auth)/student/${nextLesson.student.id}`)} />
-                    ) : (
-                        <View className="bg-white rounded-3xl p-6 shadow-sm items-center border border-gray-100">
-                            <Text className="text-gray-400 text-base">Inga inbokade lektioner just nu</Text>
+                {/* --- FÖRSENADE LEKTIONER (Visas mellan notiser och schemat) --- */}
+                {delayedLessons.length > 0 && (
+                    <View className="mb-6 mt-2">
+                        <View className="bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden">
+                            {delayedLessons.map((lesson, index) => (
+                                <ScheduleCard
+                                    key={`delayed-${lesson.student.id}-${lesson.date}-${index}`}
+                                    lesson={lesson}
+                                    onPress={() => {}} // Behövs inte då den alltid fälls ut
+                                    isLast={index === delayedLessons.length - 1}
+                                    isKommande={false}
+                                    isDelayed={true} // Tvingar fram röda badgen
+                                    onMarkCompleted={handleMarkCompleted}
+                                    onReschedule={handleReschedule}
+                                    onCancel={handleCancel}
+                                />
+                            ))}
                         </View>
-                    )}
-                </View>
+                    </View>
+                )}
 
+                {/* --- VANLIGA SCHEMAT --- */}
                 <View className="mb-6">
-                    <Text className="text-xl font-bold text-slate-900 mb-3">Ditt schema</Text>
-
                     <SchemaToggle activeTab={activeTab} onToggle={setActiveTab} />
 
                     {error && <Text className="text-red-500 text-center mt-4">Kunde inte hämta schema.</Text>}
 
                     {!error && (
-                        <View className="bg-white rounded-3xl shadow-sm border border-gray-100">
+                        <View className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                             {scheduleLessons.length > 0 ? (
                                 scheduleLessons.map((lesson, index) => (
                                     <ScheduleCard
-                                        key={`${lesson.student.id}-${lesson.date}-${lesson.time}-${index}`}
+                                        key={`regular-${lesson.student.id}-${lesson.date}-${index}`}
                                         lesson={lesson}
                                         onPress={() => router.push(`/(auth)/student/${lesson.student.id}`)}
                                         isLast={index === scheduleLessons.length - 1}
+                                        isKommande={activeTab === "kommande"}
+                                        onMarkCompleted={handleMarkCompleted}
+                                        onReschedule={handleReschedule}
+                                        onCancel={handleCancel}
                                     />
                                 ))
                             ) : (
@@ -136,6 +213,28 @@ export default function Dashboard() {
                     )}
                 </View>
             </ScrollView>
+
+            {/* ========== MODALER (Dolda tills de anropas) ========== */}
+            <CompleteLessonSheet
+                ref={completeSheetRef}
+                onClose={() => completeSheetRef.current?.dismiss()}
+                onConfirm={handleConfirmComplete}
+                isPending={completeMutation.isPending}
+            />
+
+            <RescheduleLessonSheet
+                ref={rescheduleSheetRef}
+                onClose={() => rescheduleSheetRef.current?.dismiss()}
+                onConfirm={handleConfirmReschedule}
+                isPending={rescheduleMutation.isPending}
+            />
+
+            <CancelLessonSheet
+                ref={cancelSheetRef}
+                onClose={() => cancelSheetRef.current?.dismiss()}
+                onConfirm={handleConfirmCancel}
+                isPending={cancelMutation.isPending}
+            />
         </SafeAreaView>
     );
 }

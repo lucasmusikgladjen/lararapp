@@ -245,9 +245,8 @@ export default function StudentProfile() {
     );
 
     return (
-        <View className="flex-1 bg-brand-bg" style={{ paddingTop: insets.top }}>
+        <View className="flex-1" style={{ paddingTop: insets.top }}>
             {/* Header */}
-
             <View className="px-5">
                 <PageHeader />
             </View>
@@ -294,101 +293,97 @@ export default function StudentProfile() {
                     />
                 </View>
 
-                {/* Content based on main tab */}
-                {mainTab === "oversikt" ? (
-                    <View className="px-5">
-                        {/* Kommande Section */}
-                        <Text className="text-base font-bold text-slate-900 mb-3">Kommande</Text>
+                {/* === VY 1: ÖVERSIKT === */}
+                <View style={{ display: mainTab === "oversikt" ? "flex" : "none" }} className="px-5">
+                    {/* Kommande Section */}
+                    <Text className="text-base font-bold text-slate-900 mb-3">Kommande</Text>
 
-                        {nextLesson ? (
-                            // HÄR ÄR ÄNDRINGEN:
-                            // Vi använder en container med samma styling som listan för att få "kort-känslan"
-                            // och använder ExpandableLessonCard istället för OverviewLessonCard.
-                            <View className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                                <ExpandableLessonCard
-                                    lesson={nextLesson}
-                                    onMarkCompleted={handleMarkCompleted}
-                                    onReschedule={handleReschedule}
-                                    onCancel={handleCancel}
-                                    isLast={true} // Tar bort border-bottom eftersom det är ett ensamt kort
-                                />
-                            </View>
-                        ) : (
-                            <View className="bg-white rounded-2xl p-4 items-center">
-                                <Text className="text-gray-500">Inga kommande lektioner</Text>
-                            </View>
-                        )}
-
-                        {/* Separator */}
-                        <View className="h-px bg-gray-200 my-6" />
-
-                        {/* Notes Card */}
-                        <View className="mb-4">
-                            <NoteCard
-                                title="Senaste anteckningar"
-                                value={student.notes}
-                                onSave={handleSaveNotes}
-                                isSaving={savingNotes}
-                                placeholder="Skriv dina anteckningar om eleven här..."
+                    {nextLesson ? (
+                        <View className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                            <ExpandableLessonCard
+                                lesson={nextLesson}
+                                onMarkCompleted={handleMarkCompleted}
+                                onReschedule={handleReschedule}
+                                onCancel={handleCancel}
+                                isLast={true}
                             />
                         </View>
+                    ) : (
+                        <View className="bg-white rounded-2xl p-8 items-center">
+                            <Text className="text-gray-500">Inga kommande lektioner</Text>
+                        </View>
+                    )}
 
-                        {/* Goals Card */}
+                    {/* Separator */}
+                    <View className="h-px bg-gray-200 my-6" />
+
+                    {/* Notes Card */}
+                    <View className="mb-4">
                         <NoteCard
-                            title="Terminsmål"
-                            value={student.goals}
-                            onSave={handleSaveGoals}
-                            isSaving={savingGoals}
-                            placeholder="Skriv elevens mål för terminen här..."
+                            title="Senaste anteckningar"
+                            value={student.notes}
+                            onSave={handleSaveNotes}
+                            isSaving={savingNotes}
+                            placeholder="Skriv dina anteckningar om eleven här..."
                         />
                     </View>
-                ) : (
-                    <View className="flex-1">
-                        {/* Lesson Sub-Tab Toggle */}
-                        <View className="flex-row items-center justify-between px-5 mb-4">
-                            <TabToggle
-                                options={[
-                                    { value: "kommande", label: "Kommande" },
-                                    { value: "senaste", label: "Senaste" },
-                                ]}
-                                activeTab={lessonTab}
-                                onToggle={setLessonTab}
-                                variant="underline"
-                            />
-                            <TouchableOpacity>
-                                <Ionicons name="options-outline" size={22} color="#6B7280" />
-                            </TouchableOpacity>
-                        </View>
 
-                        {/* Lesson List */}
-                        <View className="mx-5 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                            {lessonTab === "kommande" ? (
-                                upcomingLessons.length > 0 ? (
-                                    <FlatList
-                                        data={upcomingLessons}
-                                        renderItem={renderUpcomingLesson}
-                                        keyExtractor={(item) => item.id}
-                                        scrollEnabled={false}
-                                    />
-                                ) : (
-                                    <View className="p-8 items-center">
-                                        <Text className="text-gray-500">Inga kommande lektioner</Text>
-                                    </View>
-                                )
-                            ) : pastLessons.length > 0 ? (
-                                <FlatList data={pastLessons} renderItem={renderPastLesson} keyExtractor={(item) => item.id} scrollEnabled={false} />
+                    {/* Goals Card */}
+                    <NoteCard
+                        title="Terminsmål"
+                        value={student.goals}
+                        onSave={handleSaveGoals}
+                        isSaving={savingGoals}
+                        placeholder="Skriv elevens mål för terminen här..."
+                    />
+                </View>
+
+                {/* === VY 2: LEKTIONER === */}
+                <View style={{ display: mainTab === "lektioner" ? "flex" : "none" }} className="flex-1">
+                    {/* Lesson Sub-Tab Toggle */}
+                    <View className="flex-row items-center justify-between px-5 mb-4">
+                        <TabToggle
+                            options={[
+                                { value: "kommande", label: "Kommande" },
+                                { value: "senaste", label: "Senaste" },
+                            ]}
+                            activeTab={lessonTab}
+                            onToggle={setLessonTab}
+                            variant="underline"
+                        />
+                        <TouchableOpacity>
+                            <Ionicons name="options-outline" size={22} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Lesson List */}
+                    <View className="mx-5 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                        {lessonTab === "kommande" ? (
+                            upcomingLessons.length > 0 ? (
+                                <FlatList
+                                    data={upcomingLessons}
+                                    renderItem={renderUpcomingLesson}
+                                    keyExtractor={(item) => item.id}
+                                    scrollEnabled={false}
+                                />
                             ) : (
                                 <View className="p-8 items-center">
-                                    <Text className="text-gray-500">Inga tidigare lektioner</Text>
+                                    <Text className="text-gray-500">Inga kommande lektioner</Text>
                                 </View>
-                            )}
-                        </View>
+                            )
+                        ) : pastLessons.length > 0 ? (
+                            <FlatList data={pastLessons} renderItem={renderPastLesson} keyExtractor={(item) => item.id} scrollEnabled={false} />
+                        ) : (
+                            <View className="p-8 items-center">
+                                <Text className="text-gray-500">Inga tidigare lektioner</Text>
+                            </View>
+                        )}
                     </View>
-                )}
+                </View>
             </ScrollView>
 
             {/* CTA Button | "Boka lektion" */}
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 bg-brand-bg">
+            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 ">
                 <TouchableOpacity
                     onPress={handleBookLesson}
                     className="bg-brand-green rounded-2xl py-4 flex-row items-center justify-center shadow-lg"

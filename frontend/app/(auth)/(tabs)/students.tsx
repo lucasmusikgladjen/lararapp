@@ -34,24 +34,22 @@ export default function StudentsPage() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-brand-bg">
+        <SafeAreaView className="flex-1">
             <View className="flex-1 px-5">
                 <PageHeader />
 
                 <FlatList
                     data={students}
                     keyExtractor={(item) => item.id}
+                    numColumns={2}
+                    columnWrapperStyle={{ justifyContent: "space-between" }}
                     ListHeaderComponent={
                         <View>
                             <ScheduleEntryCard />
-                            <Text className="text-2xl font-bold text-brand-text mb-6">Mina elever</Text>
+                            <Text className="text-2xl font-bold text-slate-800 mb-6 mt-4">Mina elever</Text>
                         </View>
                     }
-                    renderItem={({ item, index }) => (
-                        <View>
-                            <StudentCard student={item} onPress={() => handleStudentPress(item.id)} isLast={index === students.length - 1} />
-                        </View>
-                    )}
+                    renderItem={({ item }) => <StudentCard student={item} onPress={() => handleStudentPress(item.id)} />}
                     contentContainerStyle={{ paddingBottom: 100 }}
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" />}

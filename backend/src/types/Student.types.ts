@@ -19,6 +19,7 @@ export type AirtableStudentFields = {
     ÖnskaKommentar?: string;
     Lektionstider?: string[];
     Lektioner?: string[];
+    "Lektioner Genomförda"?: boolean[];
     Kommentar?: string;
     Terminsmål?: string;
     "Vårdnadshavare namn"?: string[];
@@ -58,6 +59,7 @@ export type Student = {
     upcomingLessons: string[];
     upcomingLessonTimes: string[];
     upcomingLessonIds: string[];
+    upcomingLessonCompleted: boolean[];
     experience: string;
     description: string;
     leadScore?: string;

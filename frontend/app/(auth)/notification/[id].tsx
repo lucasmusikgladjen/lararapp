@@ -57,11 +57,12 @@ export default function NotificationActionPage() {
     };
 
     return (
+        // 1. Solid bakgrund (bg-brand-bg) döljer dashboarden helt under slide-animationen
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
-            {/* --- PREMIUM HEADER / BACK BUTTON --- */}
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
                 <PageHeader />
 
+                {/* --- TILLBAKA-KNAPPEN (Orange) --- */}
                 <View className="px-1 py-2 mb-2 flex-row items-center">
                     <TouchableOpacity
                         onPress={() => router.back()}
@@ -74,7 +75,8 @@ export default function NotificationActionPage() {
                 </View>
 
                 {/* --- THE MAIN CARD --- */}
-                <View className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+                {/* Tog bort den extrema skuggan och återgick till standard design för en egen sida */}
+                <View className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden mt-2">
                     {/* =========================================
                         LEGO-BIT 1: BILD (EDGE-TO-EDGE)
                     ========================================= */}
@@ -118,7 +120,6 @@ export default function NotificationActionPage() {
                                                 );
                                             }}
                                         >
-                                            {/* Rutan / Cirkeln */}
                                             <View
                                                 className={`w-6 h-6 rounded-full border-2 mr-4 mt-0.5 items-center justify-center ${
                                                     isChecked ? "bg-brand-green border-brand-green" : "border-slate-300 bg-white"
@@ -127,7 +128,6 @@ export default function NotificationActionPage() {
                                                 {isChecked && <Ionicons name="checkmark" size={16} color="white" />}
                                             </View>
 
-                                            {/* Texten (stryks över när den är klar) */}
                                             <Text
                                                 className={`flex-1 text-base leading-relaxed font-medium ${
                                                     isChecked ? "text-slate-400 line-through" : "text-slate-700"

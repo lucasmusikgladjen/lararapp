@@ -21,7 +21,7 @@ const PaginationDot = ({ index, progress, total }: { index: number; progress: Sh
         };
     });
 
-    return <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 }, animatedStyle]} />;
+    return <Animated.View style={[{ width: 6, height: 6, borderRadius: 4, marginHorizontal: 4 }, animatedStyle]} />;
 };
 
 export const NotificationStack = () => {
@@ -47,7 +47,6 @@ export const NotificationStack = () => {
     if (notifications.length === 1) {
         return (
             <View className="w-full mt-3 mb-6">
-                <Text className="text-xl font-bold text-slate-900 mb-3">Notifikationer</Text>
                 <View className="w-full items-center">
                     <View style={{ height: CARD_HEIGHT, width: width - 40 }}>
                         <NotificationCard item={notifications[0]} onPress={() => router.push(`/(auth)/notification/${notifications[0].id}`)} />
@@ -61,8 +60,6 @@ export const NotificationStack = () => {
 
     return (
         <View className="w-full mt-3 mb-6">
-            <Text className="text-xl font-bold text-slate-900 mb-3">Notifikationer</Text>
-
             <View className="w-full overflow-hidden" style={{ height: 135 }}>
                 <Carousel
                     key={`carousel-${notifications.length}`}

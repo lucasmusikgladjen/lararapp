@@ -84,7 +84,6 @@ export const EmptyStateDashboard = () => {
                 </View>
 
                 {/* --- DITT SCHEMA --- */}
-                <Text className="text-xl font-bold text-slate-900 mb-4 ml-1">Ditt schema</Text>
                 <View className="rounded-3xl border-2 border-dashed border-slate-400 bg-slate-50/50 py-12 items-center">
                     <View className="w-16 h-16 rounded-2xl bg-white items-center justify-center mb-4 shadow-sm border border-slate-100">
                         <Ionicons name="calendar-clear-outline" size={32} color="#94a3b8" />

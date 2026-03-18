@@ -1,48 +1,54 @@
 import { Student } from "../types/student.types";
 
 export type LessonEvent = {
-  date: string;
-  time: string; 
-  student: Student;
-  daysLeft: number;
+    id: string;
+    date: string;
+    time: string;
+    student: Student;
+    daysLeft: number;
+    isCompleted: boolean;
 };
 
 export const findNextLesson = (students: Student[]): LessonEvent | null => {
-  const allLessons: LessonEvent[] = [];
-  
-  // Skapa dagens datum som sträng "YYYY-MM-DD"
-  const today = new Date();
-  const todayString = today.toISOString().split('T')[0]; 
+    const allLessons: LessonEvent[] = [];
 
-  students.forEach((student) => {
-    if (!student.upcomingLessons) return;
+    // Skapa dagens datum som sträng "YYYY-MM-DD"
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
 
-    // Vi använder 'index' för att hitta matchande tid
-    student.upcomingLessons.forEach((dateString, index) => {
-      
-      if (dateString >= todayString) {
-        // Hämta tiden på samma position (eller defaulta till "Tid saknas")
-        const timeString = student.upcomingLessonTimes?.[index] || "Tid saknas";
+    students.forEach((student) => {
+        if (!student.upcomingLessons) return;
 
-        const dateA = new Date(todayString);
-        const dateB = new Date(dateString);
-        const diffTime = dateB.getTime() - dateA.getTime(); 
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        // Vi använder 'index' för att hitta matchande tid och ID
+        student.upcomingLessons.forEach((dateString, index) => {
+            if (dateString >= todayString) {
+                // Hämta tiden på samma position (eller defaulta till "Tid saknas")
+                const timeString = student.upcomingLessonTimes?.[index] || "Tid saknas";
 
-        allLessons.push({
-          date: dateString,
-          time: timeString, 
-          student: student,
-          daysLeft: diffDays
+                // Hämta det riktiga Airtable Record ID:t (t.ex. "recbF22f1uVMBAOka")
+                const realLessonId = student.upcomingLessonIds?.[index] || "";
+
+                const dateA = new Date(todayString);
+                const dateB = new Date(dateString);
+                const diffTime = dateB.getTime() - dateA.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                allLessons.push({
+                    id: realLessonId,
+                    date: dateString,
+                    time: timeString,
+                    student: student,
+                    daysLeft: diffDays,
+                    isCompleted: false,
+                });
+            }
         });
-      }
     });
-  });
 
-  // Sortera på datum
-  allLessons.sort((a, b) => a.date.localeCompare(b.date));
+    // Sortera på datum
+    allLessons.sort((a, b) => a.date.localeCompare(b.date));
 
-  return allLessons.length > 0 ? allLessons[0] : null;
+    return allLessons.length > 0 ? allLessons[0] : null;
 };
 
 /**
@@ -50,31 +56,37 @@ export const findNextLesson = (students: Student[]): LessonEvent | null => {
  * Används för "Ditt schema"-sektionen (Kommande/Senaste).
  */
 export const getAllLessonEvents = (students: Student[]): LessonEvent[] => {
-  const allLessons: LessonEvent[] = [];
+    const allLessons: LessonEvent[] = [];
 
-  const today = new Date();
-  const todayString = today.toISOString().split("T")[0];
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0];
 
-  students.forEach((student) => {
-    if (!student.upcomingLessons) return;
+    students.forEach((student) => {
+        if (!student.upcomingLessons) return;
 
-    student.upcomingLessons.forEach((dateString, index) => {
-      const timeString =
-        student.upcomingLessonTimes?.[index] || "Tid saknas";
+        student.upcomingLessons.forEach((dateString, index) => {
+            const timeString = student.upcomingLessonTimes?.[index] || "Tid saknas";
 
-      const dateA = new Date(todayString);
-      const dateB = new Date(dateString);
-      const diffTime = dateB.getTime() - dateA.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            // Hämta det riktiga Airtable Record ID:t
+            const realLessonId = student.upcomingLessonIds?.[index] || "";
 
-      allLessons.push({
-        date: dateString,
-        time: timeString,
-        student,
-        daysLeft: diffDays,
-      });
+            const isCompleted = student.upcomingLessonCompleted?.[index] || false;
+
+            const dateA = new Date(todayString);
+            const dateB = new Date(dateString);
+            const diffTime = dateB.getTime() - dateA.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            allLessons.push({
+                id: realLessonId,
+                date: dateString,
+                time: timeString,
+                student,
+                daysLeft: diffDays,
+                isCompleted: isCompleted,
+            });
+        });
     });
-  });
 
-  return allLessons;
+    return allLessons;
 };
