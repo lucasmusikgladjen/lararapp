@@ -195,6 +195,14 @@
     - [x] **Deep Linking:** Skapat direktlänk från Elevprofil ("Boka lektion") till schemaläggaren med vald elev förifylld via URL-parametrar och `useLocalSearchParams`.
     - [x] **Layout Fix:** Löst NativeWind-krasch i Elevprofil genom att ersätta villkorsstyrd rendering med `display: none/flex` för att bibehålla navigeringskontext.
 
+- [x] **Moderniserad Kartsökning ("Search in this area"):**
+    - **Store Refactor:** Tog bort textbaserad söklogik (`searchQuery`, `setSearchQuery`, debounce-timer) och geocoding från `findStudentsStore.ts`. Ersatte med `mapRegion`, `lastSearchRegion` och `showSearchButton` state.
+    - **Ny action `searchInArea`:** Beräknar sökradie dynamiskt baserat på kartans zoom-nivå via formeln `Radius (km) = (latitudeDelta * 111) / 2`.
+    - **Tröskellogik:** `updateShowSearchButton` jämför nuvarande kartposition mot `lastSearchRegion`. Knappen visas om mittpunkten flyttats >500m (approximerat avstånd) eller om zoom-nivån ändrats >20%.
+    - **FilterBar Cleanup:** Tog bort `TextInput` och sökikoner. Komponenten visar nu enbart instrument-filter-chips med korrekt `SafeAreaInsets`.
+    - **Smart Start (Fas 4):** Vid app-start försöker appen hämta GPS. Succé → center med `latitudeDelta: 0.36` (~20km radie). Fallback → Stockholm (59.3293, 18.0686). Automatisk sökning körs i båda fallen.
+    - **Memoization:** Alla kart-callbacks (`onRegionChangeComplete`, `handleSearchInArea`) wrappade i `useCallback` för att förhindra onödiga re-renders vid panorering.
+
 ## Pågående 🚧
 - [ ] Implementering av den nya glassmorphism-designen på resterande Dashboard-kort (Delayed/Kommande).
 

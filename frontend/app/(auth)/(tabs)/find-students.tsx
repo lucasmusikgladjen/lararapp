@@ -10,8 +10,10 @@ import { useFindStudentsStore } from "../../../src/store/findStudentsStore";
 import { StudentPublicDTO } from "../../../src/types/student.types";
 
 const STOCKHOLM = { lat: 59.3293, lng: 18.0686 };
-const DEFAULT_RADIUS_KM = 10; // 15km 
-const DEFAULT_DELTA = 0.08;
+
+// ~0.36 latitudeDelta ≈ 20km radie (0.36 * 111 / 2 = ~20km)
+const INITIAL_DELTA = 0.36;
+
 const ANIMATE_DELTA = 0.02;
 
 const MARKER_COLORS: Record<string, string> = {
@@ -27,13 +29,23 @@ function getMarkerColor(instruments: string[]): string {
 }
 
 export default function FindStudents() {
-    // 1. ALLA HOOKS MÅSTE LIGGA HÄR I BÖRJAN
     const mapRef = useRef<MapView>(null);
     const [permissionDenied, setPermissionDenied] = useState(false);
     const [initializing, setInitializing] = useState(true);
     const [isListVisible, setIsListVisible] = useState(true);
 
-    const { students, loading, userLocation, fetchStudents, setUserLocation, selectStudent, selectedStudent } = useFindStudentsStore();
+    const {
+        students,
+        loading,
+        userLocation,
+        showSearchButton,
+        selectedStudent,
+        setUserLocation,
+        selectStudent,
+        setMapRegion,
+        updateShowSearchButton,
+        searchInArea,
+    } = useFindStudentsStore();
 
     // --- ANIMATION LOGIC ---
     const animateToStudent = useCallback((student: StudentPublicDTO) => {
@@ -73,74 +85,65 @@ export default function FindStudents() {
         setIsListVisible(true);
     }, [selectStudent]);
 
-    // Initial Load Effect
+    // --- REGION CHANGE (Memoized) ---
+    const handleRegionChangeComplete = useCallback(
+        (region: Region) => {
+            updateShowSearchButton(region);
+        },
+        [updateShowSearchButton],
+    );
+
+    // --- SEARCH IN AREA (Memoized) ---
+    const handleSearchInArea = useCallback(() => {
+        searchInArea();
+    }, [searchInArea]);
+
+    // --- SMART START: GPS med fallback till Stockholm ---
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
             let location = STOCKHOLM;
+
             if (status === "granted") {
                 try {
-                    const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                    const pos = await Location.getCurrentPositionAsync({
+                        accuracy: Location.Accuracy.Balanced,
+                    });
                     location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                } catch {}
+                } catch {
+                    // GPS misslyckades, använd Stockholm
+                }
             } else {
                 setPermissionDenied(true);
             }
+
             setUserLocation(location);
-            await fetchStudents(location.lat, location.lng, DEFAULT_RADIUS_KM);
+
+            // Sätt initial region och lastSearchRegion för tröskeljämförelser
+            const initialRegion: Region = {
+                latitude: location.lat,
+                longitude: location.lng,
+                latitudeDelta: INITIAL_DELTA,
+                longitudeDelta: INITIAL_DELTA,
+            };
+
+            setMapRegion(initialRegion);
+
+            // Beräkna radie: (0.36 * 111) / 2 ≈ 20km
+            const initialRadius = (INITIAL_DELTA * 111) / 2;
+
+            // Sätt lastSearchRegion direkt i storen via searchInArea-liknande logik
+            useFindStudentsStore.setState({ lastSearchRegion: initialRegion });
+
+            await useFindStudentsStore
+                .getState()
+                .fetchStudents(location.lat, location.lng, initialRadius);
+
             setInitializing(false);
         })();
     }, []);
 
-    // AUTO-ZOOM EFFECT
-    useEffect(() => {
-        if (initializing || !mapRef.current || students.length === 0) return;
-        if (selectedStudent) return;
-
-        const coordinates = students
-            .map((s) => {
-                if (typeof s.lat === "number" && typeof s.lng === "number") {
-                    return { latitude: s.lat, longitude: s.lng };
-                }
-                return null;
-            })
-            .filter((c): c is { latitude: number; longitude: number } => c !== null);
-
-        if (coordinates.length === 0) return;
-
-        const EDGE_PADDING = {
-            top: 100,
-            right: 50,
-            bottom: 300,
-            left: 50,
-        };
-
-        // --- SMART ZOOM LOGIC ---
-
-        // Scenario A: Only 1 student found (e.g. Julian in Lund)
-        // Don't use fitToCoordinates because it zooms to street level.
-        // Instead, center on that student but keep a "City View" zoom level.
-        if (coordinates.length === 1) {
-            mapRef.current.animateToRegion(
-                {
-                    latitude: coordinates[0].latitude,
-                    longitude: coordinates[0].longitude,
-                    latitudeDelta: 0.08, // 0.08 is roughly "City View" (approx 10-15km view)
-                    longitudeDelta: 0.08,
-                },
-                1000,
-            );
-        }
-        // Scenario B: Multiple students found
-        else {
-            mapRef.current.fitToCoordinates(coordinates, {
-                edgePadding: EDGE_PADDING,
-                animated: true,
-            });
-        }
-    }, [students, selectedStudent, initializing]);
-
-    // 2. HÄR KOMMER DIN CONDITIONAL RETURN
+    // Loading screen
     if (initializing) {
         return (
             <View className="flex-1 items-center justify-center bg-brand-bg">
@@ -150,12 +153,11 @@ export default function FindStudents() {
         );
     }
 
-    // 3. SEN KOMMER RESTEN AV JSX
     const initialRegion: Region = {
         latitude: userLocation?.lat ?? STOCKHOLM.lat,
         longitude: userLocation?.lng ?? STOCKHOLM.lng,
-        latitudeDelta: DEFAULT_DELTA,
-        longitudeDelta: DEFAULT_DELTA,
+        latitudeDelta: INITIAL_DELTA,
+        longitudeDelta: INITIAL_DELTA,
     };
 
     return (
@@ -168,6 +170,7 @@ export default function FindStudents() {
                 showsUserLocation={!permissionDenied}
                 showsMyLocationButton
                 onPress={handleMapPress}
+                onRegionChangeComplete={handleRegionChangeComplete}
             >
                 {students.map((student) => (
                     <StudentMarker
@@ -180,6 +183,29 @@ export default function FindStudents() {
             </MapView>
 
             <FilterBar />
+
+            {/* "Sök i området"-knapp — visas bara när kartan flyttats tillräckligt */}
+            {showSearchButton && (
+                <View className="absolute top-32 self-center">
+                    <TouchableOpacity
+                        onPress={handleSearchInArea}
+                        activeOpacity={0.85}
+                        className="bg-white rounded-full px-5 py-3 flex-row items-center"
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 6,
+                            elevation: 4,
+                        }}
+                    >
+                        <Ionicons name="search" size={16} color="#F97316" />
+                        <Text className="text-slate-900 font-semibold text-sm ml-2">
+                            Sök i det här området
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {loading && (
                 <View className="absolute top-40 self-center bg-white rounded-full px-4 py-2 shadow-sm">
@@ -201,17 +227,21 @@ export default function FindStudents() {
                         className="bg-white rounded-full px-5 py-3 flex-row items-center shadow-md"
                     >
                         <Ionicons name="people-outline" size={18} color="#F97316" />
-                        <Text className="text-slate-900 font-semibold text-sm ml-2">Visa lista</Text>
+                        <Text className="text-slate-900 font-semibold text-sm ml-2">
+                            Visa lista
+                        </Text>
                     </TouchableOpacity>
                 </View>
             )}
 
-            {selectedStudent && <StudentDetailModal student={selectedStudent} onClose={handleMapPress} />}
+            {selectedStudent && (
+                <StudentDetailModal student={selectedStudent} onClose={handleMapPress} />
+            )}
         </View>
     );
 }
 
-// ... (Keep your existing StudentMarker component below)
+// --- STUDENT MARKER ---
 interface StudentMarkerProps {
     student: StudentPublicDTO;
     isSelected: boolean;
@@ -230,7 +260,7 @@ function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
         <Marker
             coordinate={{ latitude: student.lat, longitude: student.lng }}
             onPress={(e) => {
-                e.stopPropagation(); // Stop map click event
+                e.stopPropagation();
                 onPress();
             }}
             tracksViewChanges={false}

@@ -1,50 +1,82 @@
 import { create } from "zustand";
-import * as Location from "expo-location";
 import { StudentPublicDTO } from "../types/student.types";
 import { searchStudents } from "../services/student.service";
 import { useAuthStore } from "./authStore";
+import { Region } from "react-native-maps";
 
-const DEFAULT_RADIUS_KM = 20; // Standardradie för GPS (Nära mig)
-const CITY_RADIUS_KM = 15; // Standardradie för Stadssökning
-const DEBOUNCE_MS = 1000;
+// Radie (km) = (latitudeDelta * 111) / 2
+const KM_PER_DEGREE_LAT = 111;
 
-interface UserLocation {
-    lat: number;
-    lng: number;
+// Tröskel för att visa "Sök i området"-knappen
+const CENTER_MOVE_THRESHOLD_KM = 0.5;
+const DELTA_CHANGE_THRESHOLD = 0.2; // 20% förändring
+
+interface MapRegion {
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
 }
 
 interface FindStudentsState {
     students: StudentPublicDTO[];
     loading: boolean;
 
-    userLocation: UserLocation | null; // Din fysiska GPS-position
-    searchLocation: UserLocation | null; // Den plats kartan "tittar på" just nu (kan vara Malmö)
+    userLocation: { lat: number; lng: number } | null;
 
     selectedStudent: StudentPublicDTO | null;
     filter: string | null;
-    searchQuery: string;
-    radius: number;
 
-    fetchStudents: (lat: number, lng: number, radius?: number) => Promise<void>;
-    setUserLocation: (location: UserLocation) => void;
+    mapRegion: MapRegion | null;
+    lastSearchRegion: MapRegion | null;
+    showSearchButton: boolean;
+
+    fetchStudents: (lat: number, lng: number, radius: number) => Promise<void>;
+    setUserLocation: (location: { lat: number; lng: number }) => void;
     setFilter: (instrument: string | null) => void;
-    setSearchQuery: (query: string) => void;
     selectStudent: (student: StudentPublicDTO | null) => void;
+
+    setMapRegion: (region: MapRegion) => void;
+    updateShowSearchButton: (region: MapRegion) => void;
+    searchInArea: () => Promise<void>;
 }
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+/**
+ * Beräknar ungefärligt avstånd i km mellan två punkter.
+ * Använder en förenklad formel (inte full Haversine) för prestanda.
+ */
+function approximateDistanceKm(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+): number {
+    const dLat = (lat2 - lat1) * KM_PER_DEGREE_LAT;
+    const avgLat = ((lat1 + lat2) / 2) * (Math.PI / 180);
+    const dLng = (lng2 - lng1) * KM_PER_DEGREE_LAT * Math.cos(avgLat);
+    return Math.sqrt(dLat * dLat + dLng * dLng);
+}
+
+/**
+ * Beräknar sökradie baserat på kartans zoom-nivå (latitudeDelta).
+ * Formel: Radius (km) = (latitudeDelta * 111) / 2
+ */
+function calculateRadiusFromDelta(latitudeDelta: number): number {
+    return (latitudeDelta * KM_PER_DEGREE_LAT) / 2;
+}
 
 export const useFindStudentsStore = create<FindStudentsState>()((set, get) => ({
     students: [],
     loading: false,
     userLocation: null,
-    searchLocation: null, // <-- NY STATE
     selectedStudent: null,
     filter: null,
-    searchQuery: "",
-    radius: DEFAULT_RADIUS_KM,
 
-    fetchStudents: async (lat: number, lng: number, radius?: number) => {
+    mapRegion: null,
+    lastSearchRegion: null,
+    showSearchButton: false,
+
+    fetchStudents: async (lat: number, lng: number, radius: number) => {
         set({ loading: true });
         try {
             const token = useAuthStore.getState().token;
@@ -55,16 +87,14 @@ export const useFindStudentsStore = create<FindStudentsState>()((set, get) => ({
             }
 
             const filter = get().filter ?? undefined;
-            // Använd radius från argumentet om det finns, annars från state
-            const r = radius ?? get().radius;
 
             const data = await searchStudents({
-                token: token,
-                lat: lat,
-                lng: lng,
-                radius: r,
+                token,
+                lat,
+                lng,
+                radius,
                 instrument: filter,
-                searchQuery: undefined, // Vi kör alltid geo-sök nu
+                searchQuery: undefined,
             });
 
             set({ students: data, loading: false });
@@ -74,77 +104,66 @@ export const useFindStudentsStore = create<FindStudentsState>()((set, get) => ({
         }
     },
 
-    setUserLocation: (location: UserLocation) => {
-        // När vi startar appen och får GPS, sätter vi både User och Search location
-        set({
-            userLocation: location,
-            searchLocation: location,
-        });
+    setUserLocation: (location: { lat: number; lng: number }) => {
+        set({ userLocation: location });
     },
 
     setFilter: (instrument: string | null) => {
         set({ filter: instrument });
 
-        // HÄR ÄR FIXEN:
-        // Vi använder 'searchLocation' (där kartan är) istället för 'userLocation' (där du är).
-        const { searchLocation, userLocation, radius, fetchStudents } = get();
+        const { lastSearchRegion, fetchStudents } = get();
 
-        const targetLocation = searchLocation || userLocation;
-
-        if (targetLocation) {
-            fetchStudents(targetLocation.lat, targetLocation.lng, radius);
+        if (lastSearchRegion) {
+            const radius = calculateRadiusFromDelta(lastSearchRegion.latitudeDelta);
+            fetchStudents(lastSearchRegion.latitude, lastSearchRegion.longitude, radius);
         }
-    },
-
-  setSearchQuery: (query: string) => {
-        set({ searchQuery: query });
-
-        if (debounceTimer) clearTimeout(debounceTimer);
-
-        debounceTimer = setTimeout(async () => {
-            // Hämta nuvarande state
-            const { userLocation, radius, fetchStudents } = get();
-            
-            // 1. FIXEN: Om sökfältet är tomt -> Gör ingenting med kartan!
-            // Vi vill stanna kvar där vi är (t.ex. Malmö).
-            if (!query.trim()) {
-                console.log("Empty search, staying at current location");
-                return; 
-            }
-
-            // 2. GEOCODING (Samma som förut)
-            try {
-                set({ loading: true });
-                const geocoded = await Location.geocodeAsync(query);
-                
-                if (geocoded.length > 0) {
-                    const result = geocoded[0];
-                    console.log(`Geocoded '${query}' to:`, result.latitude, result.longitude);
-                    
-                    const newLocation = { lat: result.latitude, lng: result.longitude };
-
-                    // Uppdatera state till den nya staden
-                    set({ 
-                        searchLocation: newLocation, 
-                        radius: CITY_RADIUS_KM 
-                    });
-
-                    // Sök!
-                    await fetchStudents(result.latitude, result.longitude, CITY_RADIUS_KM);
-                } else {
-                    console.log("Platsen hittades inte.");
-                    set({ loading: false });
-                }
-            } catch (error) {
-                console.error("Geocoding failed:", error);
-                set({ loading: false });
-            }
-            
-            debounceTimer = null;
-        }, DEBOUNCE_MS);
     },
 
     selectStudent: (student: StudentPublicDTO | null) => {
         set({ selectedStudent: student });
+    },
+
+    setMapRegion: (region: MapRegion) => {
+        set({ mapRegion: region });
+    },
+
+    updateShowSearchButton: (region: MapRegion) => {
+        const { lastSearchRegion } = get();
+
+        // Om ingen sökning har gjorts ännu, visa inte knappen
+        if (!lastSearchRegion) return;
+
+        // Beräkna avstånd mellan mittpunkterna
+        const distanceKm = approximateDistanceKm(
+            lastSearchRegion.latitude,
+            lastSearchRegion.longitude,
+            region.latitude,
+            region.longitude,
+        );
+
+        // Beräkna relativ förändring i zoom-nivå (delta)
+        const deltaChange = Math.abs(
+            region.latitudeDelta - lastSearchRegion.latitudeDelta,
+        ) / lastSearchRegion.latitudeDelta;
+
+        const shouldShow =
+            distanceKm > CENTER_MOVE_THRESHOLD_KM ||
+            deltaChange > DELTA_CHANGE_THRESHOLD;
+
+        set({ showSearchButton: shouldShow, mapRegion: region });
+    },
+
+    searchInArea: async () => {
+        const { mapRegion, fetchStudents } = get();
+        if (!mapRegion) return;
+
+        const radius = calculateRadiusFromDelta(mapRegion.latitudeDelta);
+
+        set({
+            showSearchButton: false,
+            lastSearchRegion: { ...mapRegion },
+        });
+
+        await fetchStudents(mapRegion.latitude, mapRegion.longitude, radius);
     },
 }));
