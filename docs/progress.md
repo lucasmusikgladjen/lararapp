@@ -96,7 +96,7 @@
 
 - [x] **Karta Fas 6: Ansökningsflöde (Request to Teach)**
     - Backend: Implementerat `POST /api/students/:id/request` med deduplicering (`400 Bad Request`). Säker hantering av array-data för Linked Records i Airtable (append, ej overwrite).
-    - Backend/Frontend: Skapat dynamisk `hasApplied`-flagga på `StudentPublicDTO` via mapsökningen.
+    - Backend/Frontend: Skapat dynamisk `hasApplied`-flagga på `StudentPublicDTO` och returnerar i sökresultat.
     - Frontend: Byggt `useRequestToTeach`-hook med felhantering och cache-invalidering för omedelbar UI-uppdatering.
     - Frontend: Premium UX i `StudentDetailModal` där knappar och textfält gråas ut och inaktiveras om läraren redan ansökt ("ANSÖKAN SKICKAD").
 
@@ -135,6 +135,7 @@
     - Implementerade dynamiska Action-sidor i frontend baserat på notifikationsmallarna.
     - Konfigurerade React Query med `staleTime`, Pull-to-Refresh och `useFocusEffect` för snabb och skalbar uppdatering.
     - Löste render-buggar i karusellen för hantering av enstaka notiser (Bypass logik).
+    - **UX Fix:** Optimerat övergången till notifikationssidan (`presentation: "card"`) och lagt till en solid bakgrund (`bg-brand-bg`) för att dölja dashboarden under slide-animationen.
 
 - [x] **Backend - Schemaläggning & Hantering av Lektioner:**
     - Skapat `Lesson.types.ts` och robusta DTO:er för att validera inkommande data från läraren.
@@ -166,7 +167,8 @@
     - Integrerat DatePicker och TimePicker (återanvända komponenter) i "Boka om"-modalen.
     - Byggt en native iOS-liknande Segmented Control (Läraren/Vårdnadshavaren) för "Ställ in"-modalen.
     - Kopplat allt till `useLessonMutation` för omedelbar cache-invalidering och UI-uppdatering.
-    - Korrigerat `student.types.ts` och backend-mappning för att skicka ner faktiska `lessonIds` från Airtable (Linked Records) istället för frontend-genererade ID:n, vilket möjliggör korrekta API-anrop.
+    - **Buggfix (Airtable 422):** Korrigerat `student.types.ts` och backend-mappning för att skicka ner faktiska `lessonIds` från Airtable (Linked Records). Detta löste felet där fallback-ID:n skickades till Airtable.
+    - **Data-integration:** Implementerat ett **Lookup-fält** ("Lektioner Genomförda") i Airtable som mappas till studentens lektionslista för att korrekt dölja genomförda lektioner från dashboarden.
 
 - [x] **Push-notifikationer & Webhook Integration:**
     - **Frontend:** Konfigurerat `expo-notifications` och `expo-device`. Initierat EAS-projekt för att säkra ett `projectId`. Implementerat logik i `_layout.tsx` som vid inloggning ber om OS-behörighet, hämtar Push Token och skickar det tyst till backend.
@@ -174,7 +176,15 @@
     - **Backend (Webhook):** Byggt `POST /api/notifications/push-webhook` med `expo-server-sdk`. Validerar inkommande triggers via en statisk `x-webhook-secret` (frikopplad från JWT) och pushar meddelanden till Apple/Google.
     - **Airtable Automation:** Etablerat en Automation med villkoret `Status is active`. Konfigurerat "Run a script" för att skicka Record ID, titel och meddelande via POST till webhooken. Använt `localtunnel` med `Bypass-Tunnel-Reminder` header för att testa och bekräfta live-funktionalitet från databas till mobiltelefonens låsskärm.
 
+- [x] **Buggfixar & UI-Polishing:**
+    - **Routing Fix:** Bytt namn på `dashboard.tsx` till `index.tsx` inuti `(auth)/(tabs)` för att följa Expo Router-standard och lösa "Unmatched Route"-felet.
+    - **Glassmorphism Design:** Implementerat en ny visuell profil med semi-transparenta kort (`bg-white/70`), vita ramar (`border-2 border-white`) och hörnradie `rounded-[32px]`.
+    - **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra att skuggor klipps i sidled i React Native.
+    - **Grid Layout:** Uppdaterat "Mina elever" till en 2-kolumns grid för bättre UX på enheter med få elever.
+    - **Konsistens:** Uppdaterat `ScheduleEntryCard` till den nya glassmorphism-stilen för att matcha övriga listor.
+
 ## Pågående 🚧
+- [ ] Implementering av den nya glassmorphism-designen på resterande Dashboard-kort (Delayed/Kommande).
 
 ## Kommande 📅
 *(Listan är för närvarande tom. Dags att planera nästa stora funktion!)*

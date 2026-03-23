@@ -3,7 +3,8 @@
 ## Backend
 - **Namngivning:** Alla filer i `/src/controllers` och `/src/services` använder `snake_case` (t.ex. `student_controller.ts`).
 - **Felhantering:** `try-catch` ska endast finnas i Controllers. Services kastar fel uppåt för korrekt statuskod-mappning (404 vs 500).
-- **Airtable-koppling:** Tabellen "Elev" hämtar klockslag via en Lookup-kolumn `Lektionstider` från tabellen "Lektioner".
+- **Airtable-koppling:** Tabellen "Elev" hämtar klockslag via en Lookup-kolumn `Lektioner` från tabellen "Lektioner".
+- **Airtable Record IDs:** Vid `PATCH`-operationer (t.ex. markera som genomförd) måste det faktiska Airtable Record ID:t (som börjar på `rec...`) användas. Egna fallback-ID:n (t.ex. `studentId-datum`) accepteras inte av Airtable och resulterar i `422 Unprocessable Entity`.
 
 ## Backend: Validering & Utility
 - **Airtable Utility:** `airtable.ts` har nu stöd för `PATCH` via en generisk metod som tar emot `Record<string, any>` för fälten.
@@ -12,7 +13,7 @@
 - **Fältmappning (Elev):**
     - `notes` (Frontend) <-> `kommentar` (API) <-> `Kommentar` (Airtable).
     - `goals` (Frontend) <-> `terminsmal` (API) <-> `Terminsmål` (Airtable).
-    - **Data-plattning (Lookup):** För att minimera antalet API-anrop använder vi "Lookup"-fält i Airtable (t.ex. `Vårdnadshavare Namn` direkt på `Elev`-tabellen) istället för att göra separata `GET`-anrop till relaterade tabeller.
+    - **Genomförd-status:** För att hämta status på länkade lektioner används ett **Lookup-fält** i Airtable ("Lektioner Genomförda") på `Elev`-tabellen. Detta mappas till arrayen `upcomingLessonCompleted: boolean[]` i `Student`-objektet för att möjliggöra filtrering i frontend.
 - **Airtable Skriv-operationer:** Vi har utökat `airtable.ts` med en generisk `post`-metod för att kunna skapa nya poster (t.ex. vid registrering).
 - **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable. Detta möjliggör flerval utan att bryta datamodellen.
 - **Säker Profiluppdatering:** `updateProfile`-controllern ignorerar `id` i URL-parametrar och använder istället strikt `req.user.id` från JWT-token. Detta förhindrar att en inloggad användare råkar (eller illvilligt) uppdatera någon annans profil.
@@ -48,9 +49,11 @@
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.
+- **Route-namngivning:** Expo Router kräver att startfilen i en mapp heter `index.tsx` för att agera som root-vy. Om dashboarden döps om till t.ex. `dashboard.tsx` inuti `(tabs)`-mappen uppstår ett "Unmatched Route"-fel.
 - **Datumhantering:** Jämförelser sker mot `new Date().toISOString().split('T')[0]` för att undvika tidszonsförskjutningar vid midnatt.
 - **Onboarding-navigering (Register -> Instruments -> Dashboard):** Navigeringen efter registrering styrs av auth-guarden i `app/_layout.tsx` via flaggan `needsOnboarding` i Zustand-store — **inte** via direkt `router.replace` i `useRegister`-hooken. Detta löser en race condition där auth-guarden (som reagerar på `isAuthenticated`-ändringen) och hook-navigeringen tävlade om att navigera användaren, vilket ledde till att Dashboard visades direkt istället för instrumentvalet. Flödet: `useRegister` sätter `needsOnboarding: true` → anropar `loginToStore` → auth-guard ser `isAuthenticated && needsOnboarding` → navigerar till `/(auth)/onboarding/instruments` → vid avslutad profilsparning sätts `needsOnboarding: false` och navigering sker till Dashboard.
 - **Stale State Management (Cachning):** För att undvika onödiga API-anrop till Airtable använder vi `staleTime` (t.ex. 2 minuter) i React Query. Detta, kombinerat med `useFocusEffect` och `RefreshControl` (Pull-to-refresh), minimerar "blinkande" gränssnitt och UX-glitchar vid sidnavigering, samtidigt som appen förblir skalbar för tusentals lärare utan att bryta Airtables hastighetsbegränsningar (5 requests/sek).
+- **Filtrering av genomförda lektioner:** Dashboarden filtrerar nu `allLessons` baserat på `isCompleted`-flaggan. Genomförda lektioner exkluderas från "Försenad"-listan och visas istället i "Senaste"-tabben.
 
 ## Frontend: Bottom Sheet Modals & NativeWind (Edge Case)
 - **Problematik:** Att använda dynamiska `className` via NativeWind (t.ex. växla bakgrundsfärg vid klick) inuti en `@gorhom/bottom-sheet` (`BottomSheetModal`) kraschar appen med felet: `[Error: Couldn't find a navigation context...]`.
@@ -73,17 +76,17 @@
 
 ## UI & Styling Strategy
 - **Källa:** Figma Design (gratisversionen).
-- **Metod:** Visuell uppskattning och manuell kontroll av värden (färgkoder, avstånd, hörnradie) i Design-tabben då Dev Mode ej används.
 - **System:** NativeWind (Tailwind CSS) används för all styling.
-- **Konsistens:** När stylingen är satt för Dashboard, låser vi den i `docs/style_guide.md` för att säkerställa visuell identitet i framtida vyer.
+- **Glassmorphism:** Vi använder en kombination av `bg-white/70` och `border-2 border-white` för att skapa en "frosted glass"-effekt på kort. Detta gör att bakgrunds-vektorer kan anas genom komponenten för en premium-känsla.
+- **Shadow Clipping Fix:** För att förhindra att skuggor klipps i kanterna (clipping) i React Native används en `shadowWrapper` (en `View` med specifika `StyleSheet`-skuggor) som omsluter `TouchableOpacity`. Inga `overflow: hidden` används på containern med skugga.
+- **Konsistens:** Allt från Dashboard-kort till `ScheduleEntryCard` följer samma `rounded-[32px]` och skugg-standard för att skapa en enhetlig visuell identitet.
 - **Komponenter:** PascalCase (t.ex. `NextLessonCard.tsx`) och funktionsbaserade komponenter.
-- **Komponent-modularisering:** Stora vyer (som Inställningar) bryts ner i logiska sub-komponenter (t.ex. `PersonalSection`, `BioSection`) i egna mappar (`src/components/settings/`) för att hålla huvudfilen ren och underhållbar. Delade form-element samlas i t.ex. `SettingsUI.tsx`.
+- **Grid-layout:** För listvyer med få element (t.ex. 2-3 elever) används `numColumns={2}` i `FlatList` för att skapa en "galleri"-känsla istället för en gles vertikal lista.
 - **Animerade komponenter:** Vi använder `LayoutAnimation` (React Native) inkapslat i en `AccordionItem`-komponent för smidiga expand/collapse-effekter (60fps) utan behov av tunga tredjepartsbibliotek.
 - **Native Formulärkomponenter:** För att efterlikna Apples och Garmins nativa UI-känsla undviker vi fullskärmsmodaler för enkla val.
     - `SelectField` använder `@react-native-picker/picker` för nativa inbyggda rullhjul som expanderar "inline".
     - `TimePickerField` och `DatePickerField` använder `@react-native-community/datetimepicker` som utnyttjar iOS inbyggda "spinner" respektive "inline" kalender. För att inte bryta appens flow används transparent bakgrund (inte dimmad svart) med subtila skuggor (`shadow-lg`) för action-sheet-visningen.
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
-- **Globala Komponenter:** `PageHeader.tsx` i `/src/components/ui` ersatte `DashboardHeader`. Den används som en enhetlig rubrikmodul för alla huvudflikar (Dashboard, Elever, Inställningar) och tar emot en `title`-prop för att vara dynamisk men bibehålla visuell konsistens.
 
 ## Avancerade UI-Animationer (Karusell)
 - **Verktyg:** Efter stabilitetstester föll valet tillbaka på `react-native-reanimated-carousel` för att bygga notifikationsstacken (`NotificationStack`).
@@ -121,7 +124,8 @@
 ## Navigation Architecture (Refactor)
 - **Stack over Tabs:** Vi använder en "Stack over Tabs"-arkitektur för att lösa navigeringshistoriken.
     - **Struktur:** Huvudlayouten (`app/(auth)/_layout.tsx`) är en `Stack`. Inuti denna stack ligger en `Tabs`-grupp (`app/(auth)/(tabs)/_layout.tsx`).
-    - **Detaljvyer:** Detaljsidor som `student/[id]` ligger som syskon till `(tabs)` i den yttre Stacken.
+    - **Detaljvyer:** Detaljsidor som `student/[id]` och `notification/[id]` ligger som syskon till `(tabs)` i den yttre Stacken.
+    - **Transition Fix:** För att undvika att dashboarden "lyser igenom" vid slide-animationer måste detaljsidor ha en solid bakgrundsfärg (`bg-brand-bg`). Detta ger en renare övergång än att behålla transparensen hela vägen.
     - **Beteende:** När man navigerar från en lista (i en Tab) till en detaljvy, pushas detaljvyn *ovanpå* hela tabb-layouten. Detta gör att "Tillbaka"-knappen (native back eller `navigation.goBack()`) korrekt "poppar" vyn och återgår till listan, istället för att återställa till start-tabben.
     - **Expo Router Groups:** Mappen för tabbar döptes om till `(tabs)` (med parenteser) för att agera som en "Group" som inte påverkar URL-strukturen, vilket säkerställer att `index` inuti gruppen fortfarande är root (`/`).
 
