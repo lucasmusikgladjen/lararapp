@@ -10,9 +10,9 @@ export const ScheduleEntryCard = () => {
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => router.push("/schedule")}
-                className="flex-row items-center bg-white/60 p-6 rounded-[28px] border-2 border-white/80"
+                className="flex-row items-center bg-brand-bg p-6 rounded-[28px] border border-slate-300"
             >
-                <View className="w-14 h-14 rounded-full bg-white items-center justify-center mr-4 shadow-sm border border-slate-50">
+                <View className="w-14 h-14 items-center justify-center mr-4">
                     <Ionicons name="calendar-outline" size={28} color="#F97316" />
                 </View>
 

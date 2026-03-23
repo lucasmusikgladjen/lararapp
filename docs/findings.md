@@ -49,19 +49,28 @@
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54/React 19.
+- **Miljöhantering (.env):** Expo kräver att miljövariabler börjar med prefixet `EXPO_PUBLIC_` (t.ex. `EXPO_PUBLIC_API_URL`) för att de ska inkluderas i JavaScript-bundlen. Vi använder en central `src/config/api.ts` för att hantera API-URL:en (DRY), vilket underlättar växling mellan lokala IP-adresser och produktion. Vid ändring krävs ofta `npx expo start -c`.
 - **Route-namngivning:** Expo Router kräver att startfilen i en mapp heter `index.tsx` för att agera som root-vy. Om dashboarden döps om till t.ex. `dashboard.tsx` inuti `(tabs)`-mappen uppstår ett "Unmatched Route"-fel.
 - **Datumhantering:** Jämförelser sker mot `new Date().toISOString().split('T')[0]` för att undvika tidszonsförskjutningar vid midnatt.
 - **Onboarding-navigering (Register -> Instruments -> Dashboard):** Navigeringen efter registrering styrs av auth-guarden i `app/_layout.tsx` via flaggan `needsOnboarding` i Zustand-store — **inte** via direkt `router.replace` i `useRegister`-hooken. Detta löser en race condition där auth-guarden (som reagerar på `isAuthenticated`-ändringen) och hook-navigeringen tävlade om att navigera användaren, vilket ledde till att Dashboard visades direkt istället för instrumentvalet. Flödet: `useRegister` sätter `needsOnboarding: true` → anropar `loginToStore` → auth-guard ser `isAuthenticated && needsOnboarding` → navigerar till `/(auth)/onboarding/instruments` → vid avslutad profilsparning sätts `needsOnboarding: false` och navigering sker till Dashboard.
 - **Stale State Management (Cachning):** För att undvika onödiga API-anrop till Airtable använder vi `staleTime` (t.ex. 2 minuter) i React Query. Detta, kombinerat med `useFocusEffect` och `RefreshControl` (Pull-to-refresh), minimerar "blinkande" gränssnitt och UX-glitchar vid sidnavigering, samtidigt som appen förblir skalbar för tusentals lärare utan att bryta Airtables hastighetsbegränsningar (5 requests/sek).
 - **Filtrering av genomförda lektioner:** Dashboarden filtrerar nu `allLessons` baserat på `isCompleted`-flaggan. Genomförda lektioner exkluderas från "Försenad"-listan och visas istället i "Senaste"-tabben.
 
-## Frontend: Bottom Sheet Modals & NativeWind (Edge Case)
-- **Problematik:** Att använda dynamiska `className` via NativeWind (t.ex. växla bakgrundsfärg vid klick) inuti en `@gorhom/bottom-sheet` (`BottomSheetModal`) kraschar appen med felet: `[Error: Couldn't find a navigation context...]`.
-- **Orsak:** Bottom Sheets renderas i en "Portal" högst upp i appens root, utanför Expo Routers inre navigationsträd. När NativeWind försöker kompilera om dynamiska klasser vid state-ändringar inuti denna portal, tappar den bort kontexten för navigeringen och kraschar appen.
-- **Lösning (Bypass):** För dynamisk styling inuti modaler (som t.ex. en Segmented Control), använd statiska `className` för layout/struktur, och React Natives inbyggda `style`-prop för dynamiska värden (t.ex. `style={{ backgroundColor: isActive ? 'white' : 'transparent' }}`). Detta förhindrar att NativeWind försöker bygga om komponenten och kringgår kraschen helt. Detta är också betydligt mer prestandaeffektivt.
+## Frontend: Stabilitet & Renderingsfel
+- **Unika Nycklar (Composite Keys):** För att undvika krascher i listor där data kan ha dubbletter (t.ex. vid mass-genererade lektioner), används **Composite Keys**. 
+    - **Mönster:** ``key={`${lesson.student.id}-${lesson.date}-${lesson.time}-${index}`}``. Detta garanterar stabilitet även vid kantfall (Edge cases).
+- **NativeWind & Navigation Context:** Ett vanligt fel (`Couldn't find a navigation context`) uppstår när NativeWind-klasser unmountas (raderas ur minnet) för snabbt under flikbyten (ternary operators). 
+    - **Lösning:** Istället för `{tab === 'A' ? <A /> : <B />}` används `style={{ display: activeTab === 'A' ? 'flex' : 'none' }}`. Detta behåller komponenterna monterade men gömda, vilket eliminerar kraschen och ger snabbare flikbyten.
+- **State Hydration Bug:** Om appen blir blank (endast visar laddning) beror det ofta på att `AsyncStorage` har en föråldrad `token` men saknar ett giltigt `user`-objekt (Zustand osynk). En "Emergency Reset"-logik (Tvinga utloggning) implementerades för att rensa korrupt state i simulatorer.
+
+## Frontend: Dark Mode & Native UI
+- **Native Theme Variant:** iOS-komponenter som `DateTimePicker` anpassar textfärg efter telefonens systeminställning (Dark/Light). Om appen har en hårdkodad vit bakgrund blir vit text osynlig i Dark Mode.
+    - **Fix:** Använd `themeVariant="light"` direkt på `DateTimePicker` för att tvinga fram läsbar (svart) text oavsett telefonens globala inställning.
+- **App-nivå:** `userInterfaceStyle: "light"` sattes i `app.json` för att låsa appen till ljust tema under MVP-fasen.
 
 ## Hantera Lektionsschema (Schedule Management UX)
 - **Entry Card Pattern:** För att hålla appens bottenmeny ren och undvika kognitiv överbelastning, placerades "Hantera lektionsschema" som ett `ListHeaderComponent`-kort högst upp i Elever-listan. Detta skapar en tydlig och Apple-esque hierarki.
+- **Deep Linking via Params:** Genom att använda `router.push` med objektet `params: { action: 'skapa', studentId: id }` kan användaren hoppa direkt från en Elevprofil till schemaläggaren med rätt elev förvald. Detta hanteras via `useLocalSearchParams` och `useEffect` i mål-vyn.
 - **Bulk Update vs Single Update:** Tydlig separering av avsikter:
     - **Justera (Bulk):** Ändrar elevens återkommande schema för *resten av terminen*. Ett textblock har lagts till i UI:t för att minska risken för missförstånd.
     - **Boka om (Single):** Ligger kvar på individuell lektionsnivå inne på elevprofilen för att endast ändra *ett* specifikt tillfälle.
@@ -87,6 +96,7 @@
     - `SelectField` använder `@react-native-picker/picker` för nativa inbyggda rullhjul som expanderar "inline".
     - `TimePickerField` och `DatePickerField` använder `@react-native-community/datetimepicker` som utnyttjar iOS inbyggda "spinner" respektive "inline" kalender. För att inte bryta appens flow används transparent bakgrund (inte dimmad svart) med subtila skuggor (`shadow-lg`) för action-sheet-visningen.
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
+- **Tab State Management:** För att återställa accordion-menyer och rensa temporära fält vid flikbyte (Tab-switching) används `useFocusEffect` kombinerat med en `resetKey` på huvudcontainern. Detta tvingar en "Remount" av vyn varje gång användaren återvänder till fliken, vilket ger en fräsch start.
 
 ## Avancerade UI-Animationer (Karusell)
 - **Verktyg:** Efter stabilitetstester föll valet tillbaka på `react-native-reanimated-carousel` för att bygga notifikationsstacken (`NotificationStack`).
@@ -162,7 +172,7 @@
 ## Karta Fas 6: Ansökningsflöde (Request to Teach)
 - **Semantik:** Valde namngivningen `request-to-teach` (snarare än `apply`) för att matcha Airtables `Önskar`-fält och tydliggöra att det handlar om en "Connection request" till en specifik elev, inte en jobbansökan i allmänhet.
 - **Hantering av Airtable Arrays (Linked Records):** Eftersom fältet `Önskar` kan innehålla ID:n från flera olika lärare, gjordes backend robust genom att *först* hämta den befintliga arrayen, pusha in det nya ID:t (`[...current, newId]`), och sedan utföra en `PATCH`. En direkt uppdatering utan att hämta först hade skrivit över tidigare lärares ansökningar. Formatering av meddelanden i `ÖnskaKommentar` sparades med dynamisk `[YYYY-MM-DD]` timestamp.
-- **Duplicate Prevention:** Backend utvärderar direkt om en lärare redan finns i `Önskar`-arrayen. Om så är fallet avbryts requesten och kastar en exakt `400 Bad Request` med ett tydligt felmeddelande för att förhindra spam/dubbletter i databasen.
+- **Duplicate Prevention:** Backend utvärberar direkt om en lärare redan finns i `Önskar`-arrayen. Om så är fallet avbryts requesten och kastar en exakt `400 Bad Request` med ett tydligt felmeddelande för att förhindra spam/dubbletter i databasen.
 - **Frontend Error Handling:** Vi nyttjar att Axios per automatik kastar fel för 4xx/5xx-koder. TanStack Querys `onError`-block snappar upp detta och presenterar backendens felmeddelande i en native `Alert`, vilket hindrar appen från att krascha vid dubbla klick.
 - **Premium UX (hasApplied-flagga):** För att förhindra att läraren ens försöker ansöka på nytt, extraheras inloggad `teacherId` från JWT-token och skickas med i kartans `GET /search`-anrop. Backend returnerar då `hasApplied: true` ifall läraren redan ansökt om eleven. Detta genererar ett omedelbart state i modulen där knappen gråas ut och textfältet inaktiveras med texten "ANSÖKAN SKICKAD".
 - **Cache Invalidation:** Vid lyckad ansökan via `useMutation` invalideras automatiskt `["search-students"]`-cachen. Detta triggar en tyst uppdatering i bakgrunden så att modulen direkt går in i `hasApplied`-läget utan att användaren behöver stänga/öppna den.

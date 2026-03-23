@@ -20,10 +20,10 @@ export const StudentCard = ({ student, onPress }: StudentCardProps) => {
                 activeOpacity={0.9}
                 style={{ width: COLUMN_WIDTH }}
                 // Glassmorphism: bg-white/60 + border-2 border-white/80
-                className="items-center p-6 rounded-[24px] bg-white/60 border-2 border-white/80"
+                className="items-center p-6 rounded-[24px] bg-brand-bg border border-slate-300"
             >
                 {/* Avatar - Scaled down for grid */}
-                <View className="size-20 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white/90 mb-4">
+                <View className="size-20 rounded-full overflow-hidden mb-4">
                     <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
                 </View>
 

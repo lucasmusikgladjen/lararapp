@@ -143,7 +143,7 @@
     - **POST /lessons:** Logik för att loopa datumveckor (+7 dagar) och rulla ut hela terminer av lektioner tills `termEnd` nås, eller skapa enskilda instanser om repeat saknas.
     - **PATCH /lessons/adjust:** Endpoint för att "Justera" schema. Hittar alla framtida lektioner, sorterar dem i datumordning och applicerar ny tid/dag/upplägg utan att störa historik.
     - **DELETE /lessons/future:** Raderar lektioner för en elev från ett valt datum (perfekt vid uppehåll eller när en elev slutar).
-    - Löst sökproblematik i Airtable API genom att tillämpa `SEARCH('{studentName}')` på ett dedikerat textfält i Lektioner-tabellen.
+    - Löst sökproblematik i Airtable API genom att tillämpa `SEARCH('{studentName}')` på ett dedikerad textfält i Lektioner-tabellen.
 
 - [x] **Frontend - Hantera lektionsschema (Schedule Management UX):**
     - Skapat nytt "Entry Card" (`ScheduleEntryCard`) högst upp i Elever-listan som en `ListHeaderComponent` för ren hierarki.
@@ -182,6 +182,18 @@
     - **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra att skuggor klipps i sidled i React Native.
     - **Grid Layout:** Uppdaterat "Mina elever" till en 2-kolumns grid för bättre UX på enheter med få elever.
     - **Konsistens:** Uppdaterat `ScheduleEntryCard` till den nya glassmorphism-stilen för att matcha övriga listor.
+
+- [x] **Arkitektur & Miljöhantering (.env):**
+    - [x] Implementerat central API-konfiguration via `src/config/api.ts` för att följa DRY-principen.
+    - [x] Infört `.env` stöd med `EXPO_PUBLIC_` prefix för att enkelt växla mellan hem- och kontorsnätverk.
+
+- [x] **Stabilitet & Buggfixar (Session 2026):**
+    - [x] **Dashboard-krasch:** Löst krasch i "Senaste"-vyn genom att införa Composite Keys (Student ID + Datum + Tid + Index) för unik renderingsidentitet.
+    - [x] **Inställningar-bugg:** Fixat blank skärm i emulator genom att lägga till Emergency Logout-logik för att rensa korrupt state vid Zustand-osynk.
+    - [x] **Dark Mode Fix:** Åtgärdat osynlig text i Picker-komponenter genom att tvinga `themeVariant="light"` på alla native iOS-datumväljare.
+    - [x] **Navigation Fix:** Implementerat `resetKey` och `useFocusEffect` på inställningssidan för att automatiskt stänga accordions vid flikbyte.
+    - [x] **Deep Linking:** Skapat direktlänk från Elevprofil ("Boka lektion") till schemaläggaren med vald elev förifylld via URL-parametrar och `useLocalSearchParams`.
+    - [x] **Layout Fix:** Löst NativeWind-krasch i Elevprofil genom att ersätta villkorsstyrd rendering med `display: none/flex` för att bibehålla navigeringskontext.
 
 ## Pågående 🚧
 - [ ] Implementering av den nya glassmorphism-designen på resterande Dashboard-kort (Delayed/Kommande).
