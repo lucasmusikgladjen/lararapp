@@ -45,4 +45,4 @@ Ersätta den traditionella textbaserade sökningen med en dynamisk "Sök i det h
 ### Fas 5: Dokumentation & Uppföljning
 - [ ] **Uppdatera:** `docs/progress.md`.
 - [ ] **Uppdatera:** `docs/findings.md` med anteckningar om hur radie beräknas baserat på `latitudeDelta`.
-- [ ] **Uppdatera:** `docs/task_plan.md`.
+- [ ] **Uppdatera:** `docs/task_plan.md`. 
