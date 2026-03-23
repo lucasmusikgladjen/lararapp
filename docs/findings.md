@@ -151,6 +151,15 @@
     - **Kontext-baserad Radie:** Sökning på stad tvingar en mindre radie (10-20km) för att exkludera grannstäder, medan GPS-sökning använder en större radie (30km).
 - **Prestanda (Markers):** För att undvika lagg vid rendering av många markörer använder vi `tracksViewChanges={false}` på `<Marker />` och enkla `View`-komponenter istället för tunga bilder.
 
+## Moderniserad Kartsökning ("Search in this area" - Fas 7)
+- **Radieberäkning (Zoom → km):** Sökradien beräknas dynamiskt från kartans `latitudeDelta` via formeln: `Radius (km) = (latitudeDelta * 111) / 2`. Exempel: `latitudeDelta = 0.36` → `(0.36 * 111) / 2 ≈ 20 km` radie.
+- **Tröskelvärden (UX Flickering Prevention):** Knappen "Sök i det här området" visas INTE vid varje liten rörelse. Två trösklar används parallellt:
+    - **Avstånd:** Mittpunkten måste flyttas >500m (beräknat via förenklad Haversine med `cos(lat)` korrektion).
+    - **Zoom:** `latitudeDelta` måste ändras >20% relativt `lastSearchRegion`.
+- **Smart Start (Initial Position):** Vid mount körs GPS-hämtning. Succé → center med `latitudeDelta: 0.36` (~20km diameter). Fallback → Stockholm (59.3293, 18.0686). Båda triggar automatisk `fetchStudents`.
+- **Store-arkitektur:** `searchQuery`, `setSearchQuery` och geocoding-logik har tagits bort. Ersatt med `mapRegion` (aktuell kartposition), `lastSearchRegion` (senaste sökpositionen) och `showSearchButton` (boolean). `searchInArea` action beräknar radie och anropar API.
+- **Namngivning:** Följer `PascalCase` för komponenter och `camelCase` för store-actions/state, i enlighet med projektstandard.
+
 ## Filter & Sök (Karta Fas 2)
 - **Debounce-strategi:** Sökfältet (text) använder en 1000ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop, och tillåter geocoding att hinna klart. Filter-chips triggar omedelbar refetch.
 - **Modul-level timer:** Debounce-timern (`debounceTimer`) lever utanför Zustand-storen som en modul-variabel. Detta undviker att timern nollställs vid varje state-uppdatering och fungerar korrekt med Zustandss `set/get`-mönster.
