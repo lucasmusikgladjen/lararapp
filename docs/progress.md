@@ -204,7 +204,7 @@
     - **Memoization:** Alla kart-callbacks (`onRegionChangeComplete`, `handleSearchInArea`) wrappade i `useCallback` för att förhindra onödiga re-renders vid panorering.
 
 ## Pågående 🚧
-- [ ] Implementering av den nya glassmorphism-designen på resterande Dashboard-kort (Delayed/Kommande).
+- [ ] 
 
 ## Kommande 📅
 *(Listan är för närvarande tom. Dags att planera nästa stora funktion!)*

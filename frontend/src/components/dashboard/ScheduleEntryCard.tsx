@@ -6,7 +6,7 @@ export const ScheduleEntryCard = () => {
     const router = useRouter();
 
     return (
-        <View style={styles.shadowWrapper} className="mb-6 mt-2">
+        <View /* style={styles.shadowWrapper} */ className="mb-6 mt-2">
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => router.push("/schedule")}

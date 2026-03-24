@@ -48,6 +48,8 @@ export type StudentPublicDTO = {
     lng?: number;
     distance?: number;
     hasApplied?: boolean;
+    birthYear?: string | number;
+    studentNumber?: number | string;
 };
 
 export type SearchStudentsResponse = {

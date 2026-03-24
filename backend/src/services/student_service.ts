@@ -147,6 +147,8 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
             lng: lng,
             distance: distance ? parseFloat(distance.toFixed(1)) : undefined,
             hasApplied: hasApplied,
+            birthYear: fields.Födelseår,
+            studentNumber: fields.NummerID,
         };
     });
 

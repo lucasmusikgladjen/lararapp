@@ -1,5 +1,6 @@
 export type AirtableStudentFields = {
     ID: string;
+    NummerID?: number | string;
     Namn: string;
     Födelseår: string;
     Instrument: string;
@@ -79,6 +80,8 @@ export interface StudentPublicDTO {
     lng?: number;
     distance?: number;
     hasApplied?: boolean;
+    birthYear?: string | number;
+    studentNumber?: number | string;
 }
 
 export interface GetStudentsQuery {

@@ -1,148 +1,222 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, TextInput, Image, Alert, Keyboard, StyleSheet } from "react-native";
-import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { View, Text, TouchableOpacity, TextInput, Alert, Keyboard, StyleSheet } from "react-native";
+import BottomSheet, { BottomSheetScrollView, BottomSheetBackgroundProps } from "@gorhom/bottom-sheet";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { StudentPublicDTO } from "../../types/student.types";
 import { useRequestToTeach } from "../../hooks/useStudentMutation";
+import { MainBackground } from "../ui/MainBackground";
 
 interface StudentDetailSheetProps {
     student: StudentPublicDTO | null;
     onClose: () => void;
 }
 
-const INSTRUMENT_ICONS: Record<string, string> = {
-    piano: "piano",
-    gitarr: "guitar-acoustic",
-    fiol: "violin",
-    trummor: "drum",
-    sång: "microphone",
-};
-
-function getInstrumentIcon(instrument: string): string {
-    return INSTRUMENT_ICONS[instrument.toLowerCase()] ?? "musical-notes";
-}
-
 export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps) {
-    const [greeting, setGreeting] = useState("");
-    const [submitting, setSubmitting] = useState(false);
-    const sheetRef = useRef<BottomSheet>(null);
+    const [field1, setField1] = useState("");
+    const [field2, setField2] = useState("");
+    const [field3, setField3] = useState("");
+    const [field4, setField4] = useState("");
 
-    // GOOGLE MAPS BEHAVIOR:
-    // 25% = "Peek" (See name + rating + small info)
-    // 90% = "Full" (See reviews, photos, etc.)
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+    const sheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["25%", "90%"], []);
 
     const requestMutation = useRequestToTeach({
         studentId: student?.id || "",
         onSuccess: () => {
-            Alert.alert("Ansökan skickad!", "Vi hör av oss så snart som möjligt.");
-            setGreeting(""); // Clear input on success
-            onClose(); // Close the modal
+            Alert.alert("Ansökan skickad!", "Vi har tagit emot din intresseanmälan.");
+            setField1("");
+            setField2("");
+            setField3("");
+            setField4("");
+            setAgreedToTerms(false);
+            onClose();
         },
         onError: (error: any) => {
-            // Safely extract the backend error message if it exists (e.g. "You have already sent a request for this student")
-            const backendMsg = error.response?.data?.error || error.response?.data?.message || "Något gick fel. Försök igen.";
-
+            const backendMsg = error.response?.data?.error || error.response?.data?.message || "Något gick fel.";
             Alert.alert("Hoppsan!", backendMsg);
         },
     });
 
     useEffect(() => {
-        setGreeting("");
-        // When a new student is selected, snap to the "Peek" position (index 0)
-        // or "Full" (index 1) depending on preference. Google Maps usually peeks first.
+        setField1("");
+        setField2("");
+        setField3("");
+        setField4("");
+        setAgreedToTerms(false);
         sheetRef.current?.snapToIndex(0);
     }, [student]);
 
     if (!student) return null;
 
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}`;
-    const primaryInstrument = student.instruments[0] ?? "Instrument";
+    const currentYear = new Date().getFullYear();
+    const studentAge = student.birthYear ? `${currentYear - Number(student.birthYear)} år` : "Okänd";
+    const displayId = student.studentNumber ? student.studentNumber : student.id.slice(-4).toUpperCase();
 
     const handleApply = () => {
+        if (!agreedToTerms) return;
         Keyboard.dismiss();
-        requestMutation.mutate({ message: greeting.trim() });
+        const combinedMessage = `Erfarenhet: ${field1}\nTillgänglighet: ${field2}\nPris: ${field3}\nÖvrigt: ${field4}`;
+        requestMutation.mutate({ message: combinedMessage.trim() });
     };
+
+    const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({ style }) => (
+        <View style={[style, styles.sheetBackground, { overflow: "hidden" }]}>
+            <MainBackground>
+                <View />
+            </MainBackground>
+        </View>
+    );
 
     return (
         <BottomSheet
             ref={sheetRef}
-            index={0} // Start at 25% (Peek)
+            index={0}
             snapPoints={snapPoints}
             enablePanDownToClose={true}
             onClose={onClose}
-            backgroundStyle={styles.sheetBackground}
+            backgroundComponent={CustomBackground}
             handleIndicatorStyle={styles.dragHandle}
         >
-            <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-                {/* Header / Close (Visible in Peek) */}
-                <View className="flex-row items-center justify-between px-5 pt-1 pb-2">
-                    <View className="w-8" />
-                    <Text className="text-lg font-bold text-slate-900">Elevprofil</Text>
-                    <TouchableOpacity onPress={onClose} className="w-8 h-8 bg-slate-50 rounded-full items-center justify-center">
-                        <MaterialCommunityIcons name={getInstrumentIcon(primaryInstrument) as any} size={16} color="#FFFFFF" />
+            <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+                {/* Header */}
+                <View className="flex-row items-center justify-end px-5 pt-1 pb-4">
+                    <TouchableOpacity onPress={onClose} className="w-8 h-8 bg-white/60 rounded-full items-center justify-center">
+                        <MaterialCommunityIcons name="close" size={18} color="#64748B" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Hero Section (Visible in Peek) */}
-                <View className="items-center px-5 py-2">
-                    <View className="relative">
-                        <Image source={{ uri: avatarUrl }} className="w-20 h-20 rounded-full bg-slate-100" />
-                        <View className="absolute -right-1 top-0 w-8 h-8 rounded-full items-center justify-center bg-orange-500 border-2 border-white">
-                            <MaterialCommunityIcons name={getInstrumentIcon(primaryInstrument) as any} size={16} color="#FFFFFF" />
+                {/* Om eleven */}
+                <View className="px-5 py-4 bg-white rounded-3xl mx-5 shadow-sm border border-gray-100">
+                    <Text className="text-[17px] font-bold text-slate-900 mb-1">Elev #{displayId}</Text>
+                    <Text className="text-[15px] text-slate-700 leading-6 mb-5">
+                        Den här eleven söker en engagerad lärare i {student.instruments.join(", ").toLowerCase()} för att ta nästa steg i sin
+                        musikaliska utveckling.
+                    </Text>
+
+                    <View className="flex-row items-center">
+                        <View className="flex-1">
+                            <Text className="text-[16px] font-bold text-slate-900">Instrument</Text>
+                            <Text className="text-[15px] text-slate-700 mt-0.5">{student.instruments.join(", ")}</Text>
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-[16px] font-bold text-slate-900">Ålder</Text>
+                            <Text className="text-[15px] text-slate-700 mt-0.5">{studentAge}</Text>
                         </View>
                     </View>
-                    <Text className="text-2xl font-bold text-slate-900 mt-2">{student.name}</Text>
-                    <Text className="text-gray-500 text-sm font-medium">{student.instruments.join(", ")}</Text>
                 </View>
 
-                {/* Everything below here is revealed when swiping up to 90% */}
-                <View className="px-5 py-4 mt-2">
-                    <Text className="text-lg font-bold text-slate-900 mb-2">Om eleven</Text>
-                    <Text className="text-base text-gray-600 leading-6">
-                        {student.name} söker en lärare i {student.instruments.join(", ").toLowerCase()}. Eleven vill utvecklas och söker en pedagogisk
-                        lärare.
-                    </Text>
+                {/* Din ansökan */}
+                <View className="px-5 py-6 mt-2">
+                    <Text className="text-[17px] font-bold text-slate-900 mb-3">Din ansökan</Text>
+
+                    <TextInput
+                        className={`rounded-2xl p-4 text-[15px] mb-3 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="Berätta kort om din erfarenhet..."
+                        placeholderTextColor="#9CA3AF"
+                        value={field1}
+                        onChangeText={setField1}
+                        editable={!student.hasApplied && !requestMutation.isPending}
+                    />
+
+                    <TextInput
+                        className={`rounded-2xl p-4 text-[15px] mb-3 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="När kan du hålla lektioner?"
+                        placeholderTextColor="#9CA3AF"
+                        value={field2}
+                        onChangeText={setField2}
+                        editable={!student.hasApplied && !requestMutation.isPending}
+                    />
+
+                    <TextInput
+                        className={`rounded-2xl p-4 text-[15px] mb-3 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="Ditt föreslagna lektionspris..."
+                        placeholderTextColor="#9CA3AF"
+                        value={field3}
+                        onChangeText={setField3}
+                        editable={!student.hasApplied && !requestMutation.isPending}
+                    />
+
+                    <TextInput
+                        className={`rounded-2xl p-4 text-[15px] border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="Övrig info..."
+                        placeholderTextColor="#9CA3AF"
+                        value={field4}
+                        onChangeText={setField4}
+                        editable={!student.hasApplied && !requestMutation.isPending}
+                    />
                 </View>
 
-                <View className="h-[1px] bg-gray-100 mx-5 my-2" />
+                {/* Vad händer sen? - Uppdaterad för Musikglädjen med bättre spacing */}
+                <View className="px-5 mb-6">
+                    <Text className="text-[17px] font-bold text-slate-900 mb-4">Vad händer sen?</Text>
 
-                <View className="px-5 py-4">
-                    <Text className="text-lg font-bold text-slate-900 mb-3">Skicka ansökan</Text>
-                    <View
-                        className={`rounded-2xl p-4 border ${student.hasApplied ? "bg-slate-100 border-slate-200" : "bg-green-50 border-green-100"}`}
-                    >
-                        <TextInput
-                            className={`rounded-xl p-3 text-base min-h-[100px] border ${
-                                student.hasApplied ? "bg-slate-50 text-slate-500 border-slate-200" : "bg-white text-slate-900 border-gray-200"
-                            }`}
-                            placeholder={
-                                student.hasApplied ? "Du har redan skickat en ansökan till den här eleven." : "Hej! Jag hjälper dig gärna..."
-                            }
-                            placeholderTextColor="#9CA3AF"
-                            multiline
-                            textAlignVertical="top"
-                            value={greeting}
-                            onChangeText={setGreeting}
-                            editable={!student.hasApplied && !requestMutation.isPending}
-                        />
+                    <View className="flex-row items-start mb-4 pr-6">
+                        <View className="w-7 h-7 rounded-full bg-brand-orange items-center justify-center mr-3 mt-0.5 shadow-sm">
+                            <Text className="text-white font-bold text-sm">1</Text>
+                        </View>
+                        <Text className="text-[15px] text-slate-800 leading-tight flex-1">
+                            Din profil skickas till elevens familj för granskning.
+                        </Text>
+                    </View>
+
+                    <View className="flex-row items-start mb-4 pr-6">
+                        <View className="w-7 h-7 rounded-full bg-brand-orange items-center justify-center mr-3 mt-0.5 shadow-sm">
+                            <Text className="text-white font-bold text-sm">2</Text>
+                        </View>
+                        <Text className="text-[15px] text-slate-800 leading-tight flex-1">
+                            Vi granskar din ansökan för att säkerställa en bra matchning.
+                        </Text>
+                    </View>
+
+                    <View className="flex-row items-start pr-6">
+                        <View className="w-7 h-7 rounded-full bg-brand-orange items-center justify-center mr-3 mt-0.5 shadow-sm">
+                            <Text className="text-white font-bold text-sm">3</Text>
+                        </View>
+                        <Text className="text-[15px] text-slate-800 leading-tight flex-1">
+                            Vid matchning får ni kontaktuppgifter för att boka första lektionen.
+                        </Text>
                     </View>
                 </View>
 
+                {/* Checkbox & Submit */}
                 <View className="px-5 pt-2">
                     <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => !student.hasApplied && setAgreedToTerms(!agreedToTerms)}
+                        disabled={student.hasApplied}
+                        className="flex-row items-center mb-5"
+                    >
+                        <View
+                            className={`w-6 h-6 rounded-md border items-center justify-center mr-3 ${student.hasApplied ? "bg-white/50 border-slate-300" : agreedToTerms ? "bg-brand-orange border-brand-orange shadow-sm" : "bg-white border-slate-300 shadow-sm"}`}
+                        >
+                            {(agreedToTerms || student.hasApplied) && <Ionicons name="checkmark" size={16} color="white" />}
+                        </View>
+                        <Text className={`text-[15px] flex-1 leading-tight font-medium ${student.hasApplied ? "text-slate-500" : "text-slate-800"}`}>
+                            Jag bekräftar att jag vill bli matchad med den här eleven.
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
                         onPress={handleApply}
-                        disabled={requestMutation.isPending || student.hasApplied} // Disable button if applied!
-                        className="rounded-full py-4 items-center shadow-sm"
+                        disabled={requestMutation.isPending || student.hasApplied || !agreedToTerms}
+                        className="rounded-2xl py-4 flex-row justify-center items-center shadow-sm"
                         style={{
-                            // Grey if applied, light green if loading, bright green if ready
-                            backgroundColor: student.hasApplied ? "#94A3B8" : requestMutation.isPending ? "#86efac" : "#22c55e",
-                            opacity: requestMutation.isPending || student.hasApplied ? 0.7 : 1,
+                            backgroundColor:
+                                student.hasApplied || (!agreedToTerms && !requestMutation.isPending)
+                                    ? "#CBD5E1"
+                                    : requestMutation.isPending
+                                      ? "#FDBA74"
+                                      : "#F97316",
                         }}
                     >
-                        <Text className="text-white font-bold text-lg">
-                            {student.hasApplied ? "ANSÖKAN SKICKAD" : requestMutation.isPending ? "SKICKAR..." : "SKICKA ANSÖKAN"}
+                        <Text className="text-white font-bold text-[17px]">
+                            {student.hasApplied ? "ANSÖKAN SKICKAD" : requestMutation.isPending ? "SKICKAR..." : "Önska"}
                         </Text>
+                        {!student.hasApplied && !requestMutation.isPending && (
+                            <Ionicons name="arrow-forward" size={20} color="white" style={{ marginLeft: 8 }} />
+                        )}
                     </TouchableOpacity>
                 </View>
             </BottomSheetScrollView>
@@ -153,19 +227,14 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
 const styles = StyleSheet.create({
     sheetBackground: {
         backgroundColor: "white",
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 10,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
     },
     dragHandle: {
-        backgroundColor: "#E2E8F0",
+        backgroundColor: "#CBD5E1",
         width: 40,
         height: 5,
         borderRadius: 10,
-        marginTop: 8,
+        marginTop: 10,
     },
 });
