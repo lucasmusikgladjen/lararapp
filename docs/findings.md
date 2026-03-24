@@ -13,13 +13,18 @@
 - **Fältmappning (Elev):**
     - `notes` (Frontend) <-> `kommentar` (API) <-> `Kommentar` (Airtable).
     - `goals` (Frontend) <-> `terminsmal` (API) <-> `Terminsmål` (Airtable).
-    - **Genomförd-status:** För att hämta status på länkade lektioner används ett **Lookup-fält** i Airtable ("Lektioner Genomförda") på `Elev`-tabellen. Detta mappas till arrayen `upcomingLessonCompleted: boolean[]` i `Student`-objektet för att möjliggöra filtrering i frontend.
 - **Airtable Skriv-operationer:** Vi har utökat `airtable.ts` med en generisk `post`-metod för att kunna skapa nya poster (t.ex. vid registrering).
-- **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable. Detta möjliggör flerval utan att bryta datamodellen.
-- **Säker Profiluppdatering:** `updateProfile`-controllern ignorerar `id` i URL-parametrar och använder istället strikt `req.user.id` från JWT-token. Detta förhindrar att en inloggad användare råkar (eller illvilligt) uppdatera någon annans profil.
-- **Clean Controllers:** Vi använder `matchedData` från `express-validator` i controllers för att garantera att endast validerad och sanerad data hanteras. Detta minskar risken för "mass assignment"-sårbarheter och håller controllern fri från valideringslogik.
-- **Asynkron Validering:** Unikhetskontroller (t.ex. att e-post inte redan finns) görs direkt i valideringslagret via custom validators (`custom(validateEmailDoesNotExist)`), vilket separerar affärsregler från request-hantering.
-- **Språkstandard:** Alla valideringsmeddelanden och loggar i backend är standardiserade till engelska.
+- **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable.
+- **Säker Profiluppdatering:** `updateProfile`-controllern ignorerar `id` i URL-parametrar och använder istället strikt `req.user.id` från JWT-token.
+- **Clean Controllers:** Vi använder `matchedData` från `express-validator` i controllers för att garantera att endast validerad och sanerad data hanteras.
+- **Asynkron Validering:** Unikhetskontroller görs direkt i valideringslagret via custom validators.
+
+## Backend: Geospatial Sökning & DTO
+- **Anonymiserad DTO:** `StudentPublicDTO` har utökats för att stödja anonymiserad visning på kartan.
+    - **Födelseår:** Inkluderas för att frontend ska kunna beräkna ålder utan att exponera födelsedata.
+    - **NummerID:** Vi mappar Airtables interna Auto-number (`NummerID`) till DTO:n för att ge varje elev en unik publik referens (t.ex. "Elev #479") då namn och avatar döljs för oinloggade/ej matchade lärare.
+- **Filtrering:** Sökradie beräknas i backend via Haversine-formeln. Backend returnerar endast elever som matchar lärarens valda instrument och geografiska område.
+
 
 ## Backend: Teacher Profile & Settings
 - **Säkerhet (Read-only):** Fält som `Timlön`, `Skattesats` och `Status` (Aktiv/Slutat) kan inte uppdateras via API:et. Service-lagret (`teacher_service.ts`) använder en strikt "allow-list" och ignorerar tyst försök att ändra dessa fält.
@@ -68,6 +73,11 @@
     - **Fix:** Använd `themeVariant="light"` direkt på `DateTimePicker` för att tvinga fram läsbar (svart) text oavsett telefonens globala inställning.
 - **App-nivå:** `userInterfaceStyle: "light"` sattes i `app.json` för att låsa appen till ljust tema under MVP-fasen.
 
+## Frontend: Moderniserad Kartsökning (Google Maps Style)
+- **Radieberäkning:** Sökradien beräknas dynamiskt från kartans zoomnivå: `Radius (km) = (latitudeDelta * 111) / 2`.
+- **Tröskelvärden:** För att undvika flimmer (flickering) visas "Sök i området"-knappen endast om kartan flyttats >500m eller zoomats >20%.
+- **Smart Start:** Appen försöker hämta GPS vid start (20km radie). Fallback vid nekad behörighet är Stockholm.
+
 ## Hantera Lektionsschema (Schedule Management UX)
 - **Entry Card Pattern:** För att hålla appens bottenmeny ren och undvika kognitiv överbelastning, placerades "Hantera lektionsschema" som ett `ListHeaderComponent`-kort högst upp i Elever-listan. Detta skapar en tydlig och Apple-esque hierarki.
 - **Deep Linking via Params:** Genom att använda `router.push` med objektet `params: { action: 'skapa', studentId: id }` kan användaren hoppa direkt från en Elevprofil till schemaläggaren med rätt elev förvald. Detta hanteras via `useLocalSearchParams` och `useEffect` i mål-vyn.
@@ -97,6 +107,9 @@
     - `TimePickerField` och `DatePickerField` använder `@react-native-community/datetimepicker` som utnyttjar iOS inbyggda "spinner" respektive "inline" kalender. För att inte bryta appens flow används transparent bakgrund (inte dimmad svart) med subtila skuggor (`shadow-lg`) för action-sheet-visningen.
 - **Navigation:** Bottenmenyn (Tabs) är synlig även på detaljvyer (t.ex. Elevprofil) för att underlätta snabb navigering, till skillnad från standard "Stack"-beteende där menyn döljs.
 - **Tab State Management:** För att återställa accordion-menyer och rensa temporära fält vid flikbyte (Tab-switching) används `useFocusEffect` kombinerat med en `resetKey` på huvudcontainern. Detta tvingar en "Remount" av vyn varje gång användaren återvänder till fliken, vilket ger en fräsch start.
+- **Native Layouts:** Använder `LayoutAnimation` för dragspelsmenyer (60fps) och nativa rullhjul (`@react-native-picker/picker`) för iOS-val.
+- **Theme Locking:** Appen är låst till `light` tema i `app.json` för att undvika problem med osynlig text i native-komponenter som `DateTimePicker`.
+- **Shadow Wrapper:** För att undvika clipping av skuggor i Android/iOS används en wrapper-vy utan `overflow: hidden`.
 
 ## Avancerade UI-Animationer (Karusell)
 - **Verktyg:** Efter stabilitetstester föll valet tillbaka på `react-native-reanimated-carousel` för att bygga notifikationsstacken (`NotificationStack`).
@@ -159,6 +172,19 @@
 - **Smart Start (Initial Position):** Vid mount körs GPS-hämtning. Succé → center med `latitudeDelta: 0.36` (~20km diameter). Fallback → Stockholm (59.3293, 18.0686). Båda triggar automatisk `fetchStudents`.
 - **Store-arkitektur:** `searchQuery`, `setSearchQuery` och geocoding-logik har tagits bort. Ersatt med `mapRegion` (aktuell kartposition), `lastSearchRegion` (senaste sökpositionen) och `showSearchButton` (boolean). `searchInArea` action beräknar radie och anropar API.
 - **Namngivning:** Följer `PascalCase` för komponenter och `camelCase` för store-actions/state, i enlighet med projektstandard.
+
+## Frontend: StudentDetailModal (Fas 8 - High Fidelity Refactor)
+- **Visuell Konsistens:** `MainBackground` (vågmönstret) används nu som `backgroundComponent` i `BottomSheet`. Genom att sätta `overflow: "hidden"` på bakgrunden klipps mönstret perfekt efter modalens rundade hörn.
+- **Anonymisering & Integritet:** Elevens namn och profilbild har tagits bort från kartsökningen. Eleven identifieras nu enbart via sin rubrik: **"Elev #{NummerID}"**.
+- **Information Grid:** "Om eleven"-sektionen använder en 2-kolumns layout för att tydligt visa **Instrument** och **Ålder** (beräknad från `birthYear`).
+- **Utökat Ansökningsformulär:** Den tidigare generella textrutan har ersatts av fyra specifika `TextInput`-fält:
+    1. Presentation/Erfarenhet.
+    2. Tillgänglighet.
+    3. Föreslaget pris.
+    4. Övrig information.
+- **UX & Trygghet ("Vad händer sen?"):** En numrerad steg-för-steg sektion förklarar matchningsprocessen (Ansökan -> Granskning -> Kontakt). För att förhindra text-clipping används `flex-1` på text-elementen i raderna kombinerat med generös höger-padding (`pr-6`).
+- **Samtycke & Checkbox:** En obligatorisk checkbox har införts. Submit-knappen ("Önska") förblir inaktiverad (grå) tills läraren aktivt bockat i sitt godkännande.
+- **State Cleanup:** Vid stängning eller byte av elev nollställs alla fyra formulärfält samt checkbox-state för att garantera en "clean slate" vid nästa öppning.
 
 ## Filter & Sök (Karta Fas 2)
 - **Debounce-strategi:** Sökfältet (text) använder en 1000ms debounce via `setTimeout` i Zustand-storen för att förhindra överflödiga API-anrop, och tillåter geocoding att hinna klart. Filter-chips triggar omedelbar refetch.
