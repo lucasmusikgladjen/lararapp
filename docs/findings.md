@@ -53,17 +53,17 @@
 - **Stale State Management (Cachning):** Använder `staleTime` (t.ex. 2 minuter) i React Query kombinerat med `useFocusEffect` för att minimera onödiga refetches.
 - **Filtrering av genomförda lektioner:** Dashboarden filtrerar `allLessons` baserat på `isCompleted`-flaggan.
 
-## Frontend: Elevhub & Modulär Design
-- **Elevhub-koncept:** Elevvyn har omstrukturerats till en "Elevhub" med mikro-moduler istället för en lång scrollande sida. Syftet är att göra sidan enklare att förstå utan scrollning och mer modulär för framtida funktioner.
-- **Hero Card Navigering:** Toppen av sidan innehåller ett kort med elevens avatar och navigerings-taggar (Info, Lektioner, Anteckningar, Mål).
-- **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden för både Dashboard och Elevprofil. Genom att mappa elevprofilens data till `LessonEvent`-gränssnittet kan samma komponent och logik för rapportering återanvändas i hela appen.
+## Frontend: Modulär Design (Hub-konceptet)
+- **Enhetligt Hub-system:** Både elevprofilen och lärarprofilen (Inställningar) har omstrukturerats till modulära "hubbar" med micro-sidor.
+- **Hero Card Navigering:** Toppen av dessa sidor innehåller ett Hero-kort med profilbild och färgkodade navigerings-tags (piller). För läraren inkluderar detta även en biografisk sammanfattning direkt i huvudvyn.
+- **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden för både Dashboard och Elevprofil. Genom att mappa elevprofilens data till `LessonEvent`-gränssnittet återanvänds samma logik för rapportering i hela appen.
 
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
 - **NativeWind & Navigation Context:** För att undvika kraschen `Couldn't find a navigation context` vid flikbyten, används `style={{ display: activeView === 'x' ? 'flex' : 'none' }}` istället för villkorsstyrd rendering (`&&`). Detta behåller komponenterna monterade men gömda.
-- **Hybrid Styling-strategi:** Dynamiska ändringar av Tailwind-klasser i `className` (t.ex. färgbyten vid klick) kan få NativeWind att tappa bort navigations-trädet. 
+- **Hybrid Styling-strategi:** Dynamiska ändringar av Tailwind-klasser i `className` kan få NativeWind att tappa bort navigations-trädet. 
     - **Lösning:** Håll `className` statisk för grundlayouten. Använd React Natives inbyggda `style`-prop med HEX-koder för dynamiska visuella ändringar (t.ex. bakgrundsfärg på en aktiv tag).
-- **State Hydration Bug:** En "Emergency Reset"-logik implementerades för att rensa korrupt state i simulatorer när `AsyncStorage` hamnar i osynk med Zustand.
+- **Emergency Reset (Nödbroms):** Vi har identifierat att `AsyncStorage` kan hamna i osynk med Zustand-storen (token finns men user-objektet saknas). En nödutloggnings-knapp ("Tvinga utloggning") har implementerats på både **Dashboard** och **Inställningssidan** för att möjliggöra för användare att rensa korrupt state och logga in på nytt.
 
 ## Frontend: Dark Mode & Native UI
 - **Native Theme Variant:** iOS-komponenter tvingas använda `themeVariant="light"` för att säkerställa läsbar text oavsett telefonens globala systeminställning.

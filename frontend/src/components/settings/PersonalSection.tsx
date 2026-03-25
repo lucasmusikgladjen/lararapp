@@ -1,5 +1,5 @@
-import { View } from "react-native";
-import { AccordionItem } from "../ui/AccordionItem";
+import { View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { InputLabel, InputGroup, SaveButton } from "./SettingsUI";
 import { User } from "../../types/auth.types";
 
@@ -12,64 +12,36 @@ interface PersonalSectionProps {
 }
 
 export const PersonalSection = ({ user, formData, setFormData, handleSave, isSaving }: PersonalSectionProps) => {
-    // Helper to keep code clean
     const updateField = (field: string, value: string) => {
         setFormData({ ...formData, [field]: value });
     };
 
     return (
-        <AccordionItem title="Personuppgifter" icon="person" iconColor="#2563EB" iconBgColor="bg-blue-100" defaultOpen={false}>
+        <View className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+            <View className="flex-row items-center mb-6">
+                <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center mr-3">
+                    <Ionicons name="person" size={20} color="#2563EB" />
+                </View>
+                <Text className="text-lg font-bold text-slate-900">Personuppgifter</Text>
+            </View>
+
             <View className="gap-3">
-                {/* NAMN */}
                 <InputGroup label="Namn" value={formData.name} onChangeText={(t: string) => updateField("name", t)} placeholder="Ditt namn" />
-
-                {/* E-POST */}
-                <InputGroup
-                    label="E-post"
-                    value={formData.email}
-                    onChangeText={(text: string) => updateField("email", text)}
-                    placeholder="din.email@exempel.se"
-                    keyboardType="email-address"
-                />
-
-                {/* TELEFON */}
-                <InputGroup
-                    label="Telefon"
-                    value={formData.phone}
-                    onChangeText={(text: string) => updateField("phone", text)}
-                    placeholder="070-123 45 67"
-                    keyboardType="phone-pad"
-                />
-
-                {/* PERSONNUMMER (Read Only) */}
+                <InputGroup label="E-post" value={formData.email} onChangeText={(t: string) => updateField("email", t)} placeholder="din.email@exempel.se" keyboardType="email-address" />
+                <InputGroup label="Telefon" value={formData.phone} onChangeText={(t: string) => updateField("phone", t)} placeholder="070-123 45 67" keyboardType="phone-pad" />
                 <InputLabel label="Personnummer" value={user.personalNumber || "Saknas"} editable={false} isLocked />
-
-                {/* ADRESS */}
-                <InputGroup
-                    label="Adress"
-                    value={formData.address}
-                    onChangeText={(text: string) => updateField("address", text)}
-                    placeholder="Gatuadress 12"
-                />
-
-                {/* POSTNUMMER & ORT */}
+                <InputGroup label="Adress" value={formData.address} onChangeText={(t: string) => updateField("address", t)} placeholder="Gatuadress 12" />
+                
                 <View className="flex-row gap-3">
                     <View className="flex-1">
-                        <InputGroup
-                            label="Postnummer"
-                            value={formData.zip}
-                            onChangeText={(text: string) => updateField("zip", text)}
-                            placeholder="123 45"
-                            keyboardType="numeric"
-                        />
+                        <InputGroup label="Postnummer" value={formData.zip} onChangeText={(t: string) => updateField("zip", t)} placeholder="123 45" keyboardType="numeric" />
                     </View>
                     <View className="flex-1">
                         <InputGroup label="Ort" value={formData.city} onChangeText={(t: string) => updateField("city", t)} placeholder="Stad" />
                     </View>
                 </View>
-
                 <SaveButton onPress={handleSave} loading={isSaving} />
             </View>
-        </AccordionItem>
+        </View>
     );
 };

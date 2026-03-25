@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { AccordionItem } from "../ui/AccordionItem";
+import { Ionicons } from "@expo/vector-icons";
 import { StatBox } from "./SettingsUI";
 import { User } from "../../types/auth.types";
 
@@ -12,17 +12,24 @@ interface StudentsSectionProps {
 
 export const StudentsSection = ({ user, formData, setFormData, handleSave }: StudentsSectionProps) => {
     return (
-        <AccordionItem title="Elever" icon="people" iconColor="#9333EA" iconBgColor="bg-purple-100">
+        <View className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+            <View className="flex-row items-center mb-6">
+                <View className="w-10 h-10 rounded-full bg-purple-100 items-center justify-center mr-3">
+                    <Ionicons name="people" size={20} color="#9333EA" />
+                </View>
+                <Text className="text-lg font-bold text-slate-900">Elever</Text>
+            </View>
+
             <View className="flex-row gap-3 mb-4">
                 <StatBox count={user.studentIds.length} label="Nuvarande" />
                 <StatBox count={0} label="Pågående" />
             </View>
 
-            <View className="bg-white p-4 rounded-xl border border-slate-100">
-                <Text className="text-xs font-bold text-slate-400 uppercase mb-2">Önskat antal elever</Text>
+            <View className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <Text className="text-xs font-bold text-slate-500 uppercase mb-2">Önskat antal elever</Text>
                 <View className="flex-row gap-2">
                     <TextInput
-                        className="flex-1 bg-slate-50 rounded-lg px-4 py-3 text-slate-900 border border-slate-200"
+                        className="flex-1 bg-white rounded-lg px-4 py-3 text-slate-900 border border-slate-200"
                         value={formData.desiredStudentCount}
                         onChangeText={(text) => setFormData({ ...formData, desiredStudentCount: text })}
                         keyboardType="numeric"
@@ -32,6 +39,6 @@ export const StudentsSection = ({ user, formData, setFormData, handleSave }: Stu
                     </TouchableOpacity>
                 </View>
             </View>
-        </AccordionItem>
+        </View>
     );
 };

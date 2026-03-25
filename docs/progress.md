@@ -33,7 +33,7 @@
 - [x] Frontend Onboarding Fas 2: Registreringsformulär (`app/(public)/register.tsx`) med Zod-validering och `POST /register`.
 - [x] Frontend Onboarding Fas 3: Instrument-val (`app/(auth)/onboarding/instruments.tsx`) med 2-kolumns grid, chip-tags, custom-input och `PATCH /profile`.
 - [x] Auth Layout: Tab-bar dold på onboarding-rutten via `tabBarStyle: { display: "none" }` och `href: null`.
-- [x] Fixat bugg i onboarding-flödet: Navigering går nu korrekt till Instrument-val efter registrering. Orsak: race condition mellan auth-guard och `useRegister`-hook. Lösning: `needsOnboarding`-flagga i Zustand-store som auth-guarden läser för att välja rätt redirect-mål.
+- [x] Fixat bugg i onboarding-flödet: Navigering går nu korrekt till Instrument-val efter registrering.
 
 - [x] Empty State Dashboard för nya användare utan elever (`EmptyStateDashboard.tsx`):
     - Välkomstmeddelande med lärarens namn
@@ -45,8 +45,9 @@
 - [x] **Frontend - Dashboard:**
     - Implementerat en interaktiv vertikal karusell (`NotificationStack`) för notiser som ersätter statisk banner.
     - Designad matchande Figma med starka signalfärger (alert/success/info).
-    - Utnyttjade stabil `react-native-reanimated-carousel` med `mode="parallax"` för en 3D-stackad känsla utan gesture-konflikter med Dashboardens `ScrollView`.
+    - Utnyttjade stabil `react-native-reanimated-carousel` med `mode="parallax"` för en 3D-stackad känsla utan gesture-konflikter.
     - Justerade bredder (`width - 40` + `w-full` på kort) för konsekvent linjering med övrig UI.
+    - **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att hantera korrupt state i `AsyncStorage`.
     
 - [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
@@ -67,159 +68,125 @@
 - [x] **Frontend - Karta (Fas 2): Filter & Sök:**
     - Uppdaterat `student.service.ts` med objekt-parametrar för säkrare anrop.
     - Utökat `findStudentsStore` med `searchQuery`-state och geocoding-logik via `expo-location`.
-    - Implementerat "Smart Zoom": Använder `animateToRegion` för enstaka träffar (City View) och `fitToCoordinates` för flera.
+    - Implementerat "Smart Zoom": Använder `animateToRegion` för enstaka träffar och `fitToCoordinates` för flera.
     - Implementerat "Kontext-baserad Radie": 10-20km radie vid stadssökning, 30km vid GPS-sökning.
-    - Löst bugg där kartan återställdes till GPS vid filterbyte genom att införa `searchLocation` i store.
-    - Fixat UX-bugg där kartan flyttades vid rensning av sökfältet (X-knapp).
+    - Löst bugg där kartan återställdes till GPS vid filterbyte.
+    - Fixat UX-bugg där kartan flyttades vid rensning av sökfältet.
     - Skapat `FilterChip`-komponent (`src/components/ui/FilterChip.tsx`) med pill-design.
-    - Skapat `FilterBar`-komponent (`src/components/find-students/FilterBar.tsx`) med sökfält + horisontell chip-scroll.
+    - Skapat `FilterBar`-komponent (`src/components/find-students/FilterBar.tsx`) med sökfält + chip-scroll.
 
 - [x] **Frontend - Karta (Fas 3): Lista & Interaktion (High Fidelity):**
-    - Implementerat `@gorhom/bottom-sheet` för äkta native-känsla med gestures (flick, snap).
-    - **Snap Points:** 15% (Peek), 45% (Sök), och dynamisk topp-punkt (låst under sökfältet).
-    - **Låst Scroll:** `enableOverDrag={false}` och beräknad `topInset` förhindrar att listan täcker hela skärmen; innehållet scrollar inuti sheetet.
-    - **Google Maps-liknande Markörer:** Custom `Marker`-komponent byggd med lager av `View`s (vit border, instrumentfärg, triangel-svans) och ikoner (`musical-notes`).
-    - **Typsäkerhet:** Generisk typning av `BottomSheetFlatList<StudentPublicDTO>` för att lösa TS-varningar.
+    - Implementerat `@gorhom/bottom-sheet` för äkta native-känsla med gestures.
+    - **Snap Points:** 15% (Peek), 45% (Sök), och dynamisk topp-punkt.
+    - **Låst Scroll:** `enableOverDrag={false}` och beräknad `topInset` förhindrar att listan täcker sökfältet.
+    - **Google Maps-liknande Markörer:** Custom `Marker`-komponent med lager av `View`s och ikoner.
+    - **Typsäkerhet:** Generisk typning av `BottomSheetFlatList<StudentPublicDTO>`.
     - Visuell markering av vald elev med lila border.
-    - Skapat `StudentInfoCard`-komponent (`src/components/find-students/StudentInfoCard.tsx`) för marker-klick overlay.        
 
 - [x] **Frontend - Karta (Fas 4): Detaljvy & Ansökan (Google Maps Style):**
     - Ersatte den gamla `Modal`-lösningen med en andra `BottomSheet` för detaljvyn (`StudentDetailModal`).
     - **Interaction Parity:** Klick på markör → öppnar detalj-sheet direkt (Peek 25% -> Full 90%).
-    - **Smart Camera:** Vid val av elev (via lista eller markör) centreras kartan med en *offset* så att markören alltid syns ovanför sheetet.
-    - **Design:** Uppdaterad list-design ("Tiles" med grå mellanrum) för att matcha Google Maps exakt.
-    - Rensat bort överflödig kod (`StudentInfoCard.tsx` borttagen).
+    - **Smart Camera:** Centrerar kartan med en *offset* vid val av elev så att markören syns ovanför sheetet.
+    - **Design:** Uppdaterad list-design ("Tiles" med grå mellanrum) exakt som Google Maps.
 
 - [x] **Frontend - Karta (Fas 5): Fri Utforskning ("Search This Area"):**
-    - Implementerat "Sök i det här området"-knapp som dyker upp när användaren panorerar bort från sökresultatet.
-    - Utökat `findStudentsStore` med `searchInArea`-action som beräknar radie baserat på zoomnivå (delta).
-    - Kopplat `onRegionChangeComplete` i kartvyn för att detektera rörelse och visa knappen.
+    - Implementerat "Sök i det här området"-knapp vid panorering bort från sökresultatet.
+    - Utökat `findStudentsStore` med `searchInArea`-action.
+    - Kopplat `onRegionChangeComplete` i kartvyn för att detektera rörelse.
 
 - [x] **Karta Fas 6: Ansökningsflöde (Request to Teach)**
-    - Backend: Implementerat `POST /api/students/:id/request` med deduplicering (`400 Bad Request`). Säker hantering av array-data för Linked Records i Airtable (append, ej overwrite).
-    - Backend/Frontend: Skapat dynamisk `hasApplied`-flagga på `StudentPublicDTO` och returnerar i sökresultat.
-    - Frontend: Byggt `useRequestToTeach`-hook med felhantering och cache-invalidering för omedelbar UI-uppdatering.
-    - Frontend: Premium UX i `StudentDetailModal` där knappar och textfält gråas ut och inaktiveras om läraren redan ansökt ("ANSÖKAN SKICKAD").
+    - Backend: Implementerat `POST /api/students/:id/request` med deduplicering och säker hantering av linked records.
+    - Backend/Frontend: Skapat dynamisk `hasApplied`-flagga på `StudentPublicDTO`.
+    - Frontend: Byggt `useRequestToTeach`-hook med felhantering och cache-invalidering.
+    - Frontend: Premium UX i `StudentDetailModal` med inaktiverade fält vid befintlig ansökan.
 
 - [x] **Karta Fas 8: Förbättrad Detaljvy & Ansökan:**
     - [x] Implementerat anonymiserat UI där eleven identifieras via sitt NummerID (t.ex. "Elev #479").
     - [x] Skapat 2-kolumns grid för tydlig visning av instrument och ålder.
-    - [x] Utökat ansökningsformuläret från en fritextruta till fyra specifika fält (Erfarenhet, Tillgänglighet, Pris, Övrigt).
-    - [x] Lagt till "Vad händer sen?" steg-för-steg information om Musikglädjens matchningsprocess.
-    - [x] Infört obligatorisk checkbox för matchningsgodkännande för att aktivera "Önska"-knappen.
-    - [x] Visuell integration av `MainBackground` i BottomSheet-bakgrunden med `overflow: hidden` för runda hörn.
+    - [x] Utökat ansökningsformuläret till fyra specifika fält (Erfarenhet, Tillgänglighet, Pris, Övrigt).
+    - [x] Lagt till steg-för-steg information om Musikglädjens matchningsprocess.
+    - [x] Infört obligatorisk checkbox för matchningsgodkännande.
+    - [x] Visuell integration av `MainBackground` i BottomSheet-bakgrunden med runda hörn.
 
 - [x] **Frontend - Mina Elever & Navigation Refactor:**
-    - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`) som listar inloggad lärares elever.
-    - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY och konsistens.
-    - Implementerat `FlatList` med `RefreshControl` (pull-to-refresh).
-    - **Architecture Refactor:** Flyttat om navigeringsstrukturen till "Stack over Tabs". Skapade en `(tabs)`-grupp för Dashboard/Karta/Lista och flyttade `student/[id]` till den yttre stacken. Detta löste problemet med "Tillbaka"-knappen som alltid gick till Dashboard.
+    - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`).
+    - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY.
+    - Implementerat `FlatList` med `RefreshControl`.
+    - **Architecture Refactor:** Flyttat om navigeringsstrukturen till "Stack over Tabs" för att lösa navigeringshistoriken.
 
 - [x] **Frontend - UI Refactor:**
-    - Skapade `PageHeader.tsx` i `src/components/ui` för att ersätta hårdkodade headers.
-    - Den är dynamisk via `title`-prop och används nu på Dashboard, Elever och Inställningar.
+    - Skapade `PageHeader.tsx` i `src/components/ui` för dynamiska headers på alla huvudvyn.
 
 - [x] **Frontend - Elevprofil Refactor ("Elevhub"):**
-    - [x] Omstrukturerat elevvyn (`app/(auth)/student/[id].tsx`) till en modulär "Elevhub" med micro-sidor för ökad överskådlighet.
-    - [x] Implementerat Hero-kort med profilbild och färgkodade navigerings-tags (Info, Lektioner, Anteckningar, Mål).
-    - [x] Fixat krascher (`Navigation context`) vid flikbyten genom `display: none/flex` och hybrid-styling (statiska klasser + inline styles för dynamisk färg).
-    - [x] Design-polish: Tagit bort glassmorphism och ersatt med solida vita kort för ökad stabilitet och läsbarhet.
-    - [x] Förenklat lektionsvyn genom att ersätta gamla kort-komponenter med en enhetlig `ScheduleCard` standard.
+    - [x] Omstrukturerat elevvyn till en modulär "Elevhub" med micro-sidor och navigeringstaggar.
+    - [x] Fixat krascher vid flikbyten genom `display: none/flex` och hybrid-styling (statiska klasser + inline styles).
+    - [x] Standardiserat lektionsvyn genom att använda den gemensamma komponenten `ScheduleCard`.
     - [x] Förbättrad Affordance: Tagit bort högerpilar och inaktiverat klick för statiska historiska lektioner.
 
 - [x] **Backend - Lärarprofil & Inställningar:**
     - Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
-    - Implementerat `GET /profile` som returnerar dokumentstrukturer men döljer `Belastningsregister`.
-    - Implementerat `PATCH /profile` med strikt "allow-list" för vilka fält som får uppdateras.
-    - **Säkerhet:** Read-only fält (Lön, Status) ignoreras tyst vid uppdateringsförsök.
-    - **Validering:** "Smart check" för e-post (tillåter egen, blockerar andras) och validering av nya fält.
-    - **Bugfix:** Åtgärdat inloggningsfel genom att inkludera lösenord i Airtable-mappningen.
+    - Implementerat `GET /profile` och `PATCH /profile` med strikt "allow-list" för fält.
+    - **Säkerhet:** Belastningsregister filtreras bort och read-only fält (Lön, Status) skyddas.
 
-- [x] **Frontend - Inställningar & Native UI:**
-    - Omstrukturerad vy för Inställningar (`app/(auth)/(tabs)/settings.tsx`) till en iOS-inspirerad "Grouped List".
-    - Uppdelning i mindre, hanterbara komponenter (`PersonalSection`, `SalarySection`, `BioSection`, `DocumentsSection`, `SettingsUI`) för mycket bättre kodstruktur och läsbarhet.
-    - Implementerat `AccordionItem` med buttersmooth expandering (`LayoutAnimation`).
-    - Hantering av "stale cache" med en tyst `useEffect` auto-refresh av profildata när inställningssidan laddas.
-    - Fixat bugg med krasch vid tom `documents`-array genom säkra fallbacks (`documents || []`).
+- [x] **Frontend - Inställningar Refactor ("Lärarhub"):**
+    - [x] Omstrukturerat Inställningar till samma Hub-layout som elevvyn för visuell konsistens.
+    - [x] Implementerat Hero-kort med profilbild, namn och biografisk sammanfattning.
+    - [x] Tagit bort Accordions till förmån för modulära, färdigöppnade kort baserat på vald kategori.
+    - [x] UX-optimering: "Vårdnadshavaren" är nu standardval och placerad primärt till vänster i `CancelLessonSheet`.
+    - [x] **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att rensa korrupt state vid cache-osynk.
 
 - [x] **Backend - Notifikationssystem (Dynamiska actionsidor):**
-    - Uppdaterade Airtable-strukturen med `NotificationTemplates` (mallar) och `Notifications` (utskick).
-    - Implementerade `GET /api/notifications` som automatiskt slår ihop mallar med individuella override-värden.
-    - Byggde smart backend-sortering baserat på `Severity` (critical > warning > info) och skapelsedatum.
-    - Skapade endpointen `PATCH /api/notifications/:id/resolve` som möjligör för lärare att svara på formulär och arkivera notiser.
+    - Uppdaterade Airtable-strukturen med `NotificationTemplates` och `Notifications`.
+    - Implementerade `GET /api/notifications` med backend-sortering baserat på `Severity`.
+    - Skapade endpointen `PATCH /api/notifications/:id/resolve`.
 
 - [x] **Frontend - Notifikationssystem (Dynamiska actionsidor):**
-    - Implementerade dynamiska Action-sidor i frontend baserat på notifikationsmallarna.
-    - Konfigurerade React Query med `staleTime`, Pull-to-Refresh och `useFocusEffect` för snabb och skalbar uppdatering.
-    - Löste render-buggar i karusellen för hantering av enstaka notiser (Bypass logik).
-    - **UX Fix:** Optimerat övergången till notifikationssidan (`presentation: "card"`) och lagt till en solid bakgrund (`bg-brand-bg`) för att dölja dashboarden under slide-animationen.
+    - Implementerade dynamiska Action-sidor i frontend baserat på mallar.
+    - Konfigurerade React Query med snabb auto-refresh.
 
 - [x] **Backend - Schemaläggning & Hantering av Lektioner:**
-    - Skapat `Lesson.types.ts` och robusta DTO:er för att validera inkommande data från läraren.
-    - Byggt `lesson_service.ts` som implementerar "Chunking" (batch-operationer) mot Airtable för att respektera gränsen på 10 rader per request vid Bulk Updates.
-    - **POST /lessons:** Logik för att loopa datumveckor (+7 dagar) och rulla ut hela terminer av lektioner tills `termEnd` nås, eller skapa enskilda instanser om repeat saknas.
-    - **PATCH /lessons/adjust:** Endpoint för att "Justera" schema. Hittar alla framtida lektioner, sorterar dem i datumordning och applicerar ny tid/dag/upplägg utan att störa historik.
-    - **DELETE /lessons/future:** Raderar lektioner för en elev från ett valt datum (perfekt vid uppehåll eller när en elev slutar).
-    - Löst sökproblematik i Airtable API genom att tillämpa `SEARCH('{studentName}')` på ett dedikerad textfält i Lektioner-tabellen.
+    - Byggt `lesson_service.ts` med "Chunking" för bulk-operationer mot Airtable.
+    - **POST /lessons:** Logik för att rulla ut hela terminer av lektioner.
+    - **PATCH /lessons/adjust:** Endpoint för att justera framtida schema utan att störa historik.
+    - **DELETE /lessons/future:** Raderar lektioner för en elev från ett valt datum.
 
 - [x] **Frontend - Hantera lektionsschema (Schedule Management UX):**
-    - Skapat nytt "Entry Card" (`ScheduleEntryCard`) högst upp i Elever-listan som en `ListHeaderComponent` för ren hierarki.
-    - Byggt dynamisk 3-vägs `TabToggle` för valen Justera, Skapa lektion, och Avsluta.
-    - Implementerat native-känsla på formulärfält (`SelectField` inline, `TimePickerField` action sheet, `DatePickerField` inline kalender).
-    - **Justera-flöde:** Väljer elev, upplägg, veckodag och tid. Visar tydlig info-ruta om att detta är en Bulk Update för hela terminen.
-    - **Skapa-flöde:** Möjlighet att skapa enstaka lektioner eller rullande schema via en kryssruta. Appen hämtar automatiskt lärarens `termEnd` från `authStore` vid repetering.
-    - **Avsluta-flöde:** Destructive action med röd varning, en bekräftelse-checkbox för att aktivera knappen, och en sista `Alert`-prompt.
-    - **Integration:** Kopplat alla flöden till backend via TanStack Query (`useLessonMutation`) med automatisk cachenollställning (`invalidateQueries`) för att UI ska uppdateras blixtsnabbt.
+    - Skapat nytt "Entry Card" (`ScheduleEntryCard`) högst upp i Elever-listan.
+    - Byggt dynamiska flöden för att Justera, Skapa och Avsluta lektionsschema.
+    - Implementerat native-känsla på formulärfält (`SelectField`, `TimePickerField`, `DatePickerField`).
 
 - [x] **Backend - Enskilda Lektionsåtgärder (Single Lesson Actions):**
-    - Skapat funktionen `updateSingleLesson` i `lesson_service.ts` för att rikta uppdateringar mot specifika Record ID:n.
-    - Etablerat tre nya endpoints (`PATCH /:id/complete`, `PATCH /:id/reschedule`, `PATCH /:id/cancel`) med dedikerad affärslogik.
-    - Implementerat strikt indata-validering via `express-validator` (t.ex. att `cancelledBy` måste vara "Läraren" eller "Vårdnadshavaren").
-    - Byggt automatisk formatering av strängar i backend (t.ex. "Vårdnadshavaren ställer in: [anledning]") för att hålla frontend "dumb and beautiful".
+    - Skapat specifika endpoints för `PATCH /:id/complete`, `reschedule`, och `cancel`.
+    - Implementerat strikt validering och automatisk formatering av statussträngar i backend.
 
 - [x] **Frontend - Enskilda Lektionsåtgärder (Modaler):**
-    - Implementerat Bottom Sheet-modaler för "Genomförd", "Boka om" och "Ställ in".
-    - [x] UX-förbättring i `CancelLessonSheet`: "Vårdnadshavaren" är nu standardval och placerad primärt till vänster för smidigare rapportering.
-    - Löst komplex bugg gällande `NavigationContainer` och Portals genom att placera `BottomSheetModalProvider` korrekt i `app/(auth)/_layout.tsx`.
-    - Löst NativeWind-krasch vid dynamisk styling inuti modaler genom att använda statiska `className` kombinerat med dynamisk `style`-prop.
-    - Integrerat DatePicker och TimePicker (återanvända komponenter) i "Boka om"-modalen.
-    - Byggt en native iOS-liknande Segmented Control (Läraren/Vårdnadshavaren) för "Ställ in"-modalen.
-    - Kopplat allt till `useLessonMutation` för omedelbar cache-invalidering och UI-uppdatering.
-    - **Buggfix (Airtable 422):** Korrigerat `student.types.ts` och backend-mappning för att skicka ner faktiska `lessonIds` från Airtable (Linked Records). Detta löste felet där fallback-ID:n skickades till Airtable.
-    - **Data-integration:** Implementerat ett **Lookup-fält** ("Lektioner Genomförda") i Airtable som mappas till studentens lektionslista för att korrekt dölja genomförda lektioner från dashboarden.
+    - Implementerat Bottom Sheet-modaler för lektionsåtgärder.
+    - Integrerat DatePicker och Segmented Control för en nativ känsla.
+    - **Buggfix (Airtable 422):** Korrigerat mappning för att skicka korrekta Record IDs.
 
 - [x] **Push-notifikationer & Webhook Integration:**
-    - **Frontend:** Konfigurerat `expo-notifications` och `expo-device`. Initierat EAS-projekt för att säkra ett `projectId`. Implementerat logik i `_layout.tsx` som vid inloggning ber om OS-behörighet, hämtar Push Token och skickar det tyst till backend.
-    - **Backend (Token-lagring):** Adderat `PushToken` till typningarna och skapat `POST /api/profile/push-token` för att spara enhetens unika adress i Airtable ("Lärare"-tabellen).
-    - **Backend (Webhook):** Byggt `POST /api/notifications/push-webhook` med `expo-server-sdk`. Validerar inkommande triggers via en statisk `x-webhook-secret` (frikopplad från JWT) och pushar meddelanden till Apple/Google.
-    - **Airtable Automation:** Etablerat en Automation med villkoret `Status is active`. Konfigurerat "Run a script" för att skicka Record ID, titel och meddelande via POST till webhooken. Använt `localtunnel` med `Bypass-Tunnel-Reminder` header för att testa och bekräfta live-funktionalitet från databas till mobiltelefonens låsskärm.
+    - **Frontend:** Konfigurerat `expo-notifications` och implementerat token-hämtning i `_layout.tsx`.
+    - **Backend (Webhook):** Byggt `POST /api/notifications/push-webhook` skyddat med `x-webhook-secret`.
+    - **Airtable Automation:** Konfigurerat Automationer som triggar push-notiser vid specifika händelser.
 
 - [x] **Buggfixar & UI-Polishing:**
-    - **Routing Fix:** Bytt namn på `dashboard.tsx` till `index.tsx` inuti `(auth)/(tabs)` för att följa Expo Router-standard och lösa "Unmatched Route"-felet.
-    - **Glassmorphism Design:** Implementerat en ny visuell profil med semi-transparenta kort (`bg-white/70`), vita ramar (`border-2 border-white`) och hörnradie `rounded-[32px]`.
-    - **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra att skuggor klipps i sidled i React Native.
-    - **Grid Layout:** Uppdaterat "Mina elever" till en 2-kolumns grid för bättre UX på enheter med få elever.
-    - **Konsistens:** Uppdaterat `ScheduleEntryCard` till den nya glassmorphism-stilen för att matcha övriga listor.
+    - **Glassmorphism Refactor:** Övergång från semitransparenta kort till solida vita kort för ökad stabilitet i NativeWind.
+    - **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra klippta skuggor.
+    - **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid för bättre UX.
 
 - [x] **Arkitektur & Miljöhantering (.env):**
-    - [x] Implementerat central API-konfiguration via `src/config/api.ts` för att följa DRY-principen.
-    - [x] Infört `.env` stöd med `EXPO_PUBLIC_` prefix för att enkelt växla mellan hem- och kontorsnätverk.
+    - [x] Implementerat central API-konfiguration via `src/config/api.ts`.
+    - [x] Infört `.env` stöd med `EXPO_PUBLIC_` prefix.
 
 - [x] **Stabilitet & Buggfixar (Session 2026):**
-    - [x] **Dashboard-krasch:** Löst krasch i "Senaste"-vyn genom att införa Composite Keys (Student ID + Datum + Tid + Index) för unik renderingsidentitet.
-    - [x] **Inställningar-bugg:** Fixat blank skärm i emulator genom att lägga till Emergency Logout-logik för att rensa korrupt state vid Zustand-osynk.
-    - [x] **Dark Mode Fix:** Åtgärdat osynlig text i Picker-komponenter genom att tvinga `themeVariant="light"` på alla native iOS-datumväljare.
-    - [x] **Navigation Fix:** Implementerat `resetKey` och `useFocusEffect` på inställningssidan för att automatiskt stänga accordions vid flikbyte.
-    - [x] **Deep Linking:** Skapat direktlänk från Elevprofil ("Boka lektion") till schemaläggaren med vald elev förifylld via URL-parametrar och `useLocalSearchParams`.
-    - [x] **Layout Fix:** Löst NativeWind-krasch i Elevprofil genom att ersätta villkorsstyrd rendering med `display: none/flex` för att bibehålla navigeringskontext.
+    - [x] **Dashboard-krasch:** Löst krasch i "Senaste"-vyn genom Composite Keys.
+    - [x] **Dark Mode Fix:** Tvingat `themeVariant="light"` på Picker-komponenter.
+    - [x] **Deep Linking:** Skapat direktlänk från Elevprofil till schemaläggaren via URL-parametrar.
 
 - [x] **Moderniserad Kartsökning ("Search in this area"):**
-    - **Store Refactor:** Tog bort textbaserad söklogik (`searchQuery`, `setSearchQuery`, debounce-timer) och geocoding från `findStudentsStore.ts`. Ersatte med `mapRegion`, `lastSearchRegion` och `showSearchButton` state.
-    - **Ny action `searchInArea`:** Beräknar sökradie dynamiskt baserat på kartans zoom-nivå via formeln `Radius (km) = (latitudeDelta * 111) / 2`.
-    - **Tröskellogik:** `updateShowSearchButton` jämför nuvarande kartposition mot `lastSearchRegion`. Knappen visas om mittpunkten flyttats >500m (approximerat avstånd) eller om zoom-nivån ändrats >20%.
-    - **FilterBar Cleanup:** Tog bort `TextInput` och sökikoner. Komponenten visar nu enbart instrument-filter-chips med korrekt `SafeAreaInsets`.
-    - **Smart Start (Fas 4):** Vid app-start försöker appen hämta GPS. Succé → center med `latitudeDelta: 0.36` (~20km radie). Fallback → Stockholm (59.3293, 18.0686). Automatisk sökning körs i båda fallen.
-    - **Memoization:** Alla kart-callbacks (`onRegionChangeComplete`, `handleSearchInArea`) wrappade i `useCallback` för att förhindra onödiga re-renders vid panorering.
+    - **Store Refactor:** Övergång från textbaserad sökning till region-baserad sökning med smart tröskellogik.
+    - **Ny action `searchInArea`:** Dynamisk sökradie baserat på kartans zoom-nivå.
+    - **Smart Start:** Automatisk GPS-hämtning och kartsökning vid app-start.
 
 ## Pågående 🚧
 - [ ] 

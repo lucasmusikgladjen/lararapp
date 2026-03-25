@@ -15,11 +15,24 @@ import { SalarySection } from "../../../src/components/settings/SalarySection";
 import { StudentsSection } from "../../../src/components/settings/StudentsSection";
 import { MainBackground } from "../../../src/components/ui/MainBackground";
 
+type ActiveView = "person" | "lon" | "elever" | "bio" | "docs";
+
+// Färgglada Tags (Samma säkra HEX-logik som Elevhubben)
+const SETTINGS_TAGS: { id: ActiveView; label: string; activeBg: string; activeText: string }[] = [
+    { id: "person", label: "Personuppgifter", activeBg: "#DBEAFE", activeText: "#1E40AF" }, // Blå
+    { id: "lon", label: "Lön", activeBg: "#D1FAE5", activeText: "#065F46" }, // Grön
+    { id: "elever", label: "Elever", activeBg: "#F3E8FF", activeText: "#6B21A8" }, // Lila
+    { id: "bio", label: "Biografi", activeBg: "#FFEDD5", activeText: "#9A3412" }, // Orange
+    { id: "docs", label: "Dokument", activeBg: "#CCFBF1", activeText: "#115E59" }, // Teal
+];
+
 export default function SettingsPage() {
     const router = useRouter();
     const { user, token, logout, updateUser } = useAuthStore();
 
-    // Initialize state with ALL editable fields
+    const [activeView, setActiveView] = useState<ActiveView>("person");
+    const [isSaving, setIsSaving] = useState(false);
+
     const [formData, setFormData] = useState({
         name: user?.name || "",
         email: user?.email || "",
@@ -32,8 +45,6 @@ export default function SettingsPage() {
         desiredStudentCount: user?.desiredStudentCount?.toString() || "0",
         bio: user?.bio || "",
     });
-
-    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         const refreshProfile = async () => {
@@ -49,7 +60,6 @@ export default function SettingsPage() {
         refreshProfile();
     }, [token]);
 
-    // Sync state when user loads
     useEffect(() => {
         if (user) {
             setFormData((prev) => ({
@@ -88,17 +98,11 @@ export default function SettingsPage() {
 
         try {
             const payload: UpdateProfilePayload = {};
-
             if (section === "personal") {
-                payload.name = formData.name;
-                payload.email = formData.email;
-                payload.phone = formData.phone;
-                payload.address = formData.address;
-                payload.zip = formData.zip;
-                payload.city = formData.city;
+                payload.name = formData.name; payload.email = formData.email; payload.phone = formData.phone;
+                payload.address = formData.address; payload.zip = formData.zip; payload.city = formData.city;
             } else if (section === "salary") {
-                payload.bank = formData.bank;
-                payload.bankAccountNumber = formData.bankAccountNumber;
+                payload.bank = formData.bank; payload.bankAccountNumber = formData.bankAccountNumber;
             } else if (section === "students") {
                 payload.desiredStudentCount = parseInt(formData.desiredStudentCount) || 0;
             } else if (section === "bio") {
@@ -143,63 +147,95 @@ export default function SettingsPage() {
                     <PageHeader />
                 </View>
 
-                <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
-                    {/* Profile Header */}
-                    <View className="items-center py-6 mb-4">
-                        <View className="relative mb-4">
-                            <View className="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+                    
+                    {/* =============== HERO CARD (Lärarhub) =============== */}
+                    <View className="mx-5 bg-white rounded-3xl p-5 shadow-sm mb-6 border border-slate-100 mt-2">
+                        {/* Profil Info (Bild, Namn, Bio) */}
+                        <View className="flex-row items-start mb-5">
+                            <View className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 border border-slate-200 mr-4">
                                 <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
                             </View>
-                            <View className="absolute bottom-0 right-0 bg-brand-orange p-2 rounded-full border-2 border-white shadow-sm">
-                                <Ionicons name="pencil" size={14} color="white" />
+                            <View className="flex-1 pt-1">
+                                <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
+                                <Text className="text-sm font-semibold text-brand-orange mb-2">
+                                    {user.instruments && user.instruments.length > 0 ? user.instruments.join(" • ") : "Inga instrument"}
+                                </Text>
+                                <Text className="text-[13px] text-slate-600 leading-tight" numberOfLines={3}>
+                                    {user.bio || "Du har inte lagt till någon biografi ännu. Klicka på 'Biografi' för att berätta mer om dig själv!"}
+                                </Text>
                             </View>
                         </View>
-                        <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
 
-                        <View className="mt-2 flex-row items-center bg-green-100 px-3 py-1 rounded-full">
-                            <Text className="text-green-700 text-xs font-bold uppercase tracking-wider">
-                                {user.instruments && user.instruments.length > 0 ? user.instruments.join(" • ") : "Inga instrument valda"}
-                            </Text>
+                        {/* Navigerings-Tags */}
+                        <View className="flex-row flex-wrap gap-2">
+                            {SETTINGS_TAGS.map((tag) => {
+                                const isActive = activeView === tag.id;
+                                return (
+                                    <TouchableOpacity
+                                        key={tag.id}
+                                        onPress={() => setActiveView(tag.id)}
+                                        activeOpacity={0.7}
+                                        className="px-3 py-1.5 rounded-full border"
+                                        style={{
+                                            backgroundColor: isActive ? tag.activeBg : "#FFFFFF",
+                                            borderColor: isActive ? "transparent" : "#E2E8F0",
+                                            shadowOpacity: isActive ? 0.05 : 0,
+                                            shadowRadius: 2,
+                                            shadowOffset: { width: 0, height: 1 },
+                                        }}
+                                    >
+                                        <Text className="text-[13px] font-bold" style={{ color: isActive ? tag.activeText : "#64748B" }}>
+                                            {tag.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
                     </View>
 
-                    {/* ========== GROUP 1: KONTO & UPPGIFTER ========== */}
-                    <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Konto & Uppgifter</Text>
-                    <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
-                        <PersonalSection
-                            user={user}
-                            formData={formData}
-                            setFormData={setFormData}
-                            handleSave={() => handleSave("personal")}
-                            isSaving={isSaving}
-                        />
+                    {/* Separator Line */}
+                    <View className="h-px bg-slate-300/40 mx-16 mb-6 rounded-full" />
 
-                        <SalarySection
-                            user={user}
-                            formData={formData}
-                            setFormData={setFormData}
-                            handleSave={() => handleSave("salary")}
-                            isSaving={isSaving}
-                        />
-                        <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
-                    </View>
+                    {/* ---------- DYNAMIC CONTENT AREA ---------- */}
+                    <View className="px-5">
+                        
+                        {/* 1. Personuppgifter */}
+                        <View style={{ display: activeView === "person" ? "flex" : "none" }}>
+                            <PersonalSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("personal")} isSaving={isSaving} />
+                        </View>
 
-                    {/* ========== GROUP 2: INNEHÅLL ========== */}
-                    <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Innehåll</Text>
-                    <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
-                        <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
-                        <DocumentsSection user={user} />
-                    </View>
+                        {/* 2. Lön */}
+                        <View style={{ display: activeView === "lon" ? "flex" : "none" }}>
+                            <SalarySection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("salary")} isSaving={isSaving} />
+                        </View>
 
-                    {/* Logout Button */}
-                    <View className="mb-4">
-                        <TouchableOpacity
-                            onPress={handleLogout}
-                            className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100"
-                        >
-                            <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
-                            <Text className="text-red-500 font-bold text-base">Logga ut</Text>
-                        </TouchableOpacity>
+                        {/* 3. Elever */}
+                        <View style={{ display: activeView === "elever" ? "flex" : "none" }}>
+                            <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
+                        </View>
+
+                        {/* 4. Biografi */}
+                        <View style={{ display: activeView === "bio" ? "flex" : "none" }}>
+                            <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
+                        </View>
+
+                        {/* 5. Dokument */}
+                        <View style={{ display: activeView === "docs" ? "flex" : "none" }}>
+                            <DocumentsSection user={user} />
+                        </View>
+
+                        {/* Logga Ut Knapp (Alltid synlig längst ner) */}
+                        <View className="mt-8">
+                            <TouchableOpacity
+                                onPress={handleLogout}
+                                className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-red-100"
+                            >
+                                <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
+                                <Text className="text-red-500 font-bold text-base">Logga ut</Text>
+                            </TouchableOpacity>
+                        </View>
+
                     </View>
                 </ScrollView>
             </MainBackground>

@@ -1,6 +1,5 @@
 import { View, Text, Linking, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { AccordionItem } from "../ui/AccordionItem";
 import { DocRow } from "./SettingsUI";
 import { User } from "../../types/auth.types";
 
@@ -16,16 +15,22 @@ export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
     const documents = user.documents || [];
 
     return (
-        <AccordionItem title="Dokument" icon="folder" iconColor="#0D9488" iconBgColor="bg-teal-100">
+        <View className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+            <View className="flex-row items-center mb-6">
+                <View className="w-10 h-10 rounded-full bg-teal-100 items-center justify-center mr-3">
+                    <Ionicons name="folder" size={20} color="#0D9488" />
+                </View>
+                <Text className="text-lg font-bold text-slate-900">Dokument</Text>
+            </View>
+
             <View className="space-y-3">
                 {documents.length > 0 ? (
                     documents.map((doc, index) => <DocRow key={index} name={doc.name} date="Uppladdad" onPress={() => openDocument(doc.url)} />)
                 ) : (
-                    <Text className="text-slate-400 text-sm italic">Inga dokument tillgängliga</Text>
+                    <Text className="text-slate-400 text-sm italic mb-2">Inga dokument tillgängliga</Text>
                 )}
 
-                {/* Static Admin-only view */}
-                <View className="flex-row items-center justify-between bg-slate-100 p-3 rounded-xl opacity-60">
+                <View className="flex-row items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 mt-2">
                     <View className="flex-row items-center gap-3 overflow-hidden flex-1 mr-2">
                         <View className="bg-slate-200 p-2 rounded-lg">
                             <Ionicons name="lock-closed" size={20} color="#94a3b8" />
@@ -39,6 +44,6 @@ export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
                     </View>
                 </View>
             </View>
-        </AccordionItem>
+        </View>
     );
 };

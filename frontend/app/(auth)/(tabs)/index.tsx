@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState, useRef } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View, Alert } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
@@ -19,7 +19,10 @@ import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/R
 import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 
 export default function Dashboard() {
+    // 1. Hämtar både user och logout
     const user = useAuthStore((state) => state.user);
+    const logout = useAuthStore((state) => state.logout);
+
     const { data: students, isLoading: isStudentsLoading, error, refetch: refetchStudents } = useStudents();
     const { refetch: refetchNotifications } = useNotifications();
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
@@ -131,7 +134,25 @@ export default function Dashboard() {
         return allLessons.filter((l) => l.daysLeft < 0 && l.isCompleted).sort((a, b) => b.date.localeCompare(a.date));
     }, [allLessons, activeTab]);
 
-    const firstName = user?.name ? user.name.split(" ")[0] : "No Name";
+    // ⚠️ NÖDBROMS: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt
+    if (!user) {
+        return (
+            <SafeAreaView className="flex-1 items-center justify-center bg-brand-bg px-5">
+                <Text className="text-gray-500 mb-6">Kan inte läsa in din profil...</Text>
+                <TouchableOpacity
+                    onPress={async () => {
+                        await logout();
+                        router.replace("/(public)/login");
+                    }}
+                    className="bg-red-500 px-6 py-3 rounded-2xl shadow-sm"
+                >
+                    <Text className="text-white font-bold">Tvinga utloggning</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
+
+    const firstName = user.name ? user.name.split(" ")[0] : "No Name";
 
     if (isStudentsLoading) {
         return (
@@ -160,7 +181,7 @@ export default function Dashboard() {
 
                 <NotificationStack />
 
-                {/* --- FÖRSENADE LEKTIONER (Visas mellan notiser och schemat) --- */}
+                {/* --- FÖRSENADE LEKTIONER --- */}
                 {delayedLessons.length > 0 && (
                     <View className="mb-6 mt-2">
                         <View className="bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden">
@@ -168,10 +189,10 @@ export default function Dashboard() {
                                 <ScheduleCard
                                     key={`delayed-${lesson.student.id}-${lesson.date}-${index}`}
                                     lesson={lesson}
-                                    onPress={() => {}} // Behövs inte då den alltid fälls ut
+                                    onPress={() => {}}
                                     isLast={index === delayedLessons.length - 1}
                                     isKommande={false}
-                                    isDelayed={true} // Tvingar fram röda badgen
+                                    isDelayed={true}
                                     onMarkCompleted={handleMarkCompleted}
                                     onReschedule={handleReschedule}
                                     onCancel={handleCancel}
@@ -214,21 +235,19 @@ export default function Dashboard() {
                 </View>
             </ScrollView>
 
-            {/* ========== MODALER (Dolda tills de anropas) ========== */}
+            {/* ========== MODALER ========== */}
             <CompleteLessonSheet
                 ref={completeSheetRef}
                 onClose={() => completeSheetRef.current?.dismiss()}
                 onConfirm={handleConfirmComplete}
                 isPending={completeMutation.isPending}
             />
-
             <RescheduleLessonSheet
                 ref={rescheduleSheetRef}
                 onClose={() => rescheduleSheetRef.current?.dismiss()}
                 onConfirm={handleConfirmReschedule}
                 isPending={rescheduleMutation.isPending}
             />
-
             <CancelLessonSheet
                 ref={cancelSheetRef}
                 onClose={() => cancelSheetRef.current?.dismiss()}
