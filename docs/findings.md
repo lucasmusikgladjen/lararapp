@@ -56,7 +56,7 @@
 ## Frontend: Elevhub & Modulär Design
 - **Elevhub-koncept:** Elevvyn har omstrukturerats till en "Elevhub" med mikro-moduler istället för en lång scrollande sida. Syftet är att göra sidan enklare att förstå utan scrollning och mer modulär för framtida funktioner.
 - **Hero Card Navigering:** Toppen av sidan innehåller ett kort med elevens avatar och navigerings-taggar (Info, Lektioner, Anteckningar, Mål).
-- **Förenklad Lektionsvy:** Tidigare toggles för "Kommande" och "Senaste" har ersatts av en samlad modulvy där listorna presenteras under varandra.
+- **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden för både Dashboard och Elevprofil. Genom att mappa elevprofilens data till `LessonEvent`-gränssnittet kan samma komponent och logik för rapportering återanvändas i hela appen.
 
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
@@ -88,6 +88,8 @@
 - **Säkerhetsspärrar:** Destruktiva handlingar kräver både en bekräftelse-checkbox och en native `Alert`.
 
 ## UI & Styling Strategy
+- **Affordance & Interaktivitet:** För att undvika att användare försöker interagera med statiska element visas högerpilar (chevrons) endast på kort som faktiskt har en navigering eller åtgärd. Om `onPress` saknas och kortet inte är expanderbart stängs klick-ytan av helt för att ge korrekt visuell feedback.
+- **UX-optimering i formulär:** I åtgärdsformulär (t.ex. `CancelLessonSheet`) placeras det mest sannolika standardvalet (t.ex. "Vårdnadshavaren") till vänster och sätts som förvalt värde för att minimera antalet klick för användaren.
 - **Glassmorphism:** Vi använde tidigare en kombination av `bg-white/70` och `border-2 border-white`, men har i den senaste refactorn gått mot solida vita kort för bättre stabilitet och läsbarhet.
 - **Shadow Clipping Fix:** En `shadowWrapper` utan `overflow: hidden` används för att förhindra att skuggor klipps i React Native.
 - **Animerade komponenter:** `LayoutAnimation` används för smidiga expand/collapse-effekter.

@@ -6,8 +6,6 @@ import { ActivityIndicator, Alert, FlatList, Image, ScrollView, Text, TouchableO
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Komponenter
-import { ExpandableLessonCard } from "../../../src/components/lessons/ExpandableLessonCard";
-import { StaticLessonCard } from "../../../src/components/lessons/StaticLessonCard";
 import { GuardianCard } from "../../../src/components/students/GuardianCard";
 import { NoteCard } from "../../../src/components/students/NoteCard";
 import { CompleteLessonSheet } from "../../../src/components/lessons/actions/CompleteLessonSheet";
@@ -16,11 +14,15 @@ import { CancelLessonSheet } from "../../../src/components/lessons/actions/Cance
 import { PageHeader } from "../../../src/components/ui/PageHeader";
 import { MainBackground } from "../../../src/components/ui/MainBackground";
 
+// Ersätter ExpandableLessonCard/StaticLessonCard med vår nya standard
+import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
+
 // Hooks & Typer
 import { useUpdateStudent } from "../../../src/hooks/useStudentMutation";
 import { useStudents } from "../../../src/hooks/useStudents";
 import { Guardian } from "../../../src/types/student.types";
 import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
+import { LessonEvent } from "../../../src/utils/lessonHelpers";
 
 type ActiveView = "info" | "lektioner" | "anteckningar" | "mal";
 
@@ -31,14 +33,6 @@ const HUB_TAGS: { id: ActiveView; label: string; activeBackground: string; activ
     { id: "anteckningar", label: "Anteckningar", activeBackground: "#D1FAE5", activeText: "#065F46" },
     { id: "mal", label: "Mål", activeBackground: "#FFEDD5", activeText: "#9A3412" },
 ];
-
-interface LessonData {
-    id: string;
-    date: string;
-    time: string;
-    studentName: string;
-    instrument: string;
-}
 
 export default function StudentProfile() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -112,20 +106,30 @@ export default function StudentProfile() {
         };
     }, [student]);
 
-    const allLessons: LessonData[] = useMemo(() => {
+    // Omskriven för att skapa LessonEvents kompatibla med ScheduleCard
+    const allLessons: LessonEvent[] = useMemo(() => {
         if (!student) return [];
-        const lessons: LessonData[] = [];
+        const lessons: LessonEvent[] = [];
 
         student.upcomingLessons?.forEach((date, index) => {
             const realId = student.upcomingLessonIds?.[index];
             const fallbackId = `${student.id}-${date}-${index}`;
 
+            // Beräkna om lektionen är genomförd via lookup
+            const isCompleted = student.upcomingLessonCompleted?.[index] ?? false;
+
+            // Beräkna daysLeft
+            const todayStr = new Date().toISOString().split("T")[0];
+            const diffTime = new Date(date).getTime() - new Date(todayStr).getTime();
+            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
             lessons.push({
                 id: realId || fallbackId,
                 date,
                 time: student.upcomingLessonTimes?.[index] || "Tid saknas",
-                studentName: student.name,
-                instrument: student.instrument,
+                daysLeft,
+                isCompleted,
+                student: student
             });
         });
 
@@ -133,8 +137,10 @@ export default function StudentProfile() {
     }, [student]);
 
     const today = new Date().toISOString().split("T")[0];
-    const upcomingLessons = allLessons.filter((l) => l.date >= today);
-    const pastLessons = allLessons.filter((l) => l.date < today).sort((a, b) => b.date.localeCompare(a.date));
+    
+    // Filtrera framtida och försenade/genomförda
+    const upcomingLessons = allLessons.filter((l) => l.daysLeft >= 0);
+    const pastLessons = allLessons.filter((l) => l.daysLeft < 0).sort((a, b) => b.date.localeCompare(a.date));
 
     const avatarUrl = student ? `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}` : "";
 
@@ -204,19 +210,31 @@ export default function StudentProfile() {
         );
     }
 
-    const renderUpcomingLesson = ({ item, index }: { item: LessonData; index: number }) => (
-        <ExpandableLessonCard
+    const renderUpcomingLesson = ({ item, index }: { item: LessonEvent; index: number }) => (
+        <ScheduleCard
             lesson={item}
+            isLast={index === upcomingLessons.length - 1}
+            isKommande={true}
             onMarkCompleted={handleMarkCompleted}
             onReschedule={handleReschedule}
             onCancel={handleCancel}
-            isLast={index === upcomingLessons.length - 1}
         />
     );
 
-    const renderPastLesson = ({ item, index }: { item: LessonData; index: number }) => (
-        <StaticLessonCard lesson={item} isLast={index === pastLessons.length - 1} />
-    );
+    const renderPastLesson = ({ item, index }: { item: LessonEvent; index: number }) => {
+        const isDelayed = !item.isCompleted;
+        return (
+            <ScheduleCard
+                lesson={item}
+                isLast={index === pastLessons.length - 1}
+                isKommande={false}
+                isDelayed={isDelayed} // Färgar eventuellt brickan röd
+                onMarkCompleted={handleMarkCompleted}
+                onReschedule={handleReschedule}
+                onCancel={handleCancel}
+            />
+        );
+    };
 
     return (
         <MainBackground>
@@ -259,7 +277,6 @@ export default function StudentProfile() {
                                         style={{
                                             backgroundColor: isActive ? tag.activeBackground : "#FFFFFF",
                                             borderColor: isActive ? "transparent" : "#E2E8F0",
-                                            // Liten skugga om den är aktiv
                                             shadowOpacity: isActive ? 0.05 : 0,
                                             shadowRadius: 2,
                                             shadowOffset: { width: 0, height: 1 },

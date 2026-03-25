@@ -124,7 +124,8 @@
     - [x] Implementerat Hero-kort med profilbild och färgkodade navigerings-tags (Info, Lektioner, Anteckningar, Mål).
     - [x] Fixat krascher (`Navigation context`) vid flikbyten genom `display: none/flex` och hybrid-styling (statiska klasser + inline styles för dynamisk färg).
     - [x] Design-polish: Tagit bort glassmorphism och ersatt med solida vita kort för ökad stabilitet och läsbarhet.
-    - [x] Förenklat lektionsvyn genom att visa kommande och tidigare lektioner i en samlad modul.
+    - [x] Förenklat lektionsvyn genom att ersätta gamla kort-komponenter med en enhetlig `ScheduleCard` standard.
+    - [x] Förbättrad Affordance: Tagit bort högerpilar och inaktiverat klick för statiska historiska lektioner.
 
 - [x] **Backend - Lärarprofil & Inställningar:**
     - Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
@@ -178,6 +179,7 @@
 
 - [x] **Frontend - Enskilda Lektionsåtgärder (Modaler):**
     - Implementerat Bottom Sheet-modaler för "Genomförd", "Boka om" och "Ställ in".
+    - [x] UX-förbättring i `CancelLessonSheet`: "Vårdnadshavaren" är nu standardval och placerad primärt till vänster för smidigare rapportering.
     - Löst komplex bugg gällande `NavigationContainer` och Portals genom att placera `BottomSheetModalProvider` korrekt i `app/(auth)/_layout.tsx`.
     - Löst NativeWind-krasch vid dynamisk styling inuti modaler genom att använda statiska `className` kombinerat med dynamisk `style`-prop.
     - Integrerat DatePicker och TimePicker (återanvända komponenter) i "Boka om"-modalen.

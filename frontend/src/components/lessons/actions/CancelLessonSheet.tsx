@@ -10,7 +10,8 @@ interface CancelLessonSheetProps {
 }
 
 export const CancelLessonSheet = forwardRef<BottomSheetModal, CancelLessonSheetProps>(({ onClose, onConfirm, isPending }, ref) => {
-    const [cancelledBy, setCancelledBy] = useState<"Läraren" | "Vårdnadshavaren">("Läraren");
+    // Vårdnadshavare som default
+    const [cancelledBy, setCancelledBy] = useState<"Läraren" | "Vårdnadshavaren">("Vårdnadshavaren");
     const [reason, setReason] = useState("");
 
     const snapPoints = useMemo(() => ["60%"], []);
@@ -25,7 +26,7 @@ export const CancelLessonSheet = forwardRef<BottomSheetModal, CancelLessonSheetP
         onConfirm(cancelledBy, reason);
         setTimeout(() => {
             setReason("");
-            setCancelledBy("Läraren");
+            setCancelledBy("Vårdnadshavaren");
         }, 500);
     };
 
@@ -51,30 +52,7 @@ export const CancelLessonSheet = forwardRef<BottomSheetModal, CancelLessonSheetP
                 {/* Segmented Control for 'Vem ställer in?' */}
                 <Text className="text-[14px] font-bold text-slate-900 mb-2 ml-1">Vem ställer in?</Text>
                 <View className="flex-row bg-slate-100 rounded-xl p-1 mb-6">
-                    {/* FIXED: Static className, dynamic style */}
-                    <TouchableOpacity
-                        onPress={() => setCancelledBy("Läraren")}
-                        className="flex-1 py-2.5 rounded-lg items-center"
-                        style={
-                            cancelledBy === "Läraren"
-                                ? {
-                                      backgroundColor: "white",
-                                      shadowColor: "#000",
-                                      shadowOffset: { width: 0, height: 1 },
-                                      shadowOpacity: 0.05,
-                                      shadowRadius: 2,
-                                      elevation: 1,
-                                  }
-                                : {}
-                        }
-                        activeOpacity={0.8}
-                    >
-                        <Text className="font-semibold" style={{ color: cancelledBy === "Läraren" ? "#0f172a" : "#64748b" }}>
-                            Läraren
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* FIXED: Static className, dynamic style */}
+                    {/* 1. VÅRDNADSHAVAREN LIGGER NU FÖRST (VÄNSTER) */}
                     <TouchableOpacity
                         onPress={() => setCancelledBy("Vårdnadshavaren")}
                         className="flex-1 py-2.5 rounded-lg items-center"
@@ -94,6 +72,29 @@ export const CancelLessonSheet = forwardRef<BottomSheetModal, CancelLessonSheetP
                     >
                         <Text className="font-semibold" style={{ color: cancelledBy === "Vårdnadshavaren" ? "#0f172a" : "#64748b" }}>
                             Vårdnadshavaren
+                        </Text>
+                    </TouchableOpacity>
+
+                    {/* 2. LÄRAREN LIGGER NU SOM ANDRA VAL (HÖGER) */}
+                    <TouchableOpacity
+                        onPress={() => setCancelledBy("Läraren")}
+                        className="flex-1 py-2.5 rounded-lg items-center"
+                        style={
+                            cancelledBy === "Läraren"
+                                ? {
+                                      backgroundColor: "white",
+                                      shadowColor: "#000",
+                                      shadowOffset: { width: 0, height: 1 },
+                                      shadowOpacity: 0.05,
+                                      shadowRadius: 2,
+                                      elevation: 1,
+                                  }
+                                : {}
+                        }
+                        activeOpacity={0.8}
+                    >
+                        <Text className="font-semibold" style={{ color: cancelledBy === "Läraren" ? "#0f172a" : "#64748b" }}>
+                            Läraren
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -128,5 +129,3 @@ export const CancelLessonSheet = forwardRef<BottomSheetModal, CancelLessonSheetP
         </BottomSheetModal>
     );
 });
-
-

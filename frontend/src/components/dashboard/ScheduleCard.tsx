@@ -5,7 +5,7 @@ import { LessonEvent } from "../../utils/lessonHelpers";
 
 interface ScheduleCardProps {
     lesson: LessonEvent;
-    onPress: () => void;
+    onPress?: () => void; // <-- 1. Gjorde onPress valfri (?)
     isLast: boolean;
     isKommande: boolean;
     isDelayed?: boolean;
@@ -27,7 +27,6 @@ export const ScheduleCard = ({
     const [isExpanded, setIsExpanded] = useState(false);
     const { student, date, time } = lesson;
 
-    // FIX: Skapa ett fallback-ID tills databasen returnerar lesson.id
     const lessonId = (lesson as any).id || `${student.id}-${date}`;
 
     const avatarUrl = `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}`;
@@ -43,17 +42,28 @@ export const ScheduleCard = ({
     const today = new Date();
     const isToday = dateObj.getFullYear() === today.getFullYear() && dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate();
 
+    // En hjälpvariabel: Kan kortet fällas ut med åtgärder?
+    const isExpandable = isKommande || isDelayed;
+
+    // En hjälpvariabel: Ska kortet överhuvudtaget reagera på klick?
+    const isInteractive = isExpandable || !!onPress;
+
     const handleCardPress = () => {
-        if (isKommande || isDelayed) {
+        if (isExpandable) {
             setIsExpanded(!isExpanded);
-        } else {
+        } else if (onPress) {
             onPress();
         }
     };
 
     return (
         <View className={`py-4 px-5 ${!isLast ? "border-b border-gray-100" : ""}`}>
-            <TouchableOpacity onPress={handleCardPress} className="flex-row items-center" activeOpacity={0.7}>
+            <TouchableOpacity
+                onPress={handleCardPress}
+                className="flex-row items-center"
+                activeOpacity={isInteractive ? 0.7 : 1} // Ingen klick-effekt om ointeraktiv
+                disabled={!isInteractive} // Stäng av klickandet helt
+            >
                 <Image source={{ uri: avatarUrl }} className="w-14 h-14 rounded-full bg-gray-100 mr-4" />
 
                 <View className="flex-1">
@@ -71,13 +81,14 @@ export const ScheduleCard = ({
                     <View className="bg-yellow-400 px-4 py-1.5 rounded-full ml-2">
                         <Text className="text-slate-900 font-bold text-xs tracking-wide">Rapportera</Text>
                     </View>
-                ) : (
-                    <Ionicons name={isExpanded && (isKommande || isDelayed) ? "chevron-down" : "chevron-forward"} size={20} color="#D1D5DB" />
-                )}
+                ) : isInteractive ? (
+                    /* 2. Visar bara pil om kortet faktiskt gör något */
+                    <Ionicons name={isExpanded ? "chevron-down" : "chevron-forward"} size={20} color="#D1D5DB" />
+                ) : null}
             </TouchableOpacity>
 
             {/* EXPANDERAD RAPPORT TOGGLE */}
-            {isExpanded && (isKommande || isDelayed) && (
+            {isExpanded && isExpandable && (
                 <View className="flex-row gap-x-2 mt-4 pt-4 border-t border-gray-100">
                     <TouchableOpacity
                         className="flex-[2] bg-brand-green rounded-xl items-center justify-center py-4 shadow-sm"
