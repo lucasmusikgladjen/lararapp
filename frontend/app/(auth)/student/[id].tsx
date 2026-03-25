@@ -4,22 +4,33 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Komponenter
 import { ExpandableLessonCard } from "../../../src/components/lessons/ExpandableLessonCard";
 import { StaticLessonCard } from "../../../src/components/lessons/StaticLessonCard";
 import { GuardianCard } from "../../../src/components/students/GuardianCard";
 import { NoteCard } from "../../../src/components/students/NoteCard";
-import { TabToggle } from "../../../src/components/ui/TabToggle";
-import { useUpdateStudent } from "../../../src/hooks/useStudentMutation";
-import { useStudents } from "../../../src/hooks/useStudents";
-import { Guardian } from "../../../src/types/student.types";
-import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
 import { CompleteLessonSheet } from "../../../src/components/lessons/actions/CompleteLessonSheet";
 import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/RescheduleLessonSheet";
 import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 import { PageHeader } from "../../../src/components/ui/PageHeader";
+import { MainBackground } from "../../../src/components/ui/MainBackground";
 
-type MainTab = "oversikt" | "lektioner";
-type LessonTab = "kommande" | "senaste";
+// Hooks & Typer
+import { useUpdateStudent } from "../../../src/hooks/useStudentMutation";
+import { useStudents } from "../../../src/hooks/useStudents";
+import { Guardian } from "../../../src/types/student.types";
+import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
+
+type ActiveView = "info" | "lektioner" | "anteckningar" | "mal";
+
+// Konfiguration för våra färgglada "tags" med HEX-koder
+const HUB_TAGS: { id: ActiveView; label: string; activeBackground: string; activeText: string }[] = [
+    { id: "info", label: "Info", activeBackground: "#DBEAFE", activeText: "#1E40AF" },
+    { id: "lektioner", label: "Lektioner", activeBackground: "#FCE7F3", activeText: "#9D174D" },
+    { id: "anteckningar", label: "Anteckningar", activeBackground: "#D1FAE5", activeText: "#065F46" },
+    { id: "mal", label: "Mål", activeBackground: "#FFEDD5", activeText: "#9A3412" },
+];
 
 interface LessonData {
     id: string;
@@ -34,18 +45,15 @@ export default function StudentProfile() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
-    const [mainTab, setMainTab] = useState<MainTab>("oversikt");
-    const [lessonTab, setLessonTab] = useState<LessonTab>("kommande");
+    const [activeView, setActiveView] = useState<ActiveView>("info");
     const [savingNotes, setSavingNotes] = useState(false);
     const [savingGoals, setSavingGoals] = useState(false);
 
-    // --- BOTTOM SHEET REFS & STATES ---
     const completeSheetRef = useRef<BottomSheetModal>(null);
     const rescheduleSheetRef = useRef<BottomSheetModal>(null);
     const cancelSheetRef = useRef<BottomSheetModal>(null);
     const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
 
-    // --- MUTATIONS ---
     const completeMutation = useCompleteLesson({
         studentId: id as string,
         onSuccess: () => {
@@ -73,15 +81,12 @@ export default function StudentProfile() {
         },
     });
 
-    // Fetch student data from the existing students query
     const { data: students, isLoading } = useStudents();
 
-    // Find the specific student
     const student = useMemo(() => {
         return students?.find((s) => s.id === id);
     }, [students, id]);
 
-    // Update mutation
     const updateMutation = useUpdateStudent({
         studentId: id || "",
         onSuccess: () => {
@@ -95,10 +100,8 @@ export default function StudentProfile() {
         },
     });
 
-    // Create guardian object from student data
     const guardian: Guardian | null = useMemo(() => {
         if (!student) return null;
-
         return {
             name: student.guardianName || "Namn saknas",
             address: student.address || "",
@@ -109,7 +112,6 @@ export default function StudentProfile() {
         };
     }, [student]);
 
-    // Parse lessons from student data
     const allLessons: LessonData[] = useMemo(() => {
         if (!student) return [];
         const lessons: LessonData[] = [];
@@ -130,12 +132,9 @@ export default function StudentProfile() {
         return lessons.sort((a, b) => a.date.localeCompare(b.date));
     }, [student]);
 
-    // Split lessons into upcoming and past
     const today = new Date().toISOString().split("T")[0];
     const upcomingLessons = allLessons.filter((l) => l.date >= today);
     const pastLessons = allLessons.filter((l) => l.date < today).sort((a, b) => b.date.localeCompare(a.date));
-
-    const nextLesson = upcomingLessons[0];
 
     const avatarUrl = student ? `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}` : "";
 
@@ -151,63 +150,38 @@ export default function StudentProfile() {
 
     const handleMarkCompleted = (lessonId: string) => {
         setSelectedLessonId(lessonId);
-
-        // Let React state commit before animating the bottom sheet
-        setTimeout(() => {
-            completeSheetRef.current?.present();
-        }, 10);
+        setTimeout(() => completeSheetRef.current?.present(), 10);
     };
 
-    // Function that runs when the user clicks "Bekräfta" inside the modal
     const handleConfirmComplete = (notes: string, homework: string) => {
         if (!selectedLessonId) return;
-        completeMutation.mutate({
-            lessonId: selectedLessonId,
-            payload: { notes, homework },
-        });
+        completeMutation.mutate({ lessonId: selectedLessonId, payload: { notes, homework } });
     };
 
     const handleReschedule = (lessonId: string) => {
         setSelectedLessonId(lessonId);
-
-        setTimeout(() => {
-            rescheduleSheetRef.current?.present();
-        }, 10);
+        setTimeout(() => rescheduleSheetRef.current?.present(), 10);
     };
 
-    // Function that runs when the user clicks "Bekräfta" inside the reschedule modal
     const handleConfirmReschedule = (newDate: string, newTime: string, reason: string) => {
         if (!selectedLessonId) return;
-        rescheduleMutation.mutate({
-            lessonId: selectedLessonId,
-            payload: { newDate, newTime, reason },
-        });
+        rescheduleMutation.mutate({ lessonId: selectedLessonId, payload: { newDate, newTime, reason } });
     };
 
     const handleCancel = (lessonId: string) => {
         setSelectedLessonId(lessonId);
-
-        // Timeout to allow state to settle before animating
-        setTimeout(() => {
-            cancelSheetRef.current?.present();
-        }, 10);
+        setTimeout(() => cancelSheetRef.current?.present(), 10);
     };
 
     const handleConfirmCancel = (cancelledBy: "Läraren" | "Vårdnadshavaren", reason: string) => {
         if (!selectedLessonId) return;
-        cancelMutation.mutate({
-            lessonId: selectedLessonId,
-            payload: { cancelledBy, reason },
-        });
+        cancelMutation.mutate({ lessonId: selectedLessonId, payload: { cancelledBy, reason } });
     };
 
     const handleBookLesson = () => {
         router.push({
             pathname: "/(auth)/schedule",
-            params: {
-                action: "skapa",
-                studentId: id,
-            },
+            params: { action: "skapa", studentId: id },
         });
     };
 
@@ -245,178 +219,170 @@ export default function StudentProfile() {
     );
 
     return (
-        <View className="flex-1" style={{ paddingTop: insets.top }}>
-            {/* Header */}
-            <View className="px-5">
-                <PageHeader />
-            </View>
-
-            {/* Back Button */}
-            <View className="px-5 mb-2">
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    className="flex-row items-center bg-brand-orange rounded-full px-3 py-1.5 self-start"
-                    activeOpacity={0.8}
-                >
-                    <Ionicons name="arrow-back" size={18} color="white" />
-                    <Text className="text-white text-xs font-semibold ml-1">Tillbaka</Text>
-                </TouchableOpacity>
-            </View>
-
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-                {/* Student Header */}
-                <View className="items-center py-4">
-                    <Text className="text-xl font-bold text-slate-900 mb-3">{student.name}</Text>
-                    <View className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg">
-                        <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
-                    </View>
+        <MainBackground>
+            <View className="flex-1" style={{ paddingTop: insets.top }}>
+                {/* Header */}
+                <View className="px-5">
+                    <PageHeader title={student.name} />
                 </View>
 
-                {/* Guardian Card */}
-                {guardian && (
-                    <View className="px-5 mb-4">
-                        <GuardianCard guardian={guardian} />
-                    </View>
-                )}
-
-                {/* Main Tab Toggle */}
-                <View className="px-5 mb-4">
-                    <TabToggle
-                        options={[
-                            { value: "oversikt", label: "Översikt" },
-                            { value: "lektioner", label: "Lektioner" },
-                        ]}
-                        activeTab={mainTab}
-                        onToggle={setMainTab}
-                        variant="pill"
-                        activeColor="orange"
-                    />
+                {/* Back Button */}
+                <View className="px-5 mb-2">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="flex-row items-center bg-brand-orange rounded-full px-3 py-1.5 self-start shadow-sm"
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="arrow-back" size={18} color="white" />
+                        <Text className="text-white text-xs font-semibold ml-1">Tillbaka</Text>
+                    </TouchableOpacity>
                 </View>
 
-                {/* === VY 1: ÖVERSIKT === */}
-                <View style={{ display: mainTab === "oversikt" ? "flex" : "none" }} className="px-5">
-                    {/* Kommande Section */}
-                    <Text className="text-base font-bold text-slate-900 mb-3">Kommande</Text>
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+                    {/* =============== HERO CARD (Avatar + Tags) =============== */}
+                    <View className="mx-5 bg-white rounded-3xl p-4 shadow-sm mb-6 flex-row items-center mt-2 border border-slate-100">
+                        {/* Vänster: Avatar */}
+                        <View className="w-[84px] h-[84px] rounded-full overflow-hidden bg-gray-50 border border-slate-200 mr-4">
+                            <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
+                        </View>
 
-                    {nextLesson ? (
-                        <View className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                            <ExpandableLessonCard
-                                lesson={nextLesson}
-                                onMarkCompleted={handleMarkCompleted}
-                                onReschedule={handleReschedule}
-                                onCancel={handleCancel}
-                                isLast={true}
+                        {/* Höger: Tags */}
+                        <View className="flex-1 flex-row flex-wrap gap-2">
+                            {HUB_TAGS.map((tag) => {
+                                const isActive = activeView === tag.id;
+                                return (
+                                    <TouchableOpacity
+                                        key={tag.id}
+                                        onPress={() => setActiveView(tag.id)}
+                                        activeOpacity={0.7}
+                                        className="px-3 py-1.5 rounded-full border"
+                                        style={{
+                                            backgroundColor: isActive ? tag.activeBackground : "#FFFFFF",
+                                            borderColor: isActive ? "transparent" : "#E2E8F0",
+                                            // Liten skugga om den är aktiv
+                                            shadowOpacity: isActive ? 0.05 : 0,
+                                            shadowRadius: 2,
+                                            shadowOffset: { width: 0, height: 1 },
+                                        }}
+                                    >
+                                        <Text className="text-[13px] font-bold" style={{ color: isActive ? tag.activeText : "#64748B" }}>
+                                            {tag.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </View>
+
+                    {/* Separator Line */}
+                    <View className="h-1 bg-slate-200 mx-16 mb-6 rounded-full" />
+
+                    {/* ---------- DYNAMIC CONTENT AREA ---------- */}
+                    <View className="px-5 flex-1">
+                        {/* =============== INFO =============== */}
+                        <View style={{ display: activeView === "info" ? "flex" : "none" }}>
+                            {guardian ? (
+                                <GuardianCard guardian={guardian} />
+                            ) : (
+                                <View className="bg-white rounded-3xl border border-slate-100 p-8 items-center shadow-sm">
+                                    <Text className="text-slate-500">Ingen kontaktinfo tillgänglig.</Text>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* =============== LEKTIONER =============== */}
+                        <View style={{ display: activeView === "lektioner" ? "flex" : "none" }}>
+                            <Text className="text-[17px] font-bold text-slate-900 mb-3 ml-2">Kommande lektioner</Text>
+                            <View className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm mb-6">
+                                {upcomingLessons.length > 0 ? (
+                                    <FlatList
+                                        data={upcomingLessons}
+                                        renderItem={renderUpcomingLesson}
+                                        keyExtractor={(item) => item.id}
+                                        scrollEnabled={false}
+                                    />
+                                ) : (
+                                    <View className="p-8 items-center">
+                                        <Text className="text-slate-500">Inga inplanerade lektioner.</Text>
+                                    </View>
+                                )}
+                            </View>
+
+                            <Text className="text-[17px] font-bold text-slate-900 mb-3 ml-2">Tidigare lektioner</Text>
+                            <View className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                                {pastLessons.length > 0 ? (
+                                    <FlatList
+                                        data={pastLessons}
+                                        renderItem={renderPastLesson}
+                                        keyExtractor={(item) => item.id}
+                                        scrollEnabled={false}
+                                    />
+                                ) : (
+                                    <View className="p-8 items-center">
+                                        <Text className="text-slate-500">Historik saknas.</Text>
+                                    </View>
+                                )}
+                            </View>
+                        </View>
+
+                        {/* =============== ANTECKNINGAR =============== */}
+                        <View style={{ display: activeView === "anteckningar" ? "flex" : "none" }}>
+                            <NoteCard
+                                title="Dina anteckningar"
+                                value={student.notes}
+                                onSave={handleSaveNotes}
+                                isSaving={savingNotes}
+                                placeholder="Skriv dina anteckningar om eleven här..."
                             />
                         </View>
-                    ) : (
-                        <View className="bg-white rounded-2xl p-8 items-center">
-                            <Text className="text-gray-500">Inga kommande lektioner</Text>
+
+                        {/* =============== MÅL =============== */}
+                        <View style={{ display: activeView === "mal" ? "flex" : "none" }}>
+                            <NoteCard
+                                title="Terminsmål"
+                                value={student.goals}
+                                onSave={handleSaveGoals}
+                                isSaving={savingGoals}
+                                placeholder="Skriv elevens mål för terminen här..."
+                            />
                         </View>
-                    )}
-
-                    {/* Separator */}
-                    <View className="h-px bg-gray-200 my-6" />
-
-                    {/* Notes Card */}
-                    <View className="mb-4">
-                        <NoteCard
-                            title="Senaste anteckningar"
-                            value={student.notes}
-                            onSave={handleSaveNotes}
-                            isSaving={savingNotes}
-                            placeholder="Skriv dina anteckningar om eleven här..."
-                        />
                     </View>
+                </ScrollView>
 
-                    {/* Goals Card */}
-                    <NoteCard
-                        title="Terminsmål"
-                        value={student.goals}
-                        onSave={handleSaveGoals}
-                        isSaving={savingGoals}
-                        placeholder="Skriv elevens mål för terminen här..."
-                    />
+                {/* CTA Button | "Boka lektion" */}
+                <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3">
+                    <TouchableOpacity
+                        onPress={handleBookLesson}
+                        className="bg-brand-green rounded-2xl py-4 flex-row items-center justify-center shadow-lg"
+                        activeOpacity={0.9}
+                    >
+                        <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center mr-3">
+                            <Ionicons name="add" size={20} color="white" />
+                        </View>
+                        <Text className="text-white font-bold text-lg">Boka lektion</Text>
+                    </TouchableOpacity>
                 </View>
 
-                {/* === VY 2: LEKTIONER === */}
-                <View style={{ display: mainTab === "lektioner" ? "flex" : "none" }} className="flex-1">
-                    {/* Lesson Sub-Tab Toggle */}
-                    <View className="flex-row items-center justify-between px-5 mb-4">
-                        <TabToggle
-                            options={[
-                                { value: "kommande", label: "Kommande" },
-                                { value: "senaste", label: "Senaste" },
-                            ]}
-                            activeTab={lessonTab}
-                            onToggle={setLessonTab}
-                            variant="underline"
-                        />
-                        <TouchableOpacity>
-                            <Ionicons name="options-outline" size={22} color="#6B7280" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Lesson List */}
-                    <View className="mx-5 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                        {lessonTab === "kommande" ? (
-                            upcomingLessons.length > 0 ? (
-                                <FlatList
-                                    data={upcomingLessons}
-                                    renderItem={renderUpcomingLesson}
-                                    keyExtractor={(item) => item.id}
-                                    scrollEnabled={false}
-                                />
-                            ) : (
-                                <View className="p-8 items-center">
-                                    <Text className="text-gray-500">Inga kommande lektioner</Text>
-                                </View>
-                            )
-                        ) : pastLessons.length > 0 ? (
-                            <FlatList data={pastLessons} renderItem={renderPastLesson} keyExtractor={(item) => item.id} scrollEnabled={false} />
-                        ) : (
-                            <View className="p-8 items-center">
-                                <Text className="text-gray-500">Inga tidigare lektioner</Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
-            </ScrollView>
-
-            {/* CTA Button | "Boka lektion" */}
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6 pt-3 ">
-                <TouchableOpacity
-                    onPress={handleBookLesson}
-                    className="bg-brand-green rounded-2xl py-4 flex-row items-center justify-center shadow-lg"
-                    activeOpacity={0.9}
-                >
-                    <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center mr-3">
-                        <Ionicons name="add" size={20} color="white" />
-                    </View>
-                    <Text className="text-white font-bold text-lg">Boka lektion</Text>
-                </TouchableOpacity>
+                {/* =============== MODALS =============== */}
+                <CompleteLessonSheet
+                    ref={completeSheetRef}
+                    onClose={() => completeSheetRef.current?.dismiss()}
+                    onConfirm={handleConfirmComplete}
+                    isPending={completeMutation.isPending}
+                />
+                <RescheduleLessonSheet
+                    ref={rescheduleSheetRef}
+                    onClose={() => rescheduleSheetRef.current?.dismiss()}
+                    onConfirm={handleConfirmReschedule}
+                    isPending={rescheduleMutation.isPending}
+                />
+                <CancelLessonSheet
+                    ref={cancelSheetRef}
+                    onClose={() => cancelSheetRef.current?.dismiss()}
+                    onConfirm={handleConfirmCancel}
+                    isPending={cancelMutation.isPending}
+                />
             </View>
-
-            {/* ========== MODALS ========== */}
-            <CompleteLessonSheet
-                ref={completeSheetRef}
-                onClose={() => completeSheetRef.current?.dismiss()}
-                onConfirm={handleConfirmComplete}
-                isPending={completeMutation.isPending}
-            />
-
-            <RescheduleLessonSheet
-                ref={rescheduleSheetRef}
-                onClose={() => rescheduleSheetRef.current?.dismiss()}
-                onConfirm={handleConfirmReschedule}
-                isPending={rescheduleMutation.isPending}
-            />
-
-            <CancelLessonSheet
-                ref={cancelSheetRef}
-                onClose={() => cancelSheetRef.current?.dismiss()}
-                onConfirm={handleConfirmCancel}
-                isPending={cancelMutation.isPending}
-            />
-        </View>
+        </MainBackground>
     );
 }

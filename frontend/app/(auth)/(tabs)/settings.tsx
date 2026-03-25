@@ -13,6 +13,7 @@ import { DocumentsSection } from "../../../src/components/settings/DocumentsSect
 import { PersonalSection } from "../../../src/components/settings/PersonalSection";
 import { SalarySection } from "../../../src/components/settings/SalarySection";
 import { StudentsSection } from "../../../src/components/settings/StudentsSection";
+import { MainBackground } from "../../../src/components/ui/MainBackground";
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -137,69 +138,71 @@ export default function SettingsPage() {
 
     return (
         <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
-            <View className="px-5">
-                <PageHeader />
-            </View>
+            <MainBackground>
+                <View className="px-5">
+                    <PageHeader />
+                </View>
 
-            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
-                {/* Profile Header */}
-                <View className="items-center py-6 mb-4">
-                    <View className="relative mb-4">
-                        <View className="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
-                            <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
+                <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
+                    {/* Profile Header */}
+                    <View className="items-center py-6 mb-4">
+                        <View className="relative mb-4">
+                            <View className="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
+                                <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
+                            </View>
+                            <View className="absolute bottom-0 right-0 bg-brand-orange p-2 rounded-full border-2 border-white shadow-sm">
+                                <Ionicons name="pencil" size={14} color="white" />
+                            </View>
                         </View>
-                        <View className="absolute bottom-0 right-0 bg-brand-orange p-2 rounded-full border-2 border-white shadow-sm">
-                            <Ionicons name="pencil" size={14} color="white" />
+                        <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
+
+                        <View className="mt-2 flex-row items-center bg-green-100 px-3 py-1 rounded-full">
+                            <Text className="text-green-700 text-xs font-bold uppercase tracking-wider">
+                                {user.instruments && user.instruments.length > 0 ? user.instruments.join(" • ") : "Inga instrument valda"}
+                            </Text>
                         </View>
                     </View>
-                    <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
 
-                    <View className="mt-2 flex-row items-center bg-green-100 px-3 py-1 rounded-full">
-                        <Text className="text-green-700 text-xs font-bold uppercase tracking-wider">
-                            {user.instruments && user.instruments.length > 0 ? user.instruments.join(" • ") : "Inga instrument valda"}
-                        </Text>
+                    {/* ========== GROUP 1: KONTO & UPPGIFTER ========== */}
+                    <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Konto & Uppgifter</Text>
+                    <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
+                        <PersonalSection
+                            user={user}
+                            formData={formData}
+                            setFormData={setFormData}
+                            handleSave={() => handleSave("personal")}
+                            isSaving={isSaving}
+                        />
+
+                        <SalarySection
+                            user={user}
+                            formData={formData}
+                            setFormData={setFormData}
+                            handleSave={() => handleSave("salary")}
+                            isSaving={isSaving}
+                        />
+                        <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
                     </View>
-                </View>
 
-                {/* ========== GROUP 1: KONTO & UPPGIFTER ========== */}
-                <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Konto & Uppgifter</Text>
-                <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
-                    <PersonalSection
-                        user={user}
-                        formData={formData}
-                        setFormData={setFormData}
-                        handleSave={() => handleSave("personal")}
-                        isSaving={isSaving}
-                    />
+                    {/* ========== GROUP 2: INNEHÅLL ========== */}
+                    <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Innehåll</Text>
+                    <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
+                        <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
+                        <DocumentsSection user={user} />
+                    </View>
 
-                    <SalarySection
-                        user={user}
-                        formData={formData}
-                        setFormData={setFormData}
-                        handleSave={() => handleSave("salary")}
-                        isSaving={isSaving}
-                    />
-                    <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
-                </View>
-
-                {/* ========== GROUP 2: INNEHÅLL ========== */}
-                <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Innehåll</Text>
-                <View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
-                    <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
-                    <DocumentsSection user={user} />
-                </View>
-
-                {/* Logout Button */}
-                <View className="mb-4">
-                    <TouchableOpacity
-                        onPress={handleLogout}
-                        className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100"
-                    >
-                        <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
-                        <Text className="text-red-500 font-bold text-base">Logga ut</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                    {/* Logout Button */}
+                    <View className="mb-4">
+                        <TouchableOpacity
+                            onPress={handleLogout}
+                            className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-gray-100"
+                        >
+                            <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
+                            <Text className="text-red-500 font-bold text-base">Logga ut</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </MainBackground>
         </SafeAreaView>
     );
 }

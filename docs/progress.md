@@ -28,7 +28,7 @@
 - [x] Backend: Endpoint `POST /register` med validering, hashning och JWT-generering.
 - [x] Backend: Stöd för `PATCH /profile` med `instruments`-array som uppdaterar Airtable.
 - [x] Backend: `POST /register` fungerar nu med fullständig data (adress, födelseår etc).
-- [x] Backend Refactoring: Implementerat `matchedData` och robust valideringslogik med custom validators för Auth.
+- [x] Backend Refactoring: Implementerat `matchedData` och robust valideringslogik med custom validators for Auth.
 - [x] Frontend Onboarding Fas 1: `ProgressBar` och `InstrumentCard` komponenter i `src/components/onboarding/`.
 - [x] Frontend Onboarding Fas 2: Registreringsformulär (`app/(public)/register.tsx`) med Zod-validering och `POST /register`.
 - [x] Frontend Onboarding Fas 3: Instrument-val (`app/(auth)/onboarding/instruments.tsx`) med 2-kolumns grid, chip-tags, custom-input och `PATCH /profile`.
@@ -50,11 +50,12 @@
     
 - [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
-- [x] **Backend - Geospatial Sökning:**
+- [x] **Backend - Geospatial Sökning & DTO-uppdatering:**
     - Implementerat `GET /api/students/search` med Haversine-formel för avståndsberäkning.
     - Avancerad filtrering i Airtable (`SEARCH`-formler) för att hantera "Söker lärare" och array-fält (`Ort`).
-    - Typsäker DTO (`StudentPublicDTO`) för att skydda elevdata.
-    - **FIX:** Implementerat paginering (`getAllRecords`) i Airtable-servicen för att säkerställa att ALLA elever hämtas, inte bara de första 100.
+    - Typsäker `StudentPublicDTO` för att skydda elevdata.
+    - **FIX:** Implementerat paginering (`getAllRecords`) i Airtable-servicen för att säkerställa att ALLA elever hämtas.
+    - Utökat `StudentPublicDTO` med `birthYear` för åldersberäkning och `NummerID` för anonymiserad referens (t.ex. "Elev #479").
     
 - [x] **Frontend - Karta (Fas 1):**
     - Installation och konfiguration av `react-native-maps` och `expo-location` i `app.json`.
@@ -100,6 +101,14 @@
     - Frontend: Byggt `useRequestToTeach`-hook med felhantering och cache-invalidering för omedelbar UI-uppdatering.
     - Frontend: Premium UX i `StudentDetailModal` där knappar och textfält gråas ut och inaktiveras om läraren redan ansökt ("ANSÖKAN SKICKAD").
 
+- [x] **Karta Fas 8: Förbättrad Detaljvy & Ansökan:**
+    - [x] Implementerat anonymiserat UI där eleven identifieras via sitt NummerID (t.ex. "Elev #479").
+    - [x] Skapat 2-kolumns grid för tydlig visning av instrument och ålder.
+    - [x] Utökat ansökningsformuläret från en fritextruta till fyra specifika fält (Erfarenhet, Tillgänglighet, Pris, Övrigt).
+    - [x] Lagt till "Vad händer sen?" steg-för-steg information om Musikglädjens matchningsprocess.
+    - [x] Infört obligatorisk checkbox för matchningsgodkännande för att aktivera "Önska"-knappen.
+    - [x] Visuell integration av `MainBackground` i BottomSheet-bakgrunden med `overflow: hidden` för runda hörn.
+
 - [x] **Frontend - Mina Elever & Navigation Refactor:**
     - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`) som listar inloggad lärares elever.
     - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY och konsistens.
@@ -109,6 +118,13 @@
 - [x] **Frontend - UI Refactor:**
     - Skapade `PageHeader.tsx` i `src/components/ui` för att ersätta hårdkodade headers.
     - Den är dynamisk via `title`-prop och används nu på Dashboard, Elever och Inställningar.
+
+- [x] **Frontend - Elevprofil Refactor ("Elevhub"):**
+    - [x] Omstrukturerat elevvyn (`app/(auth)/student/[id].tsx`) till en modulär "Elevhub" med micro-sidor för ökad överskådlighet.
+    - [x] Implementerat Hero-kort med profilbild och färgkodade navigerings-tags (Info, Lektioner, Anteckningar, Mål).
+    - [x] Fixat krascher (`Navigation context`) vid flikbyten genom `display: none/flex` och hybrid-styling (statiska klasser + inline styles för dynamisk färg).
+    - [x] Design-polish: Tagit bort glassmorphism och ersatt med solida vita kort för ökad stabilitet och läsbarhet.
+    - [x] Förenklat lektionsvyn genom att visa kommande och tidigare lektioner i en samlad modul.
 
 - [x] **Backend - Lärarprofil & Inställningar:**
     - Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
@@ -129,7 +145,7 @@
     - Uppdaterade Airtable-strukturen med `NotificationTemplates` (mallar) och `Notifications` (utskick).
     - Implementerade `GET /api/notifications` som automatiskt slår ihop mallar med individuella override-värden.
     - Byggde smart backend-sortering baserat på `Severity` (critical > warning > info) och skapelsedatum.
-    - Skapade endpointen `PATCH /api/notifications/:id/resolve` som möjliggör för lärare att svara på formulär och arkivera notiser.
+    - Skapade endpointen `PATCH /api/notifications/:id/resolve` som möjligör för lärare att svara på formulär och arkivera notiser.
 
 - [x] **Frontend - Notifikationssystem (Dynamiska actionsidor):**
     - Implementerade dynamiska Action-sidor i frontend baserat på notifikationsmallarna.

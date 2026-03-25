@@ -154,7 +154,7 @@ export default function Dashboard() {
             >
                 <PageHeader />
 
-                <View className="py-4 px-6 mb-3 items-center">
+                <View className="py-2 px-6 mb-2 items-center">
                     <Text className="text-3xl font-bold text-slate-800">Hej, {firstName}!</Text>
                 </View>
 
