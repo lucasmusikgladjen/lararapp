@@ -6,11 +6,11 @@ export const ScheduleEntryCard = () => {
     const router = useRouter();
 
     return (
-        <View /* style={styles.shadowWrapper} */ className="mb-6 mt-2">
+        <View className="mb-6 mt-2">
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => router.push("/schedule")}
-                className="flex-row items-center bg-brand-bg p-6 rounded-[28px] border border-slate-300"
+                className="flex-row items-center p-5 bg-white rounded-3xl border border-slate-100 shadow-sm"
             >
                 <View className="w-14 h-14 items-center justify-center mr-4">
                     <Ionicons name="calendar-outline" size={28} color="#F97316" />
@@ -18,7 +18,6 @@ export const ScheduleEntryCard = () => {
 
                 <View className="flex-1">
                     <Text className="text-slate-900 font-bold text-[17px] tracking-tight mb-1">Hantera lektionsschema</Text>
-                    {/* <Text className="text-slate-500 text-sm font-medium leading-tight pr-4">Justera tider, skapa eller avsluta lektioner</Text> */}
                     <Text className="text-slate-500 text-sm font-medium leading-tight pr-4">Justera tider och hantera lektioner</Text>
                 </View>
 
@@ -28,14 +27,3 @@ export const ScheduleEntryCard = () => {
         </View>
     );
 };
-
-// Mirroring the shadow styles from StudentCard to fix clipping and maintain depth consistency
-const styles = StyleSheet.create({
-    shadowWrapper: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 5,
-    },
-});

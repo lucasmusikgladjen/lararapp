@@ -27,7 +27,7 @@
 
 ## Backend: Teacher Profile & Settings
 - **Säkerhet (Read-only):** Fält som `Timlön`, `Skattesats` och `Status` (Aktiv/Slutat) kan inte uppdateras via API:et. Service-lagret (`teacher_service.ts`) använder en strikt "allow-list" och ignorerar tyst försök att ändra dessa fält.
-- **Dokument-säkerhet:** `Avtal` och `Jämkning` mappas till frontend, men `Belastningsregister` filtreras bort helt i `mapAirtableToTeacher`. Detta säkerställer att känsliga dokument aldrig lämnar backend-servern.
+- **Dokument-säkerhet:** `Avtal`, `Jämkning` och `Belastningsregister` mappas till frontend. Tidigare filtrerades belastningsregistret bort, men det har nu låsts upp för att lärare ska kunna verifiera sin status.
 - **Lösenords-hantering:** Vi måste explicit inkludera `password` i `mapAirtableToTeacher` för att `auth_controller` ska kunna verifiera inloggningen. Däremot tar `profile_controller` bort lösenordet från svaret innan det skickas till klienten.
 - **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress som ägs av en *annan* användare.
 - **Airtable fälttyper (Datum):** Vissa datumfält (t.ex. `Terminsslut`) kan ibland returneras som en array av strängar istället för en enkel sträng från Airtable. Tjänsten hanterar nu detta säkert för att garantera att frontend och inloggnings-payload får rätt format.
@@ -56,12 +56,13 @@
 ## Frontend: Modulär Design (Hub-konceptet)
 - **Enhetligt Hub-system:** Både elevprofilen och lärarprofilen (Inställningar) har omstrukturerats till modulära "hubbar" med micro-sidor.
 - **Hero Card Navigering:** Toppen av dessa sidor innehåller ett Hero-kort med profilbild och färgkodade navigerings-tags (piller). För läraren inkluderar detta även en biografisk sammanfattning direkt i huvudvyn.
-- **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden för både Dashboard och Elevprofil. Genom att mappa elevprofilens data till `LessonEvent`-gränssnittet återanvänds samma logik för rapportering i hela appen.
+- **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden. Den använder en modern asymmetrisk layout där den primära åtgärden (Genomförd) tar störst plats.
+- **Dokumentgruppering:** Dokument visas i logiska grupper (Avtal, Jämkning, Belastningsregister) med tillhörande uppladdnings-placeholders (dashed borders) om filen saknas.
 
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
 - **NativeWind & Navigation Context:** För att undvika kraschen `Couldn't find a navigation context` vid flikbyten, används `style={{ display: activeView === 'x' ? 'flex' : 'none' }}` istället för villkorsstyrd rendering (`&&`). Detta behåller komponenterna monterade men gömda.
-- **Hybrid Styling-strategi:** Dynamiska ändringar av Tailwind-klasser i `className` kan få NativeWind att tappa bort navigations-trädet. 
+- **Hybrid Styling-strategi:** Dynamiska ändringar av Tailwind-klasser i `className` (t.ex. färgbyten vid klick) kan få NativeWind att tappa bort navigations-trädet. 
     - **Lösning:** Håll `className` statisk för grundlayouten. Använd React Natives inbyggda `style`-prop med HEX-koder för dynamiska visuella ändringar (t.ex. bakgrundsfärg på en aktiv tag).
 - **Emergency Reset (Nödbroms):** Vi har identifierat att `AsyncStorage` kan hamna i osynk med Zustand-storen (token finns men user-objektet saknas). En nödutloggnings-knapp ("Tvinga utloggning") har implementerats på både **Dashboard** och **Inställningssidan** för att möjliggöra för användare att rensa korrupt state och logga in på nytt.
 
@@ -88,10 +89,10 @@
 - **Säkerhetsspärrar:** Destruktiva handlingar kräver både en bekräftelse-checkbox och en native `Alert`.
 
 ## UI & Styling Strategy
-- **Affordance & Interaktivitet:** För att undvika att användare försöker interagera med statiska element visas högerpilar (chevrons) endast på kort som faktiskt har en navigering eller åtgärd. Om `onPress` saknas och kortet inte är expanderbart stängs klick-ytan av helt för att ge korrekt visuell feedback.
-- **UX-optimering i formulär:** I åtgärdsformulär (t.ex. `CancelLessonSheet`) placeras det mest sannolika standardvalet (t.ex. "Vårdnadshavaren") till vänster och sätts som förvalt värde för att minimera antalet klick för användaren.
-- **Glassmorphism:** Vi använde tidigare en kombination av `bg-white/70` och `border-2 border-white`, men har i den senaste refactorn gått mot solida vita kort för bättre stabilitet och läsbarhet.
-- **Shadow Clipping Fix:** En `shadowWrapper` utan `overflow: hidden` används för att förhindra att skuggor klipps i React Native.
+- **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
+- **Typografi & Luft:** För att undvika "cramped" UI används `leading-tight` och naturliga radbrytningar istället för trunkering med prickar ("..."). Badgar (status) placeras konsekvent på samma rad som rubriken för att spara vertikalt utrymme.
+- **Affordance & Interaktivitet:** Högerpilar (chevrons) visas endast på element med aktiva åtgärder. Ikoner har ofta en mjuk rund bakgrundsfärg (t.ex. `bg-orange-100`) för att signalera kategori.
+- **UX-optimering i formulär:** I åtgärdsformulär (t.ex. `CancelLessonSheet`) placeras det mest sannolika standardvalet (t.ex. "Vårdnadshavaren") till vänster och sätts som förvalt värde.
 - **Animerade komponenter:** `LayoutAnimation` används för smidiga expand/collapse-effekter.
 - **Native Layouts:** Använder `@react-native-picker/picker` och native datumväljare för att efterlikna systemets inbyggda känsla.
 

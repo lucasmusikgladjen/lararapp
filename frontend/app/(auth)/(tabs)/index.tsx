@@ -19,7 +19,7 @@ import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/R
 import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 
 export default function Dashboard() {
-    // 1. Hämtar både user och logout
+    // Hämtar både user och logout | Nödbroms: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
 
@@ -28,14 +28,14 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
     const [refreshing, setRefreshing] = useState(false);
 
-    // --- MODAL STATE ---
+    // --------------- MODAL STATE ---------------
     const completeSheetRef = useRef<BottomSheetModal>(null);
     const rescheduleSheetRef = useRef<BottomSheetModal>(null);
     const cancelSheetRef = useRef<BottomSheetModal>(null);
     const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
-    // --- MUTATIONS ---
+    // --------------- MUTATIONS ---------------
     const completeMutation = useCompleteLesson({
         studentId: selectedStudentId || "",
         onSuccess: () => {
@@ -66,7 +66,7 @@ export default function Dashboard() {
         },
     });
 
-    // --- HANDLERS FÖR ATT ÖPPNA MODALER ---
+    // --------------- HANDLERS FÖR ATT ÖPPNA MODALER ---------------
     const handleMarkCompleted = (lessonId: string, studentId: string) => {
         setSelectedLessonId(lessonId);
         setSelectedStudentId(studentId);
@@ -85,7 +85,7 @@ export default function Dashboard() {
         setTimeout(() => cancelSheetRef.current?.present(), 10);
     };
 
-    // --- HANDLERS FÖR ATT BEKRÄFTA INUTI MODALER ---
+    // --------------- HANDLERS FÖR ATT BEKRÄFTA INUTI MODALER ---------------
     const handleConfirmComplete = (notes: string, homework: string) => {
         if (!selectedLessonId) return;
         completeMutation.mutate({ lessonId: selectedLessonId, payload: { notes, homework } });
@@ -101,7 +101,7 @@ export default function Dashboard() {
         cancelMutation.mutate({ lessonId: selectedLessonId, payload: { cancelledBy, reason } });
     };
 
-    // --- DATA FETCHING ---
+    // --------------- DATA FETCHING ---------------
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await Promise.all([refetchStudents(), refetchNotifications()]);
@@ -134,7 +134,7 @@ export default function Dashboard() {
         return allLessons.filter((l) => l.daysLeft < 0 && l.isCompleted).sort((a, b) => b.date.localeCompare(a.date));
     }, [allLessons, activeTab]);
 
-    // ⚠️ NÖDBROMS: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt
+    // ⚠️ NÖDBROMS: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt!
     if (!user) {
         return (
             <SafeAreaView className="flex-1 items-center justify-center bg-brand-bg px-5">
@@ -181,10 +181,10 @@ export default function Dashboard() {
 
                 <NotificationStack />
 
-                {/* --- FÖRSENADE LEKTIONER --- */}
+                {/* --------------- FÖRSENADE LEKTIONER --------------- */}
                 {delayedLessons.length > 0 && (
                     <View className="mb-6 mt-2">
-                        <View className="bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden">
+                        <View className="bg-white rounded-3xl border border-slate-100 shadow-sm">
                             {delayedLessons.map((lesson, index) => (
                                 <ScheduleCard
                                     key={`delayed-${lesson.student.id}-${lesson.date}-${index}`}
@@ -202,14 +202,14 @@ export default function Dashboard() {
                     </View>
                 )}
 
-                {/* --- VANLIGA SCHEMAT --- */}
+                {/* --------------- VANLIGA SCHEMAT --------------- */}
                 <View className="mb-6">
                     <SchemaToggle activeTab={activeTab} onToggle={setActiveTab} />
 
                     {error && <Text className="text-red-500 text-center mt-4">Kunde inte hämta schema.</Text>}
 
                     {!error && (
-                        <View className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <View className="bg-white rounded-3xl border border-slate-100 shadow-sm">
                             {scheduleLessons.length > 0 ? (
                                 scheduleLessons.map((lesson, index) => (
                                     <ScheduleCard
@@ -235,7 +235,7 @@ export default function Dashboard() {
                 </View>
             </ScrollView>
 
-            {/* ========== MODALER ========== */}
+            {/* =============== MODALER =============== */}
             <CompleteLessonSheet
                 ref={completeSheetRef}
                 onClose={() => completeSheetRef.current?.dismiss()}

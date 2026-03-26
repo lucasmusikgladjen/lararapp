@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
 import { Student } from "../../types/student.types";
 
 const { width } = Dimensions.get("window");
@@ -14,41 +14,31 @@ export const StudentCard = ({ student, onPress }: StudentCardProps) => {
     const avatarUrl = `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}`;
 
     return (
-        <View style={styles.shadowWrapper} className="mb-4">
+        <View>
             <TouchableOpacity
                 onPress={onPress}
-                activeOpacity={0.9}
+                activeOpacity={0.7}
                 style={{ width: COLUMN_WIDTH }}
-                // Glassmorphism: bg-white/60 + border-2 border-white/80
-                className="items-center p-6 rounded-[24px] bg-brand-bg border border-slate-300"
+                // Din perfekta styling!
+                className="items-center bg-white rounded-3xl p-5 border border-slate-100 shadow-sm"
             >
-                {/* Avatar - Scaled down for grid */}
-                <View className="size-20 rounded-full overflow-hidden mb-4">
+                {/* Avatar - Nu med samma bg-slate-100 som i ScheduleCard för maximal enhetlighet */}
+                <View className="size-20 rounded-full bg-slate-100 border border-slate-200 overflow-hidden mb-4 shrink-0">
                     <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
                 </View>
 
                 {/* Info Container */}
                 <View className="items-center">
-                    <Text className="text-slate-900 font-bold text-base text-center tracking-tight" numberOfLines={1}>
+                    <Text className="text-slate-900 font-bold text-[16px] text-center tracking-tight" numberOfLines={1}>
                         {student.name.split(" ")[0]} {/* Show only first name for cleaner grid */}
                     </Text>
 
                     {/* Compact Instrument Badge */}
-                    <View className="bg-brand-orange/10 px-3 py-1 rounded-full mt-2">
-                        <Text className="text-brand-orange font-black text-[9px] uppercase tracking-wider">{student.instrument}</Text>
+                    <View className="bg-orange-50 border border-orange-100/50 px-2.5 py-1 rounded-full mt-1.5">
+                        <Text className="text-brand-orange font-extrabold text-[9px] uppercase tracking-wider">{student.instrument}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    shadowWrapper: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 5,
-    },
-});

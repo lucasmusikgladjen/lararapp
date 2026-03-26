@@ -5,7 +5,7 @@ import { LessonEvent } from "../../utils/lessonHelpers";
 
 interface ScheduleCardProps {
     lesson: LessonEvent;
-    onPress?: () => void; // <-- 1. Gjorde onPress valfri (?)
+    onPress?: () => void;
     isLast: boolean;
     isKommande: boolean;
     isDelayed?: boolean;
@@ -28,7 +28,6 @@ export const ScheduleCard = ({
     const { student, date, time } = lesson;
 
     const lessonId = (lesson as any).id || `${student.id}-${date}`;
-
     const avatarUrl = `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}`;
 
     const dateObj = new Date(date);
@@ -37,15 +36,13 @@ export const ScheduleCard = ({
     const month = dateObj.toLocaleDateString("sv-SE", { month: "short" }).replace(".", "");
     const capitalWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
     const capitalMonth = month.charAt(0).toUpperCase() + month.slice(1);
-    const formattedDate = `${capitalWeekday} ${day} ${capitalMonth} -  ${time}`;
+
+    const formattedDateTime = `${capitalWeekday} ${day} ${capitalMonth} • ${time}`;
 
     const today = new Date();
     const isToday = dateObj.getFullYear() === today.getFullYear() && dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate();
 
-    // En hjälpvariabel: Kan kortet fällas ut med åtgärder?
     const isExpandable = isKommande || isDelayed;
-
-    // En hjälpvariabel: Ska kortet överhuvudtaget reagera på klick?
     const isInteractive = isExpandable || !!onPress;
 
     const handleCardPress = () => {
@@ -57,63 +54,78 @@ export const ScheduleCard = ({
     };
 
     return (
-        <View className={`py-4 px-5 ${!isLast ? "border-b border-gray-100" : ""}`}>
+        <View className={`py-5 px-5 ${!isLast ? "border-b border-slate-200" : ""}`}>
             <TouchableOpacity
                 onPress={handleCardPress}
                 className="flex-row items-center"
-                activeOpacity={isInteractive ? 0.7 : 1} // Ingen klick-effekt om ointeraktiv
-                disabled={!isInteractive} // Stäng av klickandet helt
+                activeOpacity={isInteractive ? 0.7 : 1}
+                disabled={!isInteractive}
             >
-                <Image source={{ uri: avatarUrl }} className="w-14 h-14 rounded-full bg-gray-100 mr-4" />
-
-                <View className="flex-1">
-                    <Text className="text-base font-bold text-slate-900">{student.name}</Text>
-                    <Text className="text-sm font-semibold text-gray-500">{formattedDate}</Text>
-                    <Text className="text-sm font-semibold text-brand-orange">{student.instrument}</Text>
+                <View className="w-14 h-14 rounded-full bg-slate-100 mr-4 border border-slate-200 overflow-hidden shrink-0">
+                    <Image source={{ uri: avatarUrl }} className="w-full h-full" />
                 </View>
 
-                {/* HÖGER SIDA LOGIK */}
-                {isDelayed ? (
-                    <View className="bg-red-500 px-4 py-1.5 rounded-full ml-2">
-                        <Text className="text-white font-bold text-xs tracking-wide">Försenad</Text>
+                <View className="flex-1 justify-center gap-y-0.5">
+                    {/* RAD 1: Namn + Badge/Pil */}
+                    <View className="flex-row justify-between items-center w-full">
+                        {/* Namnet flexar så långt det kan, men bryts snyggt om det krockar */}
+                        <Text className="text-base font-bold text-slate-800">{student.name}</Text>
+
+                        {/* HÖGER SIDA LOGIK (Badges / Pilar) - Ligger nu PÅ SAMMA RAD som namnet */}
+                        {isDelayed ? (
+                            <View className="bg-[#E35453] px-2.5 py-1 rounded-md shadow-sm shrink-0">
+                                <Text className="text-white font-extrabold text-[10px] tracking-wider uppercase">Försenad</Text>
+                            </View>
+                        ) : isKommande && isToday ? (
+                            <View className="bg-[#FBBF24] px-2.5 py-1 rounded-md shadow-sm shrink-0">
+                                <Text className="text-slate-900 font-extrabold text-[10px] tracking-wider uppercase">Rapportera</Text>
+                            </View>
+                        ) : isInteractive ? (
+                            <Ionicons name={isExpanded ? "chevron-down" : "chevron-forward"} size={20} color="#CBD5E1" className="shrink-0" />
+                        ) : null}
                     </View>
-                ) : isKommande && isToday ? (
-                    <View className="bg-yellow-400 px-4 py-1.5 rounded-full ml-2">
-                        <Text className="text-slate-900 font-bold text-xs tracking-wide">Rapportera</Text>
-                    </View>
-                ) : isInteractive ? (
-                    /* 2. Visar bara pil om kortet faktiskt gör något */
-                    <Ionicons name={isExpanded ? "chevron-down" : "chevron-forward"} size={20} color="#D1D5DB" />
-                ) : null}
+
+                    {/* RAD 2: Datum & Tid */}
+                    <Text className="text-[13px] font-semibold text-slate-500 leading-tight">{formattedDateTime}</Text>
+
+                    {/* RAD 3: Instrument */}
+                    <Text className="text-[13px] font-bold text-brand-orange leading-tight">{student.instrument}</Text>
+                </View>
             </TouchableOpacity>
 
-            {/* EXPANDERAD RAPPORT TOGGLE */}
+            {/* EXPANDERAD RAPPORT TOGGLE (MODERN DESIGN) */}
             {isExpanded && isExpandable && (
-                <View className="flex-row gap-x-2 mt-4 pt-4 border-t border-gray-100">
+                <View className="flex-row gap-x-3 mt-5 pt-5 border-t border-slate-100">
                     <TouchableOpacity
-                        className="flex-[2] bg-brand-green rounded-xl items-center justify-center py-4 shadow-sm"
+                        className="flex-[1.3] bg-[#006e28] rounded-[24px] items-center justify-center py-5 shadow-sm"
                         activeOpacity={0.8}
                         onPress={() => onMarkCompleted && onMarkCompleted(lessonId, student.id)}
                     >
-                        <Ionicons name="checkmark-circle-outline" size={32} color="white" />
-                        <Text className="text-white font-bold text-sm mt-1">genomförd</Text>
+                        <View className="w-[52px] h-[52px] rounded-full bg-white/20 items-center justify-center mb-3">
+                            <View className="w-9 h-9 rounded-full bg-white items-center justify-center">
+                                <Ionicons name="checkmark" size={24} color="#006e28" />
+                            </View>
+                        </View>
+                        <Text className="text-white font-bold text-[14px] tracking-widest uppercase">genomförd</Text>
                     </TouchableOpacity>
 
                     <View className="flex-1 gap-y-2">
                         <TouchableOpacity
-                            className="flex-1 bg-slate-200 rounded-lg items-center justify-center py-2 shadow-sm"
-                            activeOpacity={0.8}
+                            className="flex-1 bg-[#F1F5F9] rounded-2xl flex-row items-center justify-center gap-x-2 border border-slate-200"
+                            activeOpacity={0.7}
                             onPress={() => onReschedule && onReschedule(lessonId, student.id)}
                         >
-                            <Text className="text-slate-600 font-bold text-xs">boka om</Text>
+                            <Ionicons name="calendar-outline" size={16} color="#475569" />
+                            <Text className="text-slate-600 font-bold text-[12px] uppercase tracking-wider">boka om</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className="flex-1 bg-slate-200 rounded-lg items-center justify-center py-2 shadow-sm"
-                            activeOpacity={0.8}
+                            className="flex-1 bg-[#F1F5F9] rounded-2xl flex-row items-center justify-center gap-x-2 border border-slate-200"
+                            activeOpacity={0.7}
                             onPress={() => onCancel && onCancel(lessonId, student.id)}
                         >
-                            <Text className="text-slate-600 font-bold text-xs">inställd</Text>
+                            <Ionicons name="close-circle-outline" size={16} color="#475569" />
+                            <Text className="text-slate-600 font-bold text-[12px] uppercase tracking-wider">inställd</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

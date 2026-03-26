@@ -17,13 +17,12 @@ import { MainBackground } from "../../../src/components/ui/MainBackground";
 
 type ActiveView = "person" | "lon" | "elever" | "bio" | "docs";
 
-// Färgglada Tags (Samma säkra HEX-logik som Elevhubben)
-const SETTINGS_TAGS: { id: ActiveView; label: string; activeBg: string; activeText: string }[] = [
-    { id: "person", label: "Personuppgifter", activeBg: "#DBEAFE", activeText: "#1E40AF" }, // Blå
-    { id: "lon", label: "Lön", activeBg: "#D1FAE5", activeText: "#065F46" }, // Grön
-    { id: "elever", label: "Elever", activeBg: "#F3E8FF", activeText: "#6B21A8" }, // Lila
-    { id: "bio", label: "Biografi", activeBg: "#FFEDD5", activeText: "#9A3412" }, // Orange
-    { id: "docs", label: "Dokument", activeBg: "#CCFBF1", activeText: "#115E59" }, // Teal
+const SETTINGS_TAGS: { id: ActiveView; label: string; activeBackground: string; activeText: string }[] = [
+    { id: "person", label: "Personuppgifter", activeBackground: "#DBEAFE", activeText: "#1E40AF" },
+    { id: "lon", label: "Lön", activeBackground: "#D1FAE5", activeText: "#065F46" },
+    { id: "elever", label: "Elever", activeBackground: "#F3E8FF", activeText: "#6B21A8" },
+    { id: "bio", label: "Biografi", activeBackground: "#FFEDD5", activeText: "#9A3412" },
+    { id: "docs", label: "Dokument", activeBackground: "#CCFBF1", activeText: "#115E59" },
 ];
 
 export default function SettingsPage() {
@@ -99,10 +98,15 @@ export default function SettingsPage() {
         try {
             const payload: UpdateProfilePayload = {};
             if (section === "personal") {
-                payload.name = formData.name; payload.email = formData.email; payload.phone = formData.phone;
-                payload.address = formData.address; payload.zip = formData.zip; payload.city = formData.city;
+                payload.name = formData.name;
+                payload.email = formData.email;
+                payload.phone = formData.phone;
+                payload.address = formData.address;
+                payload.zip = formData.zip;
+                payload.city = formData.city;
             } else if (section === "salary") {
-                payload.bank = formData.bank; payload.bankAccountNumber = formData.bankAccountNumber;
+                payload.bank = formData.bank;
+                payload.bankAccountNumber = formData.bankAccountNumber;
             } else if (section === "students") {
                 payload.desiredStudentCount = parseInt(formData.desiredStudentCount) || 0;
             } else if (section === "bio") {
@@ -119,12 +123,12 @@ export default function SettingsPage() {
         }
     };
 
+    // ⚠️ NÖDBROMS: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt!
     if (!user) {
         return (
             <View className="flex-1 items-center justify-center bg-brand-bg px-5">
                 <Text className="text-gray-500 mb-6">Laddar inställningar...</Text>
 
-                {/* NÖDKNAPP FÖR ATT RENSA KORRUPT STATE I SIMULATORN */}
                 <TouchableOpacity
                     onPress={async () => {
                         await logout();
@@ -141,26 +145,22 @@ export default function SettingsPage() {
     const avatarUrl = user.profileImageUrl || `https://api.dicebear.com/7.x/avataaars/png?seed=${user.id}`;
 
     return (
-        <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
-            <MainBackground>
+        <MainBackground>
+            <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
                 <View className="px-5">
                     <PageHeader />
                 </View>
 
                 <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-                    
                     {/* =============== HERO CARD (Lärarhub) =============== */}
                     <View className="mx-5 bg-white rounded-3xl p-5 shadow-sm mb-6 border border-slate-100 mt-2">
-                        {/* Profil Info (Bild, Namn, Bio) */}
+                        {/* Profil Info (Bild, Namn och Bio) */}
                         <View className="flex-row items-start mb-5">
                             <View className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 border border-slate-200 mr-4">
                                 <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
                             </View>
                             <View className="flex-1 pt-1">
                                 <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
-                                <Text className="text-sm font-semibold text-brand-orange mb-2">
-                                    {user.instruments && user.instruments.length > 0 ? user.instruments.join(" • ") : "Inga instrument"}
-                                </Text>
                                 <Text className="text-[13px] text-slate-600 leading-tight" numberOfLines={3}>
                                     {user.bio || "Du har inte lagt till någon biografi ännu. Klicka på 'Biografi' för att berätta mer om dig själv!"}
                                 </Text>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
                                         activeOpacity={0.7}
                                         className="px-3 py-1.5 rounded-full border"
                                         style={{
-                                            backgroundColor: isActive ? tag.activeBg : "#FFFFFF",
+                                            backgroundColor: isActive ? tag.activeBackground : "#FFFFFF",
                                             borderColor: isActive ? "transparent" : "#E2E8F0",
                                             shadowOpacity: isActive ? 0.05 : 0,
                                             shadowRadius: 2,
@@ -197,30 +197,41 @@ export default function SettingsPage() {
                     {/* Separator Line */}
                     <View className="h-px bg-slate-300/40 mx-16 mb-6 rounded-full" />
 
-                    {/* ---------- DYNAMIC CONTENT AREA ---------- */}
+                    {/* =============== DYNAMIC CONTENT AREA =============== */}
                     <View className="px-5">
-                        
-                        {/* 1. Personuppgifter */}
+                        {/* Personuppgifter */}
                         <View style={{ display: activeView === "person" ? "flex" : "none" }}>
-                            <PersonalSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("personal")} isSaving={isSaving} />
+                            <PersonalSection
+                                user={user}
+                                formData={formData}
+                                setFormData={setFormData}
+                                handleSave={() => handleSave("personal")}
+                                isSaving={isSaving}
+                            />
                         </View>
 
-                        {/* 2. Lön */}
+                        {/* Lön */}
                         <View style={{ display: activeView === "lon" ? "flex" : "none" }}>
-                            <SalarySection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("salary")} isSaving={isSaving} />
+                            <SalarySection
+                                user={user}
+                                formData={formData}
+                                setFormData={setFormData}
+                                handleSave={() => handleSave("salary")}
+                                isSaving={isSaving}
+                            />
                         </View>
 
-                        {/* 3. Elever */}
+                        {/* Elever */}
                         <View style={{ display: activeView === "elever" ? "flex" : "none" }}>
                             <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
                         </View>
 
-                        {/* 4. Biografi */}
+                        {/* Biografi */}
                         <View style={{ display: activeView === "bio" ? "flex" : "none" }}>
                             <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
                         </View>
 
-                        {/* 5. Dokument */}
+                        {/* Dokument */}
                         <View style={{ display: activeView === "docs" ? "flex" : "none" }}>
                             <DocumentsSection user={user} />
                         </View>
@@ -229,16 +240,15 @@ export default function SettingsPage() {
                         <View className="mt-8">
                             <TouchableOpacity
                                 onPress={handleLogout}
-                                className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-red-100"
+                                className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-red-400"
                             >
                                 <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
                                 <Text className="text-red-500 font-bold text-base">Logga ut</Text>
                             </TouchableOpacity>
                         </View>
-
                     </View>
                 </ScrollView>
-            </MainBackground>
-        </SafeAreaView>
+            </SafeAreaView>
+        </MainBackground>
     );
 }

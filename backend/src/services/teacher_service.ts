@@ -36,6 +36,9 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
     const taxAdj = mapAttachmentToDoc(field.Jämkning, "tax-adjustment");
     if (taxAdj) docs.push(taxAdj);
 
+    const criminalRecord = mapAttachmentToDoc(field.Belastningsregister, "criminal-record");
+    if (criminalRecord) docs.push(criminalRecord);
+
     return {
         id: record.id,
         name: field.Namn || "Okänd lärare",

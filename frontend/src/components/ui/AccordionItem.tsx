@@ -49,7 +49,6 @@ export const AccordionItem = ({ title, icon, iconColor, iconBgColor, children, d
                 </View>
 
                 <Animated.View style={chevronStyle}>
-                    {/* UX CHANGE: Use chevron-down instead of chevron-forward */}
                     <Ionicons name="chevron-down" size={20} color="#CBD5E1" />
                 </Animated.View>
             </TouchableOpacity>

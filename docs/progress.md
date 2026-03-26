@@ -126,7 +126,7 @@
 - [x] **Backend - Lärarprofil & Inställningar:**
     - Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
     - Implementerat `GET /profile` och `PATCH /profile` med strikt "allow-list" för fält.
-    - **Säkerhet:** Belastningsregister filtreras bort och read-only fält (Lön, Status) skyddas.
+    - **Säkerhet:** Dokumenthantering upplåst för alla tre huvudtyper (Avtal, Jämkning, Belastningsregister).
 
 - [x] **Frontend - Inställningar Refactor ("Lärarhub"):**
     - [x] Omstrukturerat Inställningar till samma Hub-layout som elevvyn för visuell konsistens.
@@ -134,6 +134,11 @@
     - [x] Tagit bort Accordions till förmån för modulära, färdigöppnade kort baserat på vald kategori.
     - [x] UX-optimering: "Vårdnadshavaren" är nu standardval och placerad primärt till vänster i `CancelLessonSheet`.
     - [x] **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att rensa korrupt state vid cache-osynk.
+
+- [x] **Frontend - Dokument & Uppladdning:**
+    - [x] Implementerat logisk gruppering av dokument under tydliga sektionsrubriker (Avtal, Jämkning, Belastningsregister.).
+    - [x] Skapat smarta placeholders med dashed-border som visas automatiskt om en fil saknas i en specifik kategori.
+    - [x] Design-polish av `DocRow` med cirkulära ikoner och förbättrad kontrast.
 
 - [x] **Backend - Notifikationssystem (Dynamiska actionsidor):**
     - Uppdaterade Airtable-strukturen med `NotificationTemplates` och `Notifications`.
@@ -160,9 +165,9 @@
     - Implementerat strikt validering och automatisk formatering av statussträngar i backend.
 
 - [x] **Frontend - Enskilda Lektionsåtgärder (Modaler):**
-    - Implementerat Bottom Sheet-modaler för lektionsåtgärder.
-    - Integrerat DatePicker och Segmented Control för en nativ känsla.
-    - **Buggfix (Airtable 422):** Korrigerat mappning för att skicka korrekta Record IDs.
+    - [x] **Standardisering:** Implementerat den nya High-Fidelity designen för `ScheduleCard` med asymmetrisk layout.
+    - [x] **UX-polish:** Flyttat status-badgar (Försenad/Rapportera) till samma rad som elevens namn för att tillåta naturlig radbrytning.
+    - [x] **Interaktivitet:** Integrerat premium "dubbel-cirkel" ikonografi för genomförda lektioner.
 
 - [x] **Push-notifikationer & Webhook Integration:**
     - **Frontend:** Konfigurerat `expo-notifications` och implementerat token-hämtning i `_layout.tsx`.
@@ -170,9 +175,9 @@
     - **Airtable Automation:** Konfigurerat Automationer som triggar push-notiser vid specifika händelser.
 
 - [x] **Buggfixar & UI-Polishing:**
-    - **Glassmorphism Refactor:** Övergång från semitransparenta kort till solida vita kort för ökad stabilitet i NativeWind.
+    - **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
     - **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra klippta skuggor.
-    - **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid för bättre UX.
+    - **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid med optimerad spacing och borttagna inre ramar ("box-in-a-box").
 
 - [x] **Arkitektur & Miljöhantering (.env):**
     - [x] Implementerat central API-konfiguration via `src/config/api.ts`.

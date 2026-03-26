@@ -1,4 +1,4 @@
-import { View, Text, Linking, Alert } from "react-native";
+import { View, Text, Linking, Alert, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DocRow } from "./SettingsUI";
 import { User } from "../../types/auth.types";
@@ -7,42 +7,63 @@ interface DocumentsSectionProps {
     user: User;
 }
 
+const DOCUMENT_CATEGORIES = [
+    { type: "contract", label: "Avtal" },
+    { type: "tax-adjustment", label: "Jämkning" },
+    { type: "criminal-record", label: "Belastningsregister" },
+];
+
 export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
     const openDocument = (url: string) => {
         Linking.openURL(url).catch(() => Alert.alert("Fel", "Kunde inte öppna dokumentet"));
+    };
+
+    const handleUploadClick = (categoryLabel: string) => {
+        Alert.alert("Ladda upp", `Här kommer du kunna välja och ladda upp ditt dokument för: ${categoryLabel}.`);
     };
 
     const documents = user.documents || [];
 
     return (
         <View className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-            <View className="flex-row items-center mb-6">
+            <View className="flex-row items-center mb-8">
                 <View className="w-10 h-10 rounded-full bg-teal-100 items-center justify-center mr-3">
                     <Ionicons name="folder" size={20} color="#0D9488" />
                 </View>
                 <Text className="text-lg font-bold text-slate-900">Dokument</Text>
             </View>
 
-            <View className="space-y-3">
-                {documents.length > 0 ? (
-                    documents.map((doc, index) => <DocRow key={index} name={doc.name} date="Uppladdad" onPress={() => openDocument(doc.url)} />)
-                ) : (
-                    <Text className="text-slate-400 text-sm italic mb-2">Inga dokument tillgängliga</Text>
-                )}
+            <View>
+                {DOCUMENT_CATEGORIES.map((category) => {
+                    const categoryDocs = documents.filter((doc) => doc.type === category.type);
+                    const hasDocs = categoryDocs.length > 0;
 
-                <View className="flex-row items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 mt-2">
-                    <View className="flex-row items-center gap-3 overflow-hidden flex-1 mr-2">
-                        <View className="bg-slate-200 p-2 rounded-lg">
-                            <Ionicons name="lock-closed" size={20} color="#94a3b8" />
+                    return (
+                        <View key={category.type} className="mb-8 last:mb-0">
+                            {/* Sektionsrubrik */}
+                            <Text className="text-[14px] font-bold mb-1 text-slate-800 ml-1">{category.label}</Text>
+
+                            {hasDocs ? (
+                                <View className="mb-4">
+                                    {categoryDocs.map((doc, index) => (
+                                        <DocRow key={index} name={doc.name} date="Uppladdad" onPress={() => openDocument(doc.url)} />
+                                    ))}
+                                </View>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => handleUploadClick(category.label)}
+                                    activeOpacity={0.6}
+                                    className="border-2 border-dashed border-slate-200 rounded-2xl p-5 items-center justify-center bg-slate-50/50"
+                                >
+                                    <View className="flex-row items-center gap-x-2">
+                                        <Ionicons name="add-circle-outline" size={20} color="#64748B" />
+                                        <Text className="text-sm font-bold text-slate-500">Ladda upp {category.label.toLowerCase()}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <View>
-                            <Text className="text-sm font-bold text-slate-600" numberOfLines={1}>
-                                Belastningsregister
-                            </Text>
-                            <Text className="text-[10px] text-slate-500 mt-0.5">Hanteras av administrationen</Text>
-                        </View>
-                    </View>
-                </View>
+                    );
+                })}
             </View>
         </View>
     );

@@ -48,18 +48,23 @@ export const StatBox = ({ count, label }: { count: number; label: string }) => (
 );
 
 export const DocRow = ({ name, date, onPress }: { name: string; date: string; onPress: () => void }) => (
-    <TouchableOpacity onPress={onPress} className="flex-row items-center justify-between bg-white p-3 rounded-lg border border-slate-100">
-        <View className="flex-row items-center gap-3 overflow-hidden flex-1 mr-2">
-            <View className="bg-red-50 p-2 rounded-lg">
+    <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.7}
+        className="flex-row items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200"
+    >
+        <View className="flex-row items-center gap-3.5 overflow-hidden flex-1 mr-3">
+            <View className="bg-red-50 size-11 rounded-full items-center justify-center shrink-0">
                 <Ionicons name="document-text" size={20} color="#EF4444" />
             </View>
-            <View>
-                <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
+
+            <View className="flex-1 justify-center">
+                <Text className="text-[14px] font-bold text-slate-900 leading-tight" numberOfLines={1}>
                     {name}
                 </Text>
-                <Text className="text-[10px] text-slate-400">{date}</Text>
+                <Text className="text-[11px] font-semibold text-slate-500 mt-0.5">{date}</Text>
             </View>
         </View>
-        <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+        <Ionicons name="chevron-forward" size={18} color="#6c757d" />
     </TouchableOpacity>
 );
