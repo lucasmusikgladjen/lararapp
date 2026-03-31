@@ -110,7 +110,7 @@
 
 - [x] **Frontend - Mina Elever & Navigation Refactor:**
     - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`).
-    - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY.
+    - Åeranvänt `useStudents` hook och `StudentCard` komponent för DRY.
     - Implementerat `FlatList` med `RefreshControl`.
     - **Architecture Refactor:** Flyttat om navigeringsstrukturen till "Stack over Tabs" för att lösa navigeringshistoriken.
 
@@ -174,10 +174,21 @@
     - **Backend (Webhook):** Byggt `POST /api/notifications/push-webhook` skyddat med `x-webhook-secret`.
     - **Airtable Automation:** Konfigurerat Automationer som triggar push-notiser vid specifika händelser.
 
+- [x] **Design & UX-polish (70-tals Retro):**
+    - [x] Implementerat 70-talsinspirerad estetik med Mustard Gold, Terracotta och Muted Teal.
+    - [x] Skapat avancerade SVG-bakgrunder (`The S-Groove`, `The Vinyl Radar`) för en analog känsla.
+    - [x] Löst lager-konflikter (z-index) för att säkerställa att bakgrunden syns bakom innehållet (genomskinliga containers).
+
+- [x] **Formulär-optimering (iPhone-First):**
+    - [x] `SelectField`: Implementerat Auto-select av första alternativet för att skippa onödiga "Välj"-steg.
+    - [x] `TimePickerField`: Nuvarande enhetstid sätts som default vid öppning.
+    - [x] **iOS Picker Fix:** Implementerat "Confirmation Pattern" med `tempDate` och "Klar"-knapp för att säkerställa att val sparas även utan rullning.
+    - [x] Uppdaterat instruktionstexter i schemaläggaren för bättre tydlighet och läsbarhet med manuella radbrytningar.
+
 - [x] **Buggfixar & UI-Polishing:**
-    - **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
-    - **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra klippta skuggor.
-    - **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid med optimerad spacing och borttagna inre ramar ("box-in-a-box").
+    - [x] **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
+    - [x] **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra klippta skuggor.
+    - [x] **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid med optimerad spacing och borttagna inre ramar ("box-in-a-box").
 
 - [x] **Arkitektur & Miljöhantering (.env):**
     - [x] Implementerat central API-konfiguration via `src/config/api.ts`.

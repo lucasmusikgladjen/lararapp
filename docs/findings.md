@@ -53,16 +53,28 @@
 - **Stale State Management (Cachning):** Använder `staleTime` (t.ex. 2 minuter) i React Query kombinerat med `useFocusEffect` för att minimera onödiga refetches.
 - **Filtrering av genomförda lektioner:** Dashboarden filtrerar `allLessons` baserat på `isCompleted`-flaggan.
 
+## Frontend: UI-estetik & "Musikglädjen"-Retro
+- **70-tals Signature Style:** Appen använder en kurerad retro-palett: **Mustard Gold** (#F59E0B), **Terracotta/Rust** (#B45309) och **Muted Teal** (#0D9488) mot en krämvit bas (#FFFBEB).
+- **SVG Bakgrunder:** Vi använder komplexa `react-native-svg`-komponenter (`MainBackground`, `SettingsBackground`) för att skapa mjuka kurvor ("The S-Groove", "The Vinyl Radar") som ger appen en unik analog känsla.
+- **Lager-konflikter (Z-index):** För att SVG-bakgrunder ska synas måste överliggande containers (som `SafeAreaView` eller `ScrollView`) ha genomskinliga bakgrunder. Att inkludera `bg-brand-bg` eller liknande klasser på dessa blockerar bakgrunds-lagret helt.
+
 ## Frontend: Modulär Design (Hub-konceptet)
 - **Enhetligt Hub-system:** Både elevprofilen och lärarprofilen (Inställningar) har omstrukturerats till modulära "hubbar" med micro-sidor.
 - **Hero Card Navigering:** Toppen av dessa sidor innehåller ett Hero-kort med profilbild och färgkodade navigerings-tags (piller). För läraren inkluderar detta även en biografisk sammanfattning direkt i huvudvyn.
 - **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden. Den använder en modern asymmetrisk layout där den primära åtgärden (Genomförd) tar störst plats.
 - **Dokumentgruppering:** Dokument visas i logiska grupper (Avtal, Jämkning, Belastningsregister) med tillhörande uppladdnings-placeholders (dashed borders) om filen saknas.
 
+## Frontend: UX-principer & "iPhone-First" Form-logic
+- **Eliminering av Placeholders:** I moderna mobila flöden skippar vi "-- Välj --" eller tomma states. 
+    - **Auto-select:** `SelectField` förväljer automatiskt första tillgängliga alternativ så fort data laddats via en `useEffect`.
+    - **Initial Time:** `TimePickerField` öppnas med enhetens exakta nuvarande tid som standard istället för en statisk placeholder.
+- **iOS Spinner-fix (The Confirmation Pattern):** Eftersom iOS-pickers inte alltid triggar `onChange` om användaren inte snurrar på hjulet, använder vi ett `tempDate`-state i modalen. När användaren trycker på "Klar" sparas det temporära värdet.
+- **Inline Accordion UX:** För enkla val föredras en inline-accordion (expand/collapse) framför Bottom Sheets för att minimera antalet animationer och behålla användarens fokus.
+
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
 - **NativeWind & Navigation Context:** För att undvika kraschen `Couldn't find a navigation context` vid flikbyten, används `style={{ display: activeView === 'x' ? 'flex' : 'none' }}` istället för villkorsstyrd rendering (`&&`). Detta behåller komponenterna monterade men gömda.
-- **Hybrid Styling-strategi:** Dynamiska ändringar av Tailwind-klasser i `className` (t.ex. färgbyten vid klick) kan få NativeWind att tappa bort navigations-trädet. 
+- **Hybrid Styling-strategi:** Dynamiska ändringar av Tailwind-klasser i `className` kan få NativeWind att tappa bort navigations-trädet. 
     - **Lösning:** Håll `className` statisk för grundlayouten. Använd React Natives inbyggda `style`-prop med HEX-koder för dynamiska visuella ändringar (t.ex. bakgrundsfärg på en aktiv tag).
 - **Emergency Reset (Nödbroms):** Vi har identifierat att `AsyncStorage` kan hamna i osynk med Zustand-storen (token finns men user-objektet saknas). En nödutloggnings-knapp ("Tvinga utloggning") har implementerats på både **Dashboard** och **Inställningssidan** för att möjliggöra för användare att rensa korrupt state och logga in på nytt.
 
@@ -90,7 +102,7 @@
 
 ## UI & Styling Strategy
 - **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
-- **Typografi & Luft:** För att undvika "cramped" UI används `leading-tight` och naturliga radbrytningar istället för trunkering med prickar ("..."). Badgar (status) placeras konsekvent på samma rad som rubriken för att spara vertikalt utrymme.
+- **Typografi & Luft:** För att undvika "cramped" UI används `leading-tight` och naturliga radbrytningar. Använder `{"\n"}` i JSX för att styra radbrytningar i instruktionstexter manuellt (t.ex. i Tips-boxar). 
 - **Affordance & Interaktivitet:** Högerpilar (chevrons) visas endast på element med aktiva åtgärder. Ikoner har ofta en mjuk rund bakgrundsfärg (t.ex. `bg-orange-100`) för att signalera kategori.
 - **UX-optimering i formulär:** I åtgärdsformulär (t.ex. `CancelLessonSheet`) placeras det mest sannolika standardvalet (t.ex. "Vårdnadshavaren") till vänster och sätts som förvalt värde.
 - **Animerade komponenter:** `LayoutAnimation` används för smidiga expand/collapse-effekter.
