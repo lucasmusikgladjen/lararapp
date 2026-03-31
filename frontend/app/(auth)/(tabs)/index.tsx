@@ -1,8 +1,8 @@
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState, useRef } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View, Alert, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyStateDashboard } from "../../../src/components/dashboard/EmptyStateDashboard";
 import { NotificationStack } from "../../../src/components/dashboard/NotificationStack";
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
@@ -13,10 +13,11 @@ import { useStudents } from "../../../src/hooks/useStudents";
 import { useAuthStore } from "../../../src/store/authStore";
 import { getAllLessonEvents } from "../../../src/utils/lessonHelpers";
 
-import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
+import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 import { CompleteLessonSheet } from "../../../src/components/lessons/actions/CompleteLessonSheet";
 import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/RescheduleLessonSheet";
-import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
+import { DashboardBackground } from "../../../src/components/ui/DashboardBackground";
+import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
 
 export default function Dashboard() {
     // Hämtar både user och logout | Nödbroms: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt
@@ -167,93 +168,95 @@ export default function Dashboard() {
     }
 
     return (
-        <SafeAreaView edges={["top"]} className="flex-1">
-            <ScrollView
-                className="flex-1 px-5"
-                showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" colors={["#F97316"]} />}
-            >
-                <PageHeader />
+        <DashboardBackground>
+            <SafeAreaView edges={["top"]} className="flex-1">
+                <ScrollView
+                    className="flex-1 px-5"
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" colors={["#F97316"]} />}
+                >
+                    <PageHeader />
 
-                <View className="py-2 px-6 mb-2 items-center">
-                    <Text className="text-3xl font-bold text-slate-800">Hej, {firstName}!</Text>
-                </View>
-
-                <NotificationStack />
-
-                {/* --------------- FÖRSENADE LEKTIONER --------------- */}
-                {delayedLessons.length > 0 && (
-                    <View className="mb-6 mt-2">
-                        <View className="bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            {delayedLessons.map((lesson, index) => (
-                                <ScheduleCard
-                                    key={`delayed-${lesson.student.id}-${lesson.date}-${index}`}
-                                    lesson={lesson}
-                                    onPress={() => {}}
-                                    isLast={index === delayedLessons.length - 1}
-                                    isKommande={false}
-                                    isDelayed={true}
-                                    onMarkCompleted={handleMarkCompleted}
-                                    onReschedule={handleReschedule}
-                                    onCancel={handleCancel}
-                                />
-                            ))}
-                        </View>
+                    <View className="py-2 px-6 mb-2 items-center">
+                        <Text className="text-3xl font-bold text-slate-800">Hej, {firstName}!</Text>
                     </View>
-                )}
 
-                {/* --------------- VANLIGA SCHEMAT --------------- */}
-                <View className="mb-6">
-                    <SchemaToggle activeTab={activeTab} onToggle={setActiveTab} />
+                    <NotificationStack />
 
-                    {error && <Text className="text-red-500 text-center mt-4">Kunde inte hämta schema.</Text>}
-
-                    {!error && (
-                        <View className="bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            {scheduleLessons.length > 0 ? (
-                                scheduleLessons.map((lesson, index) => (
+                    {/* --------------- FÖRSENADE LEKTIONER --------------- */}
+                    {delayedLessons.length > 0 && (
+                        <View className="mb-6 mt-2">
+                            <View className="bg-white rounded-3xl border border-slate-100 shadow-sm">
+                                {delayedLessons.map((lesson, index) => (
                                     <ScheduleCard
-                                        key={`regular-${lesson.student.id}-${lesson.date}-${index}`}
+                                        key={`delayed-${lesson.student.id}-${lesson.date}-${index}`}
                                         lesson={lesson}
-                                        onPress={() => router.push(`/(auth)/student/${lesson.student.id}`)}
-                                        isLast={index === scheduleLessons.length - 1}
-                                        isKommande={activeTab === "kommande"}
+                                        onPress={() => {}}
+                                        isLast={index === delayedLessons.length - 1}
+                                        isKommande={false}
+                                        isDelayed={true}
                                         onMarkCompleted={handleMarkCompleted}
                                         onReschedule={handleReschedule}
                                         onCancel={handleCancel}
                                     />
-                                ))
-                            ) : (
-                                <View className="py-10 items-center">
-                                    <Text className="text-gray-400 text-base">
-                                        {activeTab === "kommande" ? "Inga kommande lektioner" : "Inga tidigare lektioner"}
-                                    </Text>
-                                </View>
-                            )}
+                                ))}
+                            </View>
                         </View>
                     )}
-                </View>
-            </ScrollView>
 
-            {/* =============== MODALER =============== */}
-            <CompleteLessonSheet
-                ref={completeSheetRef}
-                onClose={() => completeSheetRef.current?.dismiss()}
-                onConfirm={handleConfirmComplete}
-                isPending={completeMutation.isPending}
-            />
-            <RescheduleLessonSheet
-                ref={rescheduleSheetRef}
-                onClose={() => rescheduleSheetRef.current?.dismiss()}
-                onConfirm={handleConfirmReschedule}
-                isPending={rescheduleMutation.isPending}
-            />
-            <CancelLessonSheet
-                ref={cancelSheetRef}
-                onClose={() => cancelSheetRef.current?.dismiss()}
-                onConfirm={handleConfirmCancel}
-                isPending={cancelMutation.isPending}
-            />
-        </SafeAreaView>
+                    {/* --------------- VANLIGA SCHEMAT --------------- */}
+                    <View className="mb-6">
+                        <SchemaToggle activeTab={activeTab} onToggle={setActiveTab} />
+
+                        {error && <Text className="text-red-500 text-center mt-4">Kunde inte hämta schema.</Text>}
+
+                        {!error && (
+                            <View className="bg-white rounded-3xl border border-slate-100 shadow-sm">
+                                {scheduleLessons.length > 0 ? (
+                                    scheduleLessons.map((lesson, index) => (
+                                        <ScheduleCard
+                                            key={`regular-${lesson.student.id}-${lesson.date}-${index}`}
+                                            lesson={lesson}
+                                            onPress={() => router.push(`/(auth)/student/${lesson.student.id}`)}
+                                            isLast={index === scheduleLessons.length - 1}
+                                            isKommande={activeTab === "kommande"}
+                                            onMarkCompleted={handleMarkCompleted}
+                                            onReschedule={handleReschedule}
+                                            onCancel={handleCancel}
+                                        />
+                                    ))
+                                ) : (
+                                    <View className="py-10 items-center">
+                                        <Text className="text-gray-400 text-base">
+                                            {activeTab === "kommande" ? "Inga kommande lektioner" : "Inga tidigare lektioner"}
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        )}
+                    </View>
+                </ScrollView>
+
+                {/* =============== MODALER =============== */}
+                <CompleteLessonSheet
+                    ref={completeSheetRef}
+                    onClose={() => completeSheetRef.current?.dismiss()}
+                    onConfirm={handleConfirmComplete}
+                    isPending={completeMutation.isPending}
+                />
+                <RescheduleLessonSheet
+                    ref={rescheduleSheetRef}
+                    onClose={() => rescheduleSheetRef.current?.dismiss()}
+                    onConfirm={handleConfirmReschedule}
+                    isPending={rescheduleMutation.isPending}
+                />
+                <CancelLessonSheet
+                    ref={cancelSheetRef}
+                    onClose={() => cancelSheetRef.current?.dismiss()}
+                    onConfirm={handleConfirmCancel}
+                    isPending={cancelMutation.isPending}
+                />
+            </SafeAreaView>
+        </DashboardBackground>
     );
 }

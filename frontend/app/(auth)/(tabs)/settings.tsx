@@ -13,7 +13,7 @@ import { DocumentsSection } from "../../../src/components/settings/DocumentsSect
 import { PersonalSection } from "../../../src/components/settings/PersonalSection";
 import { SalarySection } from "../../../src/components/settings/SalarySection";
 import { StudentsSection } from "../../../src/components/settings/StudentsSection";
-import { MainBackground } from "../../../src/components/ui/MainBackground";
+import { SettingsBackground } from "../../../src/components/ui/SettingsBackground";
 
 type ActiveView = "person" | "lon" | "elever" | "bio" | "docs";
 
@@ -145,8 +145,8 @@ export default function SettingsPage() {
     const avatarUrl = user.profileImageUrl || `https://api.dicebear.com/7.x/avataaars/png?seed=${user.id}`;
 
     return (
-        <MainBackground>
-            <SafeAreaView edges={["top"]} className="flex-1 bg-brand-bg">
+        <SettingsBackground>
+            <SafeAreaView edges={["top"]} className="flex-1">
                 <View className="px-5">
                     <PageHeader />
                 </View>
@@ -249,6 +249,6 @@ export default function SettingsPage() {
                     </View>
                 </ScrollView>
             </SafeAreaView>
-        </MainBackground>
+        </SettingsBackground>
     );
 }

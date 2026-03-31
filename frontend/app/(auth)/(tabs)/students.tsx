@@ -6,6 +6,7 @@ import { useStudents } from "../../../src/hooks/useStudents";
 import { StudentCard } from "../../../src/components/students/StudentCard";
 import { PageHeader } from "../../../src/components/ui/PageHeader";
 import { ScheduleEntryCard } from "../../../src/components/dashboard/ScheduleEntryCard"; // LÄGG TILL IMPORTEN
+import { StudentBackground } from "../../../src/components/ui/StudentBackground";
 
 export default function StudentsPage() {
     const router = useRouter();
@@ -34,34 +35,36 @@ export default function StudentsPage() {
     }
 
     return (
-        <SafeAreaView className="flex-1">
-            <View className="flex-1 px-5">
-                <PageHeader />
+        <StudentBackground>
+            <SafeAreaView className="flex-1">
+                <View className="flex-1 px-5">
+                    <PageHeader />
 
-                <FlatList
-                    data={students}
-                    keyExtractor={(item) => item.id}
-                    numColumns={2}
-                    columnWrapperStyle={{ justifyContent: "space-between" }}
-                    ListHeaderComponent={
-                        <View>
-                            <ScheduleEntryCard />
-                            <Text className="text-2xl font-bold text-slate-800 mb-6 mt-4">Mina elever</Text>
-                        </View>
-                    }
-                    renderItem={({ item }) => <StudentCard student={item} onPress={() => handleStudentPress(item.id)} />}
-                    contentContainerStyle={{ paddingBottom: 100 }}
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" />}
-                    ListEmptyComponent={
-                        !loading ? (
-                            <View className="mt-10 items-center">
-                                <Text className="text-gray-400 text-lg">Du har inga elever än.</Text>
+                    <FlatList
+                        data={students}
+                        keyExtractor={(item) => item.id}
+                        numColumns={2}
+                        columnWrapperStyle={{ justifyContent: "space-between" }}
+                        ListHeaderComponent={
+                            <View>
+                                <ScheduleEntryCard />
+                                <Text className="text-2xl font-bold text-slate-800 mb-6 mt-4">Mina elever</Text>
                             </View>
-                        ) : null
-                    }
-                />
-            </View>
-        </SafeAreaView>
+                        }
+                        renderItem={({ item }) => <StudentCard student={item} onPress={() => handleStudentPress(item.id)} />}
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        showsVerticalScrollIndicator={false}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" />}
+                        ListEmptyComponent={
+                            !loading ? (
+                                <View className="mt-10 items-center">
+                                    <Text className="text-gray-400 text-lg">Du har inga elever än.</Text>
+                                </View>
+                            ) : null
+                        }
+                    />
+                </View>
+            </SafeAreaView>
+        </StudentBackground>
     );
 }

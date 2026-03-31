@@ -10,7 +10,7 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
     return (
         <View className="flex-row items-center justify-between py-3 mb-2">
             {/* Vinyl Record Logo */}
-            <Image source={require("../../../assets/vinyl.png")} className="w-10 h-10 rounded-full" resizeMode="contain" />
+            <Image source={require("../../../assets/musik-icon.png")} className="w-16 h-12" resizeMode="contain" />
             
             <Text className="text-xl font-bold text-slate-900">{title}</Text>
 

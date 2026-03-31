@@ -4,7 +4,7 @@ import BottomSheet, { BottomSheetScrollView, BottomSheetBackgroundProps } from "
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { StudentPublicDTO } from "../../types/student.types";
 import { useRequestToTeach } from "../../hooks/useStudentMutation";
-import { MainBackground } from "../ui/MainBackground";
+import { DashboardBackground } from "../ui/DashboardBackground";
 
 interface StudentDetailSheetProps {
     student: StudentPublicDTO | null;
@@ -63,9 +63,9 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
 
     const CustomBackground: React.FC<BottomSheetBackgroundProps> = ({ style }) => (
         <View style={[style, styles.sheetBackground, { overflow: "hidden" }]}>
-            <MainBackground>
+            <DashboardBackground>
                 <View />
-            </MainBackground>
+            </DashboardBackground>
         </View>
     );
 

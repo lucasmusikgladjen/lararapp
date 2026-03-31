@@ -12,7 +12,6 @@ import { CompleteLessonSheet } from "../../../src/components/lessons/actions/Com
 import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/RescheduleLessonSheet";
 import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 import { PageHeader } from "../../../src/components/ui/PageHeader";
-import { MainBackground } from "../../../src/components/ui/MainBackground";
 
 // Ersätter ExpandableLessonCard/StaticLessonCard med vår nya standard
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
@@ -23,6 +22,7 @@ import { useStudents } from "../../../src/hooks/useStudents";
 import { Guardian } from "../../../src/types/student.types";
 import { useCancelLesson, useCompleteLesson, useRescheduleLesson } from "../../../src/hooks/useLessonMutation";
 import { LessonEvent } from "../../../src/utils/lessonHelpers";
+import { StudentIDBackground } from "../../../src/components/ui/StudentIDBackground";
 
 type ActiveView = "info" | "lektioner" | "anteckningar" | "mal";
 
@@ -129,7 +129,7 @@ export default function StudentProfile() {
                 time: student.upcomingLessonTimes?.[index] || "Tid saknas",
                 daysLeft,
                 isCompleted,
-                student: student
+                student: student,
             });
         });
 
@@ -137,7 +137,7 @@ export default function StudentProfile() {
     }, [student]);
 
     const today = new Date().toISOString().split("T")[0];
-    
+
     // Filtrera framtida och försenade/genomförda
     const upcomingLessons = allLessons.filter((l) => l.daysLeft >= 0);
     const pastLessons = allLessons.filter((l) => l.daysLeft < 0).sort((a, b) => b.date.localeCompare(a.date));
@@ -237,7 +237,7 @@ export default function StudentProfile() {
     };
 
     return (
-        <MainBackground>
+        <StudentIDBackground>
             <View className="flex-1" style={{ paddingTop: insets.top }}>
                 {/* Header */}
                 <View className="px-5">
@@ -400,6 +400,6 @@ export default function StudentProfile() {
                     isPending={cancelMutation.isPending}
                 />
             </View>
-        </MainBackground>
+        </StudentIDBackground>
     );
 }
