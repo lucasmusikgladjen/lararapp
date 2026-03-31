@@ -145,9 +145,9 @@ export default function Dashboard() {
                         await logout();
                         router.replace("/(public)/login");
                     }}
-                    className="bg-red-500 px-6 py-3 rounded-2xl shadow-sm"
+                    className="w-full bg-red-500 flex-row items-center justify-center py-4 rounded-2xl"
                 >
-                    <Text className="text-white font-bold">Tvinga utloggning</Text>
+                    <Text className="text-white font-bold text-base">Tvinga utloggning</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         );

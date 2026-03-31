@@ -237,13 +237,13 @@ export default function SettingsPage() {
                         </View>
 
                         {/* Logga Ut Knapp (Alltid synlig längst ner) */}
-                        <View className="mt-8">
+                        <View className="mt-10 mb-6">
                             <TouchableOpacity
                                 onPress={handleLogout}
-                                className="w-full bg-white flex-row items-center justify-center py-4 rounded-2xl shadow-sm border border-red-400"
+                                className="w-full bg-red-500 flex-row items-center justify-center py-4 rounded-2xl"
                             >
-                                <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
-                                <Text className="text-red-500 font-bold text-base">Logga ut</Text>
+                                <Ionicons name="log-out-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                                <Text className="text-white font-bold text-base">Logga ut</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
