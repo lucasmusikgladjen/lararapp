@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -10,7 +10,7 @@ export const ScheduleEntryCard = () => {
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => router.push("/schedule")}
-                className="flex-row items-center p-5 bg-white rounded-3xl border border-slate-100 shadow-sm"
+                className="flex-row items-center p-5 bg-white rounded-3xl border border-slate-200"
             >
                 <View className="w-14 h-14 items-center justify-center mr-4">
                     <Ionicons name="calendar-outline" size={28} color="#F97316" />

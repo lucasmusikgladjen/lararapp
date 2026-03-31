@@ -146,12 +146,12 @@ export default function SettingsPage() {
 
     return (
         <SettingsBackground>
-            <SafeAreaView edges={["top"]} className="flex-1">
+            <SafeAreaView edges={["top"]} className="flex-1" >
                 <View className="px-5">
                     <PageHeader />
                 </View>
 
-                <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
                     {/* =============== HERO CARD (Lärarhub) =============== */}
                     <View className="mx-5 bg-white rounded-3xl p-5 shadow-sm mb-6 border border-slate-100 mt-2">
                         {/* Profil Info (Bild, Namn och Bio) */}
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                                         key={tag.id}
                                         onPress={() => setActiveView(tag.id)}
                                         activeOpacity={0.7}
-                                        className="px-3 py-1.5 rounded-full border"
+                                        className="px-3 py-1.5 rounded-md border"
                                         style={{
                                             backgroundColor: isActive ? tag.activeBackground : "#FFFFFF",
                                             borderColor: isActive ? "transparent" : "#E2E8F0",
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                         <View className="mt-10 mb-6">
                             <TouchableOpacity
                                 onPress={handleLogout}
-                                className="w-full bg-red-500 flex-row items-center justify-center py-4 rounded-2xl"
+                                className="w-full bg-[#E35453] flex-row items-center justify-center py-4 rounded-2xl"
                             >
                                 <Ionicons name="log-out-outline" size={20} color="white" style={{ marginRight: 8 }} />
                                 <Text className="text-white font-bold text-base">Logga ut</Text>

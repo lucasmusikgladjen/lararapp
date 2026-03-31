@@ -52,7 +52,7 @@ export default function StudentsPage() {
                             </View>
                         }
                         renderItem={({ item }) => <StudentCard student={item} onPress={() => handleStudentPress(item.id)} />}
-                        contentContainerStyle={{ paddingBottom: 100 }}
+                        contentContainerStyle={{ paddingBottom: 20 }}
                         showsVerticalScrollIndicator={false}
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" />}
                         ListEmptyComponent={

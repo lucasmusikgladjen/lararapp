@@ -71,7 +71,7 @@ export const ScheduleCard = ({
                         {/* Namnet flexar så långt det kan, men bryts snyggt om det krockar */}
                         <Text className="text-base font-bold text-slate-800">{student.name}</Text>
 
-                        {/* HÖGER SIDA LOGIK (Badges / Pilar) - Ligger nu PÅ SAMMA RAD som namnet */}
+                        {/* HÖGER SIDA LOGIK (Badges / Pilar) */}
                         {isDelayed ? (
                             <View className="bg-[#E35453] px-2.5 py-1 rounded-md shadow-sm shrink-0">
                                 <Text className="text-white font-extrabold text-[10px] tracking-wider uppercase">Försenad</Text>

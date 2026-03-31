@@ -12,8 +12,6 @@ import { CompleteLessonSheet } from "../../../src/components/lessons/actions/Com
 import { RescheduleLessonSheet } from "../../../src/components/lessons/actions/RescheduleLessonSheet";
 import { CancelLessonSheet } from "../../../src/components/lessons/actions/CancelLessonSheet";
 import { PageHeader } from "../../../src/components/ui/PageHeader";
-
-// Ersätter ExpandableLessonCard/StaticLessonCard med vår nya standard
 import { ScheduleCard } from "../../../src/components/dashboard/ScheduleCard";
 
 // Hooks & Typer
@@ -26,7 +24,7 @@ import { StudentIDBackground } from "../../../src/components/ui/StudentIDBackgro
 
 type ActiveView = "info" | "lektioner" | "anteckningar" | "mal";
 
-// Konfiguration för våra färgglada "tags" med HEX-koder
+// Konfiguration de färgglada "tags" med HEX-koder
 const HUB_TAGS: { id: ActiveView; label: string; activeBackground: string; activeText: string }[] = [
     { id: "info", label: "Info", activeBackground: "#DBEAFE", activeText: "#1E40AF" },
     { id: "lektioner", label: "Lektioner", activeBackground: "#FCE7F3", activeText: "#9D174D" },
@@ -273,7 +271,7 @@ export default function StudentProfile() {
                                         key={tag.id}
                                         onPress={() => setActiveView(tag.id)}
                                         activeOpacity={0.7}
-                                        className="px-3 py-1.5 rounded-full border"
+                                        className="px-3 py-1.5 rounded-md border"
                                         style={{
                                             backgroundColor: isActive ? tag.activeBackground : "#FFFFFF",
                                             borderColor: isActive ? "transparent" : "#E2E8F0",
@@ -310,7 +308,8 @@ export default function StudentProfile() {
                         {/* =============== LEKTIONER =============== */}
                         <View style={{ display: activeView === "lektioner" ? "flex" : "none" }}>
                             <Text className="text-[17px] font-bold text-slate-900 mb-3 ml-2">Kommande lektioner</Text>
-                            <View className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm mb-6">
+                            {/* bg-white rounded-3xl border border-slate-100 shadow-sm */}
+                            <View className="bg-white border rounded-3xl border-slate-100 shadow-sm mb-6">
                                 {upcomingLessons.length > 0 ? (
                                     <FlatList
                                         data={upcomingLessons}
@@ -319,7 +318,7 @@ export default function StudentProfile() {
                                         scrollEnabled={false}
                                     />
                                 ) : (
-                                    <View className="p-8 items-center">
+                                    <View className="p-8 items-center ">
                                         <Text className="text-slate-500">Inga inplanerade lektioner.</Text>
                                     </View>
                                 )}

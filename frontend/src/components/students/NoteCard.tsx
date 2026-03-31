@@ -1,6 +1,4 @@
-// ELEVPROFIL --> 'ÖVERSIKT' --> SENASTE ANTECKNINGAR & TERMINSMÅL
-
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 

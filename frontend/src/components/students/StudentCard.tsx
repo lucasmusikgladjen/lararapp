@@ -19,8 +19,7 @@ export const StudentCard = ({ student, onPress }: StudentCardProps) => {
                 onPress={onPress}
                 activeOpacity={0.7}
                 style={{ width: COLUMN_WIDTH }}
-                // Din perfekta styling!
-                className="items-center bg-white rounded-3xl p-5 border border-slate-100 shadow-sm"
+                className="items-center bg-white rounded-3xl p-5 border border-slate-200"
             >
                 {/* Avatar - Nu med samma bg-slate-100 som i ScheduleCard för maximal enhetlighet */}
                 <View className="size-20 rounded-full bg-slate-100 border border-slate-200 overflow-hidden mb-4 shrink-0">
