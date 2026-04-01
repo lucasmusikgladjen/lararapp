@@ -114,7 +114,8 @@
     - **Architecture Refactor:** Flyttat om navigeringsstrukturen till "Stack over Tabs" för att lösa navigeringshistoriken.
 
 - [x] **Frontend - UI Refactor:**
-    - Skapade `PageHeader.tsx` i `src/components/ui` för dynamiska headers på alla huvudvyn.
+    - [x] Skapade `PageHeader.tsx` i `src/components/ui` för dynamiska headers på alla huvudvyn.
+    - [x] **Informationshub:** Implementerat en Modal i headern som triggas av hjälp-ikonen. Visar företagets logotyp, biografi och klickbara kontaktlänkar (Webb, E-post, Telefon) via `Linking` API:et.
 
 - [x] **Frontend - Elevprofil Refactor ("Elevhub"):**
     - [x] Omstrukturerat elevvyn till en modulär "Elevhub" med micro-sidor och navigeringstaggar.
@@ -185,7 +186,7 @@
     - [x] **iOS Picker Fix:** Implementerat "Confirmation Pattern" med `tempDate` och "Klar"-knapp.
 
 - [x] **Buggfixar & UI-Polishing:**
-    - [x] **Standard Card Design:** Alla huvudkomponenter använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
+    - [x] **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
     - [x] **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid.
 
 - [x] **Arkitektur & Miljöhantering (.env):**
@@ -198,8 +199,9 @@
     - [x] **Deep Linking:** Skapat direktlänk från Elevprofil till schemaläggaren via URL-parametrar.
 
 - [x] **Moderniserad Kartsökning ("Search in this area"):**
-    - **Store Refactor:** Övergång från textbaserad sökning till region-baserad sökning.
-    - **Smart Start:** Automatisk GPS-hämtning och kartsökning vid app-start.
+    - [x] **Store Refactor:** Övergång från textbaserad sökning till region-baserad sökning.
+    - [x] **Smart Start:** Automatisk GPS-hämtning och kartsökning vid app-start.
+    - [x] **Ikonografi:** Implementerat instrument-specifika kartmarkörer med en hybrid av `MaterialCommunityIcons` och `FontAwesome5` (t.ex. trum-ikon för trummor).
 
 ## Pågående 🚧
 - [ ] 

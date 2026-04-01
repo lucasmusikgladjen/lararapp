@@ -14,7 +14,7 @@
     - `notes` (Frontend) <-> `kommentar` (API) <-> `Kommentar` (Airtable).
     - `goals` (Frontend) <-> `terminsmal` (API) <-> `Terminsmål` (Airtable).
 - **Airtable Skriv-operationer:** Vi har utökat `airtable.ts` med en generisk `post`-metod för att kunna skapa nya poster (t.ex. vid registrering).
-- **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable i databasen.
+- **Instrument-hantering:** Backend hanterar instrument som en array av strängar (`string[]`) för frontend, men mappar om detta till en kommaseparerad sträng ("Piano, Gitarr") för Airtable i databasen. Vid uppdatering (`PATCH`) konverteras inkommande textsträngar via `.split(',').map(i => i.trim())`.
 - **Säker Profiluppdatering:** `updateProfile`-controllern ignorerar `id` i URL-parametrar och använder istället strikt `req.user.id` från JWT-token.
 - **Clean Controllers:** Vi använder `matchedData` från `express-validator` i controllers för att garantera att endast validerad och sanerad data hanteras.
 - **Asynkron Validering:** Unikhetskontroller görs direkt i valideringslagret via custom validators.
@@ -57,7 +57,7 @@
 - **70-tals Signature Style:** Appen använder en kurerad retro-palett: **Mustard Gold** (#F59E0B), **Terracotta/Rust** (#B45309) och **Muted Teal** (#0D9488) mot en krämvit bas (#FFFBEB).
 - **SVG Bakgrunder:** Vi använder komplexa `react-native-svg`-komponenter (`MainBackground`, `SettingsBackground`) för att skapa mjuka kurvor ("The S-Groove", "The Vinyl Radar") som ger appen en unik analog känsla.
 - **Lager-konflikter (Z-index):** För att SVG-bakgrunder ska synas måste överliggande containers (som `SafeAreaView` eller `ScrollView`) ha genomskinliga bakgrunder. Att inkludera `bg-brand-bg` eller liknande klasser på dessa blockerar bakgrunds-lagret helt.
-- **iOS-liknande Notifikationstack:** `NotificationStack.tsx` använder `react-native-reanimated-carousel` med en `customAnimation` som morphar korten från en ihoptryckt stack (Y-offset, scaling) till en rak vertikal lista vid expansion. Detta bevarar scroll-funktionalitet i stängt läge samtidigt som det ger en "buttersmooth" iPhone-känsla vid utfällning.
+- **iOS-liknande Notifikationstack:** `NotificationStack.tsx` använder `react-native-reanimated-carousel` med en `customAnimation` som morphar korten från en ihoptryckt stack (Y-offset, scaling) till en rak vertikal lista vid expansion. Detta bevarar scroll-funktionalitet i stängt läge samtidigt som det ger en "buttersmooth" iPhone-känsla och spatial kontinuitet vid utfällning.
 
 ## Frontend: Modulär Design (Hub-konceptet)
 - **Enhetligt Hub-system:** Både elevprofilen och lärarprofilen (Inställningar) har omstrukturerats till modulära "hubbar" med micro-sidor.
@@ -72,6 +72,7 @@
 - **iOS Spinner-fix (The Confirmation Pattern):** Eftersom iOS-pickers inte alltid triggar `onChange` om användaren inte snurrar på hjulet, använder vi ett `tempDate`-state i modalen. När användaren trycker på "Klar" sparas det temporära värdet.
 - **Inline Accordion UX:** För enkla val föredras en inline-accordion (expand/collapse) framför Bottom Sheets för att minimera antalet animationer och behålla användarens fokus.
 - **Textbaserad Instrumenthantering:** Istället för komplexa multi-select grids hanteras instrument nu som ett vanligt `InputGroup`-textfält i `PersonalSection`. Användaren skriver instrument separerade med komma, vilket sedan mappas om till en array i `handleSave`. Detta förenklar både UI och state-hantering.
+- **Hjälp & Information:** `PageHeader` innehåller en interaktiv hjälpsymbol (`help-circle`) som öppnar en Modal. Denna modal använder företagets logotyp (`musikgladjen.png`), `text-justify` för biografi och klickbara kontaktlänkar via `Linking`-API:et för webb, e-post och telefon.
 
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
@@ -89,6 +90,7 @@
 - **Radieberäkning:** Sökradien beräknas dynamiskt från kartans zoomnivå via formeln: `Radius (km) = (latitudeDelta * 111) / 2`.
 - **Tröskelvärden:** För att undvika flimmer (flickering) visas "Sök i området"-knappen endast om kartan flyttats >500m eller om zoomnivån ändrats >20%.
 - **Smart Start:** Appen försöker hämta GPS vid start för att centrera kartan (20km radie), med Stockholm som fallback.
+- **Instrument-specifika Markörer:** Kartmarkörer använder en hybrid-lösning av `MaterialCommunityIcons` och `FontAwesome5` (t.ex. `drum` för trummor) för att visuellt representera elevens instrument direkt på kartan via en färgkodad ikonografi.
 
 ## Frontend: StudentDetailModal (Fas 8 - High Fidelity Refactor)
 - **Visuell Konsistens:** `MainBackground` används som `backgroundComponent` i `BottomSheet` med `overflow: "hidden"` för att klippa mönstret efter modalens rundade hörn.
