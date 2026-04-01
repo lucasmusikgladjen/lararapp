@@ -16,6 +16,9 @@ export const PersonalSection = ({ user, formData, setFormData, handleSave, isSav
         setFormData({ ...formData, [field]: value });
     };
 
+    // Gör om arrayen till en kommaseparerad sträng (t.ex. "Piano, Gitarr") så det ser snyggt ut i fältet
+    const instrumentsString = Array.isArray(formData.instruments) ? formData.instruments.join(", ") : formData.instruments || "";
+
     return (
         <View className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
             <View className="flex-row items-center mb-6">
@@ -27,20 +30,55 @@ export const PersonalSection = ({ user, formData, setFormData, handleSave, isSav
 
             <View className="gap-3">
                 <InputGroup label="Namn" value={formData.name} onChangeText={(t: string) => updateField("name", t)} placeholder="Ditt namn" />
-                <InputGroup label="E-post" value={formData.email} onChangeText={(t: string) => updateField("email", t)} placeholder="din.email@exempel.se" keyboardType="email-address" />
-                <InputGroup label="Telefon" value={formData.phone} onChangeText={(t: string) => updateField("phone", t)} placeholder="070-123 45 67" keyboardType="phone-pad" />
+                <InputGroup
+                    label="E-post"
+                    value={formData.email}
+                    onChangeText={(t: string) => updateField("email", t)}
+                    placeholder="din.email@exempel.se"
+                    keyboardType="email-address"
+                />
+                <InputGroup
+                    label="Telefon"
+                    value={formData.phone}
+                    onChangeText={(t: string) => updateField("phone", t)}
+                    placeholder="070-123 45 67"
+                    keyboardType="phone-pad"
+                />
+
                 <InputLabel label="Personnummer" value={user.personalNumber || "Saknas"} editable={false} isLocked />
-                <InputGroup label="Adress" value={formData.address} onChangeText={(t: string) => updateField("address", t)} placeholder="Gatuadress 12" />
-                
+
+                <InputGroup
+                    label="Instrument"
+                    value={instrumentsString}
+                    onChangeText={(text: string) => updateField("instruments", text)}
+                    placeholder="T.ex. Piano, Gitarr"
+                />
+
+                <InputGroup
+                    label="Adress"
+                    value={formData.address}
+                    onChangeText={(t: string) => updateField("address", t)}
+                    placeholder="Gatuadress 12"
+                />
+
                 <View className="flex-row gap-3">
                     <View className="flex-1">
-                        <InputGroup label="Postnummer" value={formData.zip} onChangeText={(t: string) => updateField("zip", t)} placeholder="123 45" keyboardType="numeric" />
+                        <InputGroup
+                            label="Postnummer"
+                            value={formData.zip}
+                            onChangeText={(t: string) => updateField("zip", t)}
+                            placeholder="123 45"
+                            keyboardType="numeric"
+                        />
                     </View>
                     <View className="flex-1">
                         <InputGroup label="Ort" value={formData.city} onChangeText={(t: string) => updateField("city", t)} placeholder="Stad" />
                     </View>
                 </View>
-                <SaveButton onPress={handleSave} loading={isSaving} />
+
+                <View className="mt-4">
+                    <SaveButton onPress={handleSave} loading={isSaving} />
+                </View>
             </View>
         </View>
     );

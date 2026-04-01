@@ -43,6 +43,7 @@ export default function SettingsPage() {
         bankAccountNumber: user?.bankAccountNumber || "",
         desiredStudentCount: user?.desiredStudentCount?.toString() || "0",
         bio: user?.bio || "",
+        instruments: (user?.instruments || []) as string[] | string,
     });
 
     useEffect(() => {
@@ -73,6 +74,7 @@ export default function SettingsPage() {
                 bankAccountNumber: user.bankAccountNumber || "",
                 desiredStudentCount: user.desiredStudentCount?.toString() || "0",
                 bio: user.bio || "",
+                instruments: user.instruments || [],
             }));
         }
     }, [user]);
@@ -104,6 +106,15 @@ export default function SettingsPage() {
                 payload.address = formData.address;
                 payload.zip = formData.zip;
                 payload.city = formData.city;
+
+                if (typeof formData.instruments === "string") {
+                    payload.instruments = formData.instruments
+                        .split(",")
+                        .map((instrument: string) => instrument.trim())
+                        .filter((instrument: string) => instrument !== "");
+                } else {
+                    payload.instruments = formData.instruments;
+                }
             } else if (section === "salary") {
                 payload.bank = formData.bank;
                 payload.bankAccountNumber = formData.bankAccountNumber;
@@ -146,7 +157,7 @@ export default function SettingsPage() {
 
     return (
         <SettingsBackground>
-            <SafeAreaView edges={["top"]} className="flex-1" >
+            <SafeAreaView edges={["top"]} className="flex-1">
                 <View className="px-5">
                     <PageHeader />
                 </View>
