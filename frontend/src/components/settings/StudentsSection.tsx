@@ -11,6 +11,9 @@ interface StudentsSectionProps {
 }
 
 export const StudentsSection = ({ user, formData, setFormData, handleSave }: StudentsSectionProps) => {
+    // Räkna hur många pågående ansökningar läraren har
+    const pendingCount = user.pendingStudentIds ? user.pendingStudentIds.length : 0;
+
     return (
         <View className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
             <View className="flex-row items-center mb-6">
@@ -21,8 +24,8 @@ export const StudentsSection = ({ user, formData, setFormData, handleSave }: Stu
             </View>
 
             <View className="flex-row gap-3 mb-4">
-                <StatBox count={user.studentIds.length} label="Nuvarande" />
-                <StatBox count={0} label="Pågående" />
+                <StatBox count={user.studentIds?.length || 0} label="Nuvarande" />
+                <StatBox count={pendingCount} label="Pågående" />
             </View>
 
             <View className="bg-slate-50 p-4 rounded-xl border border-slate-100">

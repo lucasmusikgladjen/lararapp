@@ -26,6 +26,7 @@ export type AirtableTeacherRecord = {
         "E-post"?: string;
         Lösenord?: string;
         Elev?: string[];
+        "Önskar"?: string[];
         Profilbild?: AirtableImage[];
         Timlön?: number;
         Skattesats?: number; 
@@ -61,6 +62,7 @@ export type Teacher = {
     email: string;
     password?: string;
     studentIds: string[];
+    pendingStudentIds: string[];
     profileImageUrl: string;
     status: string;
     address?: string;

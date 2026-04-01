@@ -9,6 +9,7 @@ export type User = {
     name: string;
     email: string;
     studentIds: string[];
+    pendingStudentIds?: string[];
     profileImageUrl?: string;
     status: "Aktiv" | "Paus" | "Slutat" | string;
 

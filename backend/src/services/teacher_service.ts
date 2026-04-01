@@ -45,6 +45,7 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         email: field["E-post"] || "",
         password: field.Lösenord,
         studentIds: field.Elev || [],
+        pendingStudentIds: field["Önskar"] || [],
         profileImageUrl: imageUrl,
         status: field.Slutar || "Okänd",
         address: field.Adress,

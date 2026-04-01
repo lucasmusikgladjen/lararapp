@@ -43,11 +43,10 @@
     - Villkorsstyrd rendering i `app/(auth)/index.tsx` baserat på `students.length`
     
 - [x] **Frontend - Dashboard:**
-    - Implementerat en interaktiv vertikal karusell (`NotificationStack`) för notiser som ersätter statisk banner.
-    - Designad matchande Figma med starka signalfärger (alert/success/info).
-    - Utnyttjade stabil `react-native-reanimated-carousel` med `mode="parallax"` för en 3D-stackad känsla utan gesture-konflikter.
-    - Justerade bredder (`width - 40` + `w-full` på kort) för konsekvent linjering med övrig UI.
-    - **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att hantera korrupt state i `AsyncStorage`.
+    - [x] Implementerat en interaktiv vertikal karusell (`NotificationStack`) för notiser.
+    - [x] **Premium UX:** Refactor av `NotificationStack` med "Morphing animation" (Stack -> Lista) för en buttersmooth iPhone-känsla.
+    - [x] Utnyttjade stabil `react-native-reanimated-carousel` med `customAnimation` för fysisk spatial continuity.
+    - [x] **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att hantera korrupt state i `AsyncStorage`.
     
 - [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
@@ -110,7 +109,7 @@
 
 - [x] **Frontend - Mina Elever & Navigation Refactor:**
     - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`).
-    - Åeranvänt `useStudents` hook och `StudentCard` komponent för DRY.
+    - Återanvänt `useStudents` hook och `StudentCard` komponent för DRY.
     - Implementerat `FlatList` med `RefreshControl`.
     - **Architecture Refactor:** Flyttat om navigeringsstrukturen till "Stack over Tabs" för att lösa navigeringshistoriken.
 
@@ -124,20 +123,21 @@
     - [x] Förbättrad Affordance: Tagit bort högerpilar och inaktiverat klick för statiska historiska lektioner.
 
 - [x] **Backend - Lärarprofil & Inställningar:**
-    - Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
-    - Implementerat `GET /profile` och `PATCH /profile` med strikt "allow-list" för fält.
-    - **Säkerhet:** Dokumenthantering upplåst för alla tre huvudtyper (Avtal, Jämkning, Belastningsregister).
+    - [x] Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
+    - [x] Implementerat `GET /profile` och `PATCH /profile` med strikt "allow-list" för fält.
+    - [x] **Dynamisk Statistik:** Mappat Airtables `Önskar`-fält till `pendingStudentIds` i API-svaret.
+    - [x] **Säkerhet:** Dokumenthantering upplåst för alla tre huvudtyper (Avtal, Jämkning, Belastningsregister).
 
 - [x] **Frontend - Inställningar Refactor ("Lärarhub"):**
     - [x] Omstrukturerat Inställningar till samma Hub-layout som elevvyn för visuell konsistens.
     - [x] Implementerat Hero-kort med profilbild, namn och biografisk sammanfattning.
-    - [x] Tagit bort Accordions till förmån för modulära, färdigöppnade kort baserat på vald kategori.
+    - [x] **Instrument-redigering:** Integrerat textbaserad instrumentredigering direkt i `PersonalSection` med automatisk Array-konvertering.
+    - [x] **Statistik:** Implementerat dynamisk räknare för "Pågående" elever (baserat på `pendingStudentIds`).
     - [x] UX-optimering: "Vårdnadshavaren" är nu standardval och placerad primärt till vänster i `CancelLessonSheet`.
-    - [x] **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att rensa korrupt state vid cache-osynk.
 
 - [x] **Frontend - Dokument & Uppladdning:**
-    - [x] Implementerat logisk gruppering av dokument under tydliga sektionsrubriker (Avtal, Jämkning, Belastningsregister.).
-    - [x] Skapat smarta placeholders med dashed-border som visas automatiskt om en fil saknas i en specifik kategori.
+    - [x] Implementerat logisk gruppering av dokument under tydliga sektionsrubriker.
+    - [x] Skapat smarta placeholders med dashed-border som visas automatiskt om en fil saknas.
     - [x] Design-polish av `DocRow` med cirkulära ikoner och förbättrad kontrast.
 
 - [x] **Backend - Notifikationssystem (Dynamiska actionsidor):**
@@ -166,7 +166,7 @@
 
 - [x] **Frontend - Enskilda Lektionsåtgärder (Modaler):**
     - [x] **Standardisering:** Implementerat den nya High-Fidelity designen för `ScheduleCard` med asymmetrisk layout.
-    - [x] **UX-polish:** Flyttat status-badgar (Försenad/Rapportera) till samma rad som elevens namn för att tillåta naturlig radbrytning.
+    - [x] **UX-polish:** Flyttat status-badgar (Försenad/Rapportera) till samma rad som elevens namn.
     - [x] **Interaktivitet:** Integrerat premium "dubbel-cirkel" ikonografi för genomförda lektioner.
 
 - [x] **Push-notifikationer & Webhook Integration:**
@@ -176,19 +176,17 @@
 
 - [x] **Design & UX-polish (70-tals Retro):**
     - [x] Implementerat 70-talsinspirerad estetik med Mustard Gold, Terracotta och Muted Teal.
-    - [x] Skapat avancerade SVG-bakgrunder (`The S-Groove`, `The Vinyl Radar`) för en analog känsla.
-    - [x] Löst lager-konflikter (z-index) för att säkerställa att bakgrunden syns bakom innehållet (genomskinliga containers).
+    - [x] Skapat avancerade SVG-bakgrunder (`The S-Groove`, `The Vinyl Radar`).
+    - [x] Löst lager-konflikter (z-index) för att säkerställa att bakgrunden syns bakom innehållet.
 
 - [x] **Formulär-optimering (iPhone-First):**
-    - [x] `SelectField`: Implementerat Auto-select av första alternativet för att skippa onödiga "Välj"-steg.
+    - [x] `SelectField`: Implementerat Auto-select av första alternativet.
     - [x] `TimePickerField`: Nuvarande enhetstid sätts som default vid öppning.
-    - [x] **iOS Picker Fix:** Implementerat "Confirmation Pattern" med `tempDate` och "Klar"-knapp för att säkerställa att val sparas även utan rullning.
-    - [x] Uppdaterat instruktionstexter i schemaläggaren för bättre tydlighet och läsbarhet med manuella radbrytningar.
+    - [x] **iOS Picker Fix:** Implementerat "Confirmation Pattern" med `tempDate` och "Klar"-knapp.
 
 - [x] **Buggfixar & UI-Polishing:**
-    - [x] **Standard Card Design:** Alla huvudkomponenter (ScheduleCard, StudentCard, SettingsSections) använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
-    - [x] **Shadow Clipping Fix:** Introducerat en `shadowWrapper` för att förhindra klippta skuggor.
-    - [x] **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid med optimerad spacing och borttagna inre ramar ("box-in-a-box").
+    - [x] **Standard Card Design:** Alla huvudkomponenter använder nu en enhetlig profil: `bg-white rounded-3xl p-5 border border-slate-100 shadow-sm`.
+    - [x] **Grid Layout:** Uppdaterat elevlistor till en 2-kolumns grid.
 
 - [x] **Arkitektur & Miljöhantering (.env):**
     - [x] Implementerat central API-konfiguration via `src/config/api.ts`.
@@ -200,8 +198,7 @@
     - [x] **Deep Linking:** Skapat direktlänk från Elevprofil till schemaläggaren via URL-parametrar.
 
 - [x] **Moderniserad Kartsökning ("Search in this area"):**
-    - **Store Refactor:** Övergång från textbaserad sökning till region-baserad sökning med smart tröskellogik.
-    - **Ny action `searchInArea`:** Dynamisk sökradie baserat på kartans zoom-nivå.
+    - **Store Refactor:** Övergång från textbaserad sökning till region-baserad sökning.
     - **Smart Start:** Automatisk GPS-hämtning och kartsökning vid app-start.
 
 ## Pågående 🚧
