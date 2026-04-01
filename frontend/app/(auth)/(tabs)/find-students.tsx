@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
@@ -20,12 +20,40 @@ const MARKER_COLORS: Record<string, string> = {
     piano: "#F97316",
     gitarr: "#8B5CF6",
     fiol: "#EF4444",
-    trummor: "#ef476f",
+    trummor: "#ec4899",
+    sång: "#3B82F6",
+    trumpet: "#EAB308",
 };
 
 function getMarkerColor(instruments: string[]): string {
     const first = instruments[0]?.toLowerCase();
     return MARKER_COLORS[first] ?? "#14B8A6";
+}
+
+// 1. Definiera våra tillåtna ikon-familjer
+type IconFamily = "MaterialCommunityIcons" | "FontAwesome5" | "Ionicons";
+
+interface InstrumentIcon {
+    family: IconFamily;
+    name: string;
+}
+
+// 2. Mixa och matcha de snyggaste ikonerna!
+const INSTRUMENT_ICONS: Record<string, InstrumentIcon> = {
+    piano: { family: "MaterialCommunityIcons", name: "piano" },
+    gitarr: { family: "MaterialCommunityIcons", name: "guitar-acoustic" },
+    fiol: { family: "MaterialCommunityIcons", name: "violin" },
+    trummor: { family: "FontAwesome5", name: "drum" }, 
+    sång: { family: "MaterialCommunityIcons", name: "microphone-variant" },
+    trumpet: { family: "MaterialCommunityIcons", name: "trumpet" },
+    saxofon: { family: "MaterialCommunityIcons", name: "saxophone" },
+    bas: { family: "MaterialCommunityIcons", name: "guitar-electric" },
+};
+
+// 3. Om instrumentet saknas, faller vi tillbaka på Ionicons standard-not
+function getInstrumentIcon(instruments: string[]): InstrumentIcon {
+    const first = instruments[0]?.toLowerCase();
+    return INSTRUMENT_ICONS[first] || { family: "Ionicons", name: "musical-notes" };
 }
 
 export default function FindStudents() {
@@ -135,9 +163,7 @@ export default function FindStudents() {
             // Sätt lastSearchRegion direkt i storen via searchInArea-liknande logik
             useFindStudentsStore.setState({ lastSearchRegion: initialRegion });
 
-            await useFindStudentsStore
-                .getState()
-                .fetchStudents(location.lat, location.lng, initialRadius);
+            await useFindStudentsStore.getState().fetchStudents(location.lat, location.lng, initialRadius);
 
             setInitializing(false);
         })();
@@ -200,9 +226,7 @@ export default function FindStudents() {
                         }}
                     >
                         <Ionicons name="search" size={16} color="#F97316" />
-                        <Text className="text-slate-900 font-semibold text-sm ml-2">
-                            Sök i det här området
-                        </Text>
+                        <Text className="text-slate-900 font-semibold text-sm ml-2">Sök i det här området</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -227,16 +251,12 @@ export default function FindStudents() {
                         className="bg-white rounded-full px-5 py-3 flex-row items-center shadow-md"
                     >
                         <Ionicons name="people-outline" size={18} color="#F97316" />
-                        <Text className="text-slate-900 font-semibold text-sm ml-2">
-                            Visa lista
-                        </Text>
+                        <Text className="text-slate-900 font-semibold text-sm ml-2">Visa lista</Text>
                     </TouchableOpacity>
                 </View>
             )}
 
-            {selectedStudent && (
-                <StudentDetailModal student={selectedStudent} onClose={handleMapPress} />
-            )}
+            {selectedStudent && <StudentDetailModal student={selectedStudent} onClose={handleMapPress} />}
         </View>
     );
 }
@@ -250,7 +270,11 @@ interface StudentMarkerProps {
 
 function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
     if (!student.lat || !student.lng) return null;
+
+    // Hämta färg och den nya hybrid-ikonen
     const color = getMarkerColor(student.instruments);
+    const iconInfo = getInstrumentIcon(student.instruments);
+
     const scale = isSelected ? 1.2 : 1;
     const HEAD_SIZE = 36;
     const BORDER_WIDTH = 2.5;
@@ -300,9 +324,16 @@ function StudentMarker({ student, isSelected, onPress }: StudentMarkerProps) {
                             justifyContent: "center",
                         }}
                     >
-                        <Ionicons name="musical-notes" size={16} color="white" />
+                        {/* Rendera rätt ikon-familj dynamiskt med 'as any' för att slippa TS-klagomål */}
+                        {iconInfo.family === "MaterialCommunityIcons" && (
+                            <MaterialCommunityIcons name={iconInfo.name as any} size={18} color="white" />
+                        )}
+                        {iconInfo.family === "FontAwesome5" && <FontAwesome5 name={iconInfo.name as any} size={13} color="white" solid />}
+                        {iconInfo.family === "Ionicons" && <Ionicons name={iconInfo.name as any} size={16} color="white" />}
                     </View>
                 </View>
+
+                {/* Pilen nedåt på markören */}
                 <View style={{ marginTop: -2, alignItems: "center" }}>
                     <View
                         style={{

@@ -30,21 +30,15 @@ export function StudentListSheet({ onStudentPress, visible, onClose }: StudentLi
                 <TouchableOpacity
                     onPress={() => onStudentPress(item)}
                     activeOpacity={0.7}
-                    // Clean, white background, no selection highlight
                     className="flex-row px-5 py-4 mb-1.5 items-center bg-white"
                 >
                     <View className="mr-4">
-                        <Image 
-                            source={{ uri: avatarUrl }} 
-                            className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100" 
-                        />
+                        <Image source={{ uri: avatarUrl }} className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100" />
                     </View>
 
                     <View className="flex-1 justify-center">
-                        <Text className="text-[16px] mb-0.5 font-bold text-slate-900">
-                            {item.name}
-                        </Text>
-                        
+                        <Text className="text-[16px] mb-0.5 font-bold text-slate-900">{item.name}</Text>
+
                         <Text className="text-[14px]" numberOfLines={1}>
                             <Text className="font-semibold text-purple-600">{item.instruments[0]}</Text>
                             <Text className="text-slate-300"> • </Text>
@@ -61,7 +55,7 @@ export function StudentListSheet({ onStudentPress, visible, onClose }: StudentLi
                 </TouchableOpacity>
             );
         },
-        [onStudentPress]
+        [onStudentPress],
     );
 
     // If detail is open (visible=false passed from parent), we hide this sheet completely
