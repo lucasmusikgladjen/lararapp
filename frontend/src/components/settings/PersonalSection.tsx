@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { InputLabel, InputGroup, SaveButton } from "./SettingsUI";
+import { InputGroup, SaveButton } from "./SettingsUI"; // Tog bort InputLabel eftersom vi inte behöver den längre
 import { User } from "../../types/auth.types";
 
 interface PersonalSectionProps {
@@ -45,7 +45,12 @@ export const PersonalSection = ({ user, formData, setFormData, handleSave, isSav
                     keyboardType="phone-pad"
                 />
 
-                <InputLabel label="Personnummer" value={user.personalNumber || "Saknas"} editable={false} isLocked />
+                <InputGroup
+                    label="Personnummer"
+                    value={formData.personalNumber}
+                    onChangeText={(t: string) => updateField("personalNumber", t)}
+                    placeholder="ÅÅMMDDXXXX"
+                />
 
                 <InputGroup
                     label="Instrument"

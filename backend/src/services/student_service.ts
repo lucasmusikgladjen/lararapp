@@ -182,17 +182,22 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     // 2. Append the new teacher ID to the list
     const updatedRequests = [...currentRequests, data.teacherId];
 
-    // 3. Append the comment to 'ÖnskaKommentar'
-    let updatedComment = currentFields.ÖnskaKommentar || "";
+  // 3. Append the comment to 'Egen anteckning'
+    // Vi läser av vad som redan står i 'Egen anteckning' för att inte radera tidigare historik
+    let updatedComment = currentFields["Egen anteckning"] || "";
     if (data.message) {
         const dateStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
-        updatedComment += `\n[${dateStr}] ${data.teacherName}: ${data.message}`;
+        // Om det redan finns text, lägger vi till en dubbel radbrytning innan vi lägger till det nya
+        const separator = updatedComment ? "\n\n" : "";
+        
+        // Snyggare och tydligare rubrik i Airtable!
+        updatedComment += `${separator}--- Elevansökan: ${data.teacherName} (${dateStr}) ---\n${data.message}`;
     }
 
-    // 4. Update Airtable
+    // 4. Update Airtable - Använd exakt samma kolumnnamn som i Airtable!
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
         Önskar: updatedRequests,
-        ÖnskaKommentar: updatedComment.trim(),
+        "Egen anteckning": updatedComment.trim(),
     });
 
     return mapAirtableToStudent(updatedRecord);

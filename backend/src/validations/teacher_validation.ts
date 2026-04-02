@@ -68,6 +68,7 @@ export const updateProfileRules = [
     body("zip").optional().isString().trim(),
     body("city").optional().isString().trim(),
     body("birthYear").optional().isString().isLength({ min: 4, max: 4 }),
+    body("personalNumber").optional().isString().trim(),
 
     body("phone").optional().isString().trim(),
     body("bank").optional().isString().trim(),

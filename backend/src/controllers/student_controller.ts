@@ -75,7 +75,7 @@ export const search = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
     try {
         const { id } = req.params as { id: string };
-        const { kommentar, terminsmal, standardLayout, lessonDay, lessonTimeHHMM } = req.body;
+        const { kommentar, terminsmal } = req.body;
 
         debug(`Updating student ${id}. Notes: ${kommentar}, Goals: ${terminsmal}`);
 

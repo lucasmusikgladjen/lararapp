@@ -114,6 +114,7 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.zip !== undefined) fields.Postnummer = data.zip;
     if (data.city !== undefined) fields.Ort = data.city;
     if (data.birthYear !== undefined) fields.Födelseår = data.birthYear;
+    if (data.personalNumber !== undefined) fields.Personnummer = data.personalNumber;
     if (data.phone !== undefined) fields.Telefon = data.phone;
     if (data.bank !== undefined) fields.Bank = data.bank;
     if (data.bankAccountNumber !== undefined) fields.Bankkontonummer = data.bankAccountNumber;

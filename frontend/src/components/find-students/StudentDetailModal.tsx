@@ -12,15 +12,15 @@ interface StudentDetailSheetProps {
 }
 
 export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps) {
+    // Uppdaterat till 3 fält
     const [field1, setField1] = useState("");
     const [field2, setField2] = useState("");
     const [field3, setField3] = useState("");
-    const [field4, setField4] = useState("");
 
     const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     const sheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ["35%", "88%"], []);
+    const snapPoints = useMemo(() => ["35%", "87%"], []);
 
     const requestMutation = useRequestToTeach({
         studentId: student?.id || "",
@@ -29,7 +29,6 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
             setField1("");
             setField2("");
             setField3("");
-            setField4("");
             setAgreedToTerms(false);
             onClose();
         },
@@ -43,7 +42,6 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
         setField1("");
         setField2("");
         setField3("");
-        setField4("");
         setAgreedToTerms(false);
         sheetRef.current?.snapToIndex(0);
     }, [student]);
@@ -54,10 +52,21 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
     const studentAge = student.birthYear ? `${currentYear - Number(student.birthYear)} år` : "Okänd";
     const displayId = student.studentNumber ? student.studentNumber : student.id.slice(-4).toUpperCase();
 
-    const handleApply = () => {
+const handleApply = () => {
         if (!agreedToTerms) return;
         Keyboard.dismiss();
-        const combinedMessage = `Erfarenhet: ${field1}\nTillgänglighet: ${field2}\nPris: ${field3}\nÖvrigt: ${field4}`;
+
+        // Formatera meddelandet med de exakta frågorna som rubriker för tydlighet i Airtable
+        const combinedMessage = 
+`1. Hur bra passar eleven dig? (Skala 1-10 + motivering):
+${field1 || "Inget svar."}
+
+2. Dagar/tider för första lektion närmaste 2 veckorna:
+${field2 || "Inget svar."}
+
+3. Övrig info eller frågor:
+${field3 || "Inget svar."}`;
+
         requestMutation.mutate({ message: combinedMessage.trim() });
     };
 
@@ -109,46 +118,49 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
 
                 {/* Din ansökan */}
                 <View className="px-5 py-6 mt-2">
-                    <Text className="text-[17px] font-bold text-slate-900 mb-3">Din ansökan</Text>
+                    <Text className="text-[17px] font-bold text-slate-900 mb-4">Din ansökan</Text>
 
+                    {/* Fråga 1 - Fixed: No uppercase, increased text size for professional look */}
+                    <Text className="text-[14px] font-semibold text-slate-700 mb-2 ml-1">
+                        Hur bra passar den här eleven dig? {"\n"}Skala 1-10 och motivera
+                    </Text>
                     <TextInput
-                        className={`rounded-2xl p-4 text-[15px] mb-3 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
-                        placeholder="Berätta kort om din erfarenhet..."
+                        className={`rounded-2xl p-4 text-[15px] mb-5 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="Skriv din motivering här..."
                         placeholderTextColor="#9CA3AF"
                         value={field1}
                         onChangeText={setField1}
                         editable={!student.hasApplied && !requestMutation.isPending}
                     />
 
+                    {/* Fråga 2 - Fixed: No uppercase, direct style */}
+                    <Text className="text-[14px] font-semibold text-slate-700 mb-2 ml-1">
+                        Vilka dagar och tider hade du kunnat ha en {"\n"}första lektion de närmaste två veckorna?
+                    </Text>
                     <TextInput
-                        className={`rounded-2xl p-4 text-[15px] mb-3 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
-                        placeholder="När kan du hålla lektioner?"
+                        className={`rounded-2xl p-4 text-[15px] mb-5 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="Föreslå dagar och tider..."
                         placeholderTextColor="#9CA3AF"
                         value={field2}
                         onChangeText={setField2}
                         editable={!student.hasApplied && !requestMutation.isPending}
                     />
 
+                    {/* Fråga 3 - Fixed: No uppercase */}
+                    <Text className="text-[14px] font-semibold text-slate-700 mb-2 ml-1">Övrig info eller frågor?</Text>
                     <TextInput
-                        className={`rounded-2xl p-4 text-[15px] mb-3 border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
-                        placeholder="Ditt föreslagna lektionspris..."
+                        className={`rounded-2xl p-4 text-[15px] border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
+                        placeholder="Skriv dina frågor här..."
                         placeholderTextColor="#9CA3AF"
                         value={field3}
                         onChangeText={setField3}
                         editable={!student.hasApplied && !requestMutation.isPending}
-                    />
-
-                    <TextInput
-                        className={`rounded-2xl p-4 text-[15px] border shadow-sm ${student.hasApplied ? "bg-white/50 border-slate-200" : "bg-white border-white"}`}
-                        placeholder="Övrig info..."
-                        placeholderTextColor="#9CA3AF"
-                        value={field4}
-                        onChangeText={setField4}
-                        editable={!student.hasApplied && !requestMutation.isPending}
+                        multiline={true}
+                        textAlignVertical="top" // Professional multiline look
                     />
                 </View>
 
-                {/* Vad händer sen? - Uppdaterad för Musikglädjen med bättre spacing */}
+                {/* Vad händer sen? - Uppdaterad */}
                 <View className="px-5 mb-6">
                     <Text className="text-[17px] font-bold text-slate-900 mb-4">Vad händer sen?</Text>
 
@@ -157,25 +169,16 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
                             <Text className="text-white font-bold text-sm">1</Text>
                         </View>
                         <Text className="text-[15px] text-slate-800 leading-tight flex-1">
-                            Din profil skickas till elevens familj för granskning.
-                        </Text>
-                    </View>
-
-                    <View className="flex-row items-start mb-4 pr-6">
-                        <View className="w-7 h-7 rounded-full bg-brand-orange items-center justify-center mr-3 mt-0.5 shadow-sm">
-                            <Text className="text-white font-bold text-sm">2</Text>
-                        </View>
-                        <Text className="text-[15px] text-slate-800 leading-tight flex-1">
-                            Vi granskar din ansökan för att säkerställa en bra matchning.
+                            Vi kontaktar vårdnadshavaren och föreslår dig som lärare.
                         </Text>
                     </View>
 
                     <View className="flex-row items-start pr-6">
                         <View className="w-7 h-7 rounded-full bg-brand-orange items-center justify-center mr-3 mt-0.5 shadow-sm">
-                            <Text className="text-white font-bold text-sm">3</Text>
+                            <Text className="text-white font-bold text-sm">2</Text>
                         </View>
                         <Text className="text-[15px] text-slate-800 leading-tight flex-1">
-                            Vid matchning får ni kontaktuppgifter för att boka första lektionen.
+                            Om de vill börja sätter vi er i kontakt med varandra - håll koll på din mail.
                         </Text>
                     </View>
                 </View>

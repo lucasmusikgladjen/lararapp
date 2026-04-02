@@ -32,10 +32,12 @@ export default function SettingsPage() {
     const [activeView, setActiveView] = useState<ActiveView>("person");
     const [isSaving, setIsSaving] = useState(false);
 
+    // LADE TILL personalNumber HÄR
     const [formData, setFormData] = useState({
         name: user?.name || "",
         email: user?.email || "",
         phone: user?.phone || "",
+        personalNumber: user?.personalNumber || "", 
         address: user?.address || "",
         zip: user?.zip || "",
         city: user?.city || "",
@@ -62,11 +64,13 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (user) {
+            // LADE TILL personalNumber HÄR OCKSÅ
             setFormData((prev) => ({
                 ...prev,
                 name: user.name || "",
                 email: user.email || "",
                 phone: user.phone || "",
+                personalNumber: user.personalNumber || "",
                 address: user.address || "",
                 zip: user.zip || "",
                 city: user.city || "",
@@ -103,6 +107,7 @@ export default function SettingsPage() {
                 payload.name = formData.name;
                 payload.email = formData.email;
                 payload.phone = formData.phone;
+                payload.personalNumber = formData.personalNumber; // LADE TILL personalNumber I PAYLOAD
                 payload.address = formData.address;
                 payload.zip = formData.zip;
                 payload.city = formData.city;

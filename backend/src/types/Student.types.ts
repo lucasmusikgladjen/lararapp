@@ -17,7 +17,7 @@ export type AirtableStudentFields = {
     "Lead score"?: string;
     "Närmaste lärare"?: string[];
     Önskar?: string[];
-    ÖnskaKommentar?: string;
+    "Egen anteckning"?: string;
     Lektionstider?: string[];
     Lektioner?: string[];
     "Lektioner Genomförda"?: boolean[];

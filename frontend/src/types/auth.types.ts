@@ -20,7 +20,7 @@ export type User = {
 
     // Personal & Contact
     birthYear?: string;
-    personalNumber?: string; // Read-only in UI
+    personalNumber?: string; 
     phone?: string;
 
     // Professional
@@ -75,6 +75,7 @@ export type UpdateProfilePayload = {
     zip?: string;
     city?: string;
     phone?: string;
+    personalNumber?: string;
     bank?: string;
     bankAccountNumber?: string;
     bio?: string;

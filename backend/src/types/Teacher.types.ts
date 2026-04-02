@@ -26,11 +26,11 @@ export type AirtableTeacherRecord = {
         "E-post"?: string;
         Lösenord?: string;
         Elev?: string[];
-        "Önskar"?: string[];
+        Önskar?: string[];
         Profilbild?: AirtableImage[];
         Timlön?: number;
-        Skattesats?: number; 
-        Slutar?: string; 
+        Skattesats?: number;
+        Slutar?: string;
         Adress?: string;
         Postnummer?: string;
         Ort?: string;
@@ -69,7 +69,7 @@ export type Teacher = {
     zip?: string;
     city?: string;
     birthYear?: string;
-    personalNumber?: string; 
+    personalNumber?: string;
     instruments: string[];
     phone?: string;
     bank?: string;
@@ -99,7 +99,8 @@ export type UpdateTeacherData = {
     address?: string;
     zip?: string;
     city?: string;
-    birthYear?: string; 
+    birthYear?: string;
+    personalNumber?: string;
     instruments?: string[];
     phone?: string;
     bank?: string;
