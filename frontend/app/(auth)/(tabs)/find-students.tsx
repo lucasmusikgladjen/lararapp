@@ -43,7 +43,7 @@ const INSTRUMENT_ICONS: Record<string, InstrumentIcon> = {
     piano: { family: "MaterialCommunityIcons", name: "piano" },
     gitarr: { family: "MaterialCommunityIcons", name: "guitar-acoustic" },
     fiol: { family: "MaterialCommunityIcons", name: "violin" },
-    trummor: { family: "FontAwesome5", name: "drum" }, 
+    trummor: { family: "FontAwesome5", name: "drum" },
     sång: { family: "MaterialCommunityIcons", name: "microphone-variant" },
     trumpet: { family: "MaterialCommunityIcons", name: "trumpet" },
     saxofon: { family: "MaterialCommunityIcons", name: "saxophone" },

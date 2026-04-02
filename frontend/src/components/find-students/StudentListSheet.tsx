@@ -25,6 +25,7 @@ export function StudentListSheet({ onStudentPress, visible, onClose }: StudentLi
     const renderItem = useCallback(
         ({ item }: { item: StudentPublicDTO }) => {
             const avatarUrl = `https://api.dicebear.com/7.x/avataaars/png?seed=${item.id}`;
+            const displayId = item.studentNumber ? item.studentNumber : item.id.slice(-4).toUpperCase();
 
             return (
                 <TouchableOpacity
@@ -37,7 +38,7 @@ export function StudentListSheet({ onStudentPress, visible, onClose }: StudentLi
                     </View>
 
                     <View className="flex-1 justify-center">
-                        <Text className="text-[16px] mb-0.5 font-bold text-slate-900">{item.name}</Text>
+                        <Text className="text-[16px] mb-0.5 font-bold text-slate-900">Elev #{displayId}</Text>
 
                         <Text className="text-[14px]" numberOfLines={1}>
                             <Text className="font-semibold text-purple-600">{item.instruments[0]}</Text>
