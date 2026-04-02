@@ -122,6 +122,10 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.desiredStudentCount !== undefined) fields["Önskat antal elever"] = data.desiredStudentCount;
     if (data.pushToken !== undefined) fields.PushToken = data.pushToken;
 
+    if (data.clearDocument === "contract") fields.Avtal = [];
+    if (data.clearDocument === "tax-adjustment") fields.Jämkning = [];
+    if (data.clearDocument === "criminal-record") fields.Belastningsregister = [];
+
     if (data.instruments) {
         fields.Instrument = data.instruments.join(", ");
     }

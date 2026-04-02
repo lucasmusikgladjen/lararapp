@@ -81,6 +81,7 @@ export type UpdateProfilePayload = {
     bio?: string;
     instruments?: string[];
     desiredStudentCount?: number;
+    clearDocument?: "contract" | "tax-adjustment" | "criminal-record";
 };
 
 export type AuthState = {

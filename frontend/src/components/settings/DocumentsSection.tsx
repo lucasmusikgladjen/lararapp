@@ -1,7 +1,10 @@
-import { View, Text, Linking, Alert, TouchableOpacity } from "react-native";
+import { View, Text, Linking, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import { DocRow } from "./SettingsUI";
-import { User } from "../../types/auth.types";
+import { User, TeacherDocument } from "../../types/auth.types";
+import { useAuthStore } from "../../store/authStore";
+import { authService } from "../../services/auth.service";
 
 interface DocumentsSectionProps {
     user: User;
@@ -14,12 +17,38 @@ const DOCUMENT_CATEGORIES = [
 ];
 
 export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
+    const { token, updateUser } = useAuthStore();
+    const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
     const openDocument = (url: string) => {
         Linking.openURL(url).catch(() => Alert.alert("Fel", "Kunde inte öppna dokumentet"));
     };
 
     const handleUploadClick = (categoryLabel: string) => {
         Alert.alert("Ladda upp", `Här kommer du kunna välja och ladda upp ditt dokument för: ${categoryLabel}.`);
+    };
+
+    const handleDelete = (docType: TeacherDocument["type"], categoryLabel: string) => {
+        Alert.alert("Radera dokument", `Är du säker på att du vill radera ditt ${categoryLabel.toLowerCase()}? Det går inte att ångra.`, [
+            { text: "Avbryt", style: "cancel" },
+            {
+                text: "Radera",
+                style: "destructive",
+                onPress: async () => {
+                    if (!token) return;
+                    setIsDeleting(docType);
+                    try {
+                        const updatedUser = await authService.updateProfile(token, { clearDocument: docType });
+                        updateUser(updatedUser);
+                        Alert.alert("Raderat", "Dokumentet har tagits bort.");
+                    } catch (error) {
+                        Alert.alert("Fel", "Något gick fel när dokumentet skulle raderas.");
+                    } finally {
+                        setIsDeleting(null);
+                    }
+                },
+            },
+        ]);
     };
 
     const documents = user.documents || [];
@@ -44,9 +73,27 @@ export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
                             <Text className="text-[14px] font-bold mb-1 text-slate-800 ml-1">{category.label}</Text>
 
                             {hasDocs ? (
-                                <View className="mb-4">
+                                <View className="mb-4 gap-y-2">
                                     {categoryDocs.map((doc, index) => (
-                                        <DocRow key={index} name={doc.name} date="Uppladdad" onPress={() => openDocument(doc.url)} />
+                                        <View key={index} className="flex-row items-center">
+                                            {/* Dokument-raden tar upp max yta */}
+                                            <View className="flex-1">
+                                                <DocRow name={doc.name} date="Uppladdad" onPress={() => openDocument(doc.url)} />
+                                            </View>
+
+                                            {/* Radera-knapp - UPPDATERAD STYLING HÄR */}
+                                            <TouchableOpacity
+                                                onPress={() => handleDelete(doc.type as any, category.label)}
+                                                disabled={isDeleting === doc.type}
+                                                className="w-[68px] h-[68px] ml-2 bg-red-50 rounded-2xl items-center justify-center border border-red-100"
+                                            >
+                                                {isDeleting === doc.type ? (
+                                                    <ActivityIndicator size="small" color="#EF4444" />
+                                                ) : (
+                                                    <Ionicons name="trash-outline" size={24} color="#EF4444" />
+                                                )}
+                                            </TouchableOpacity>
+                                        </View>
                                     ))}
                                 </View>
                             ) : (

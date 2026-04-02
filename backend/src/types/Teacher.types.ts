@@ -108,4 +108,5 @@ export type UpdateTeacherData = {
     bio?: string;
     desiredStudentCount?: number;
     pushToken?: string;
+    clearDocument?: "contract" | "tax-adjustment" | "criminal-record";
 };

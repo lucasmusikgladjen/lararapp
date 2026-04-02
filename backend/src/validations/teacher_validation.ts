@@ -75,6 +75,7 @@ export const updateProfileRules = [
     body("bankAccountNumber").optional().isString().trim(),
     body("bio").optional().isString(),
     body("desiredStudentCount").optional().isInt({ min: 0 }),
+    body("clearDocument").optional().isIn(["contract", "tax-adjustment", "criminal-record"]),
 
     body("instruments")
         .optional()
