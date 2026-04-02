@@ -53,7 +53,7 @@ export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
                                 <TouchableOpacity
                                     onPress={() => handleUploadClick(category.label)}
                                     activeOpacity={0.6}
-                                    className="border-2 border-dashed border-slate-200 rounded-2xl p-5 items-center justify-center bg-slate-50/50"
+                                    className="border-2 border-dashed border-slate-200 rounded-2xl p-5 items-center justify-center bg-slate-50/50 mb-5"
                                 >
                                     <View className="flex-row items-center gap-x-2">
                                         <Ionicons name="add-circle-outline" size={20} color="#64748B" />

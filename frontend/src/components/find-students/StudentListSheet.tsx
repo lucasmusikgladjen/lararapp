@@ -73,7 +73,7 @@ export function StudentListSheet({ onStudentPress, visible, onClose }: StudentLi
             backgroundStyle={styles.sheetBackground}
             handleIndicatorStyle={styles.dragHandle}
         >
-            <View className="px-5 pt-2 pb-3 flex-row justify-between items-center bg-white z-10 border-b border-gray-100">
+            <View className="px-5 pt-2 pb-3 flex-row justify-between items-center bg-white z-10 border-gray-100">
                 <Text className="text-[20px] font-bold text-slate-900 tracking-tight">
                     Elever i närheten <Text className="text-slate-400 font-medium text-lg">({students.length})</Text>
                 </Text>

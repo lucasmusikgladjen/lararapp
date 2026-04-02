@@ -20,7 +20,7 @@ export function StudentDetailModal({ student, onClose }: StudentDetailSheetProps
     const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     const sheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ["25%", "90%"], []);
+    const snapPoints = useMemo(() => ["35%", "88%"], []);
 
     const requestMutation = useRequestToTeach({
         studentId: student?.id || "",
