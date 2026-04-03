@@ -80,8 +80,6 @@ export const ScheduleCard = ({
                             <View className="bg-[#FBBF24] px-2.5 py-1 rounded-md shadow-sm shrink-0">
                                 <Text className="text-slate-900 font-extrabold text-[10px] tracking-wider uppercase">Rapportera</Text>
                             </View>
-                        ) : isInteractive ? (
-                            <Ionicons name={isExpanded ? "chevron-down" : "chevron-forward"} size={20} color="#CBD5E1" className="shrink-0" />
                         ) : null}
                     </View>
 

@@ -115,12 +115,15 @@ export default function StudentProfile() {
         };
     }, [student]);
 
-    // Omskriven för att skapa LessonEvents kompatibla med ScheduleCard
+    // Skapa LessonEvents kompatibla med ScheduleCard
     const allLessons: LessonEvent[] = useMemo(() => {
         if (!student) return [];
         const lessons: LessonEvent[] = [];
 
         student.upcomingLessons?.forEach((date, index) => {
+            const isCancelled = student.upcomingLessonCancelled?.[index] || false;
+            if (isCancelled) return;
+
             const realId = student.upcomingLessonIds?.[index];
             const fallbackId = `${student.id}-${date}-${index}`;
 
