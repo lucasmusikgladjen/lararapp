@@ -42,8 +42,11 @@ export default function Dashboard() {
         onSuccess: () => {
             completeSheetRef.current?.dismiss();
             setSelectedLessonId(null);
-            refetchStudents();
             Alert.alert("Klart!", "Lektionen har markerats som genomförd.");
+
+            setTimeout(() => {
+                refetchStudents();
+            }, 1000);
         },
     });
 
@@ -52,8 +55,11 @@ export default function Dashboard() {
         onSuccess: () => {
             rescheduleSheetRef.current?.dismiss();
             setSelectedLessonId(null);
-            refetchStudents();
             Alert.alert("Klart!", "Lektionen har bokats om.");
+
+            setTimeout(() => {
+                refetchStudents();
+            }, 1000);
         },
     });
 
@@ -62,8 +68,10 @@ export default function Dashboard() {
         onSuccess: () => {
             cancelSheetRef.current?.dismiss();
             setSelectedLessonId(null);
-            refetchStudents();
-            Alert.alert("Klart!", "Lektionen har ställts in.");
+
+            setTimeout(() => {
+                refetchStudents();
+            }, 1000);
         },
     });
 

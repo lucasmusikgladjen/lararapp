@@ -52,6 +52,10 @@ export default function StudentProfile() {
             completeSheetRef.current?.dismiss();
             setSelectedLessonId(null);
             Alert.alert("Klart!", "Lektionen har markerats som genomförd.");
+
+            setTimeout(() => {
+                refetchStudents();
+            }, 1000);
         },
     });
 
@@ -61,6 +65,10 @@ export default function StudentProfile() {
             rescheduleSheetRef.current?.dismiss();
             setSelectedLessonId(null);
             Alert.alert("Klart!", "Lektionen har bokats om.");
+
+            setTimeout(() => {
+                refetchStudents();
+            }, 1000);
         },
     });
 
@@ -69,11 +77,14 @@ export default function StudentProfile() {
         onSuccess: () => {
             cancelSheetRef.current?.dismiss();
             setSelectedLessonId(null);
-            Alert.alert("Klart!", "Lektionen har ställts in.");
+
+            setTimeout(() => {
+                refetchStudents();
+            }, 1000);
         },
     });
 
-    const { data: students, isLoading } = useStudents();
+    const { data: students, isLoading, refetch: refetchStudents } = useStudents();
 
     const student = useMemo(() => {
         return students?.find((s) => s.id === id);

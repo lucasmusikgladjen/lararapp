@@ -106,6 +106,7 @@
     - [x] Lagt till steg-för-steg information om Musikglädjens matchningsprocess.
     - [x] Infört obligatorisk checkbox för matchningsgodkännande.
     - [x] Visuell integration av `MainBackground` i BottomSheet-bakgrunden med runda hörn.
+    - [x] **Design-refinement:** Uppdaterad typografi (normal casing) och direkta instruktionstexter i placeholders för en premiumkänsla.
 
 - [x] **Frontend - Mina Elever & Navigation Refactor:**
     - Skapat sidan "Mina elever" (`app/(auth)/(tabs)/students.tsx`).
@@ -126,6 +127,7 @@
 - [x] **Backend - Lärarprofil & Inställningar:**
     - [x] Utökat `Teacher` types och DTO med nya fält (Telefon, Bio, Bank, mm).
     - [x] Implementerat `GET /profile` och `PATCH /profile` med strikt "allow-list" för fält.
+    - [x] **Personnummer:** Låst upp fältet för redigering i backend (validering + service-mappning) och frontend.
     - [x] **Dynamisk Statistik:** Mappat Airtables `Önskar`-fält till `pendingStudentIds` i API-svaret.
     - [x] **Säkerhet:** Dokumenthantering upplåst för alla tre huvudtyper (Avtal, Jämkning, Belastningsregister).
 
@@ -139,12 +141,14 @@
 - [x] **Frontend - Dokument & Uppladdning:**
     - [x] Implementerat logisk gruppering av dokument under tydliga sektionsrubriker.
     - [x] Skapat smarta placeholders med dashed-border som visas automatiskt om en fil saknas.
+    - [x] **Radering:** Implementerat funktion för att radera uppladdade filer via en Confirm Modal (Native Alert) och en kvadratisk röd papperskorg-knapp.
     - [x] Design-polish av `DocRow` med cirkulära ikoner och förbättrad kontrast.
 
 - [x] **Backend - Notifikationssystem (Dynamiska actionsidor):**
     - Uppdaterade Airtable-strukturen med `NotificationTemplates` och `Notifications`.
     - Implementerade `GET /api/notifications` med backend-sortering baserat på `Severity`.
     - Skapade endpointen `PATCH /api/notifications/:id/resolve`.
+    - **Städning:** Tog bort redundanta knappar ("Jag har en fråga") i Action-sidorna till förmån för direkta formulärfält (`Form Field 1 Answer`) i Airtable.
 
 - [x] **Frontend - Notifikationssystem (Dynamiska actionsidor):**
     - Implementerade dynamiska Action-sidor i frontend baserat på mallar.
@@ -164,6 +168,7 @@
 - [x] **Backend - Enskilda Lektionsåtgärder (Single Lesson Actions):**
     - Skapat specifika endpoints för `PATCH /:id/complete`, `reschedule`, och `cancel`.
     - Implementerat strikt validering och automatisk formatering av statussträngar i backend.
+    - **Ansökningslogik:** Uppdaterat `requestToTeachStudent` för att skriva till "Egen anteckning" och bevara historik med tydliga rubriker.
 
 - [x] **Frontend - Enskilda Lektionsåtgärder (Modaler):**
     - [x] **Standardisering:** Implementerat den nya High-Fidelity designen för `ScheduleCard` med asymmetrisk layout.
@@ -197,11 +202,13 @@
     - [x] **Dashboard-krasch:** Löst krasch i "Senaste"-vyn genom Composite Keys.
     - [x] **Dark Mode Fix:** Tvingat `themeVariant="light"` på Picker-komponenter.
     - [x] **Deep Linking:** Skapat direktlänk från Elevprofil till schemaläggaren via URL-parametrar.
+    - [x] **Synkroniserings-delay:** Implementerat en 1000ms delay i alla lektionsmutations för att hantera Airtables bakgrundsberäkningar i Lookup-fält.
+    - [x] **Lookup Filtering:** Konfigurerat Airtable för att dölja inställda lektioner via villkorsstyrda Lookup-fält (`Inställd is empty`).
 
 - [x] **Moderniserad Kartsökning ("Search in this area"):**
     - [x] **Store Refactor:** Övergång från textbaserad sökning till region-baserad sökning.
     - [x] **Smart Start:** Automatisk GPS-hämtning och kartsökning vid app-start.
-    - [x] **Ikonografi:** Implementerat instrument-specifika kartmarkörer med en hybrid av `MaterialCommunityIcons` och `FontAwesome5` (t.ex. trum-ikon för trummor).
+    - [x] **Ikonografi:** Implementerat instrument-specifika kartmarkörer med en hybrid av `MaterialCommunityIcons` och `FontAwesome5`.
 
 ## Pågående 🚧
 - [ ] 

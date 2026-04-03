@@ -195,10 +195,10 @@ export default function NotificationActionPage() {
                             )}
 
                             {/* =========================================
-                            LEGO-BIT 6: BEKRÄFTA & FRÅGA-KNAPPAR
-                        ========================================= */}
+                                LEGO-BIT 6: BEKRÄFTA-KNAPP (Uppdaterad)
+                               ========================================= */}
                             {actionPage.showConfirmButtons && !actionPage.showSubmitButton && (
-                                <View className="mt-8 gap-y-4">
+                                <View className="mt-8">
                                     <TouchableOpacity
                                         onPress={handleSubmit}
                                         disabled={isPending || (actionPage.showChecklist && checkedItems.length !== content.checklistItems.length)}
@@ -213,13 +213,6 @@ export default function NotificationActionPage() {
                                         ) : (
                                             <Text className="text-white font-bold text-lg">{content.confirmButtonText || "Jag bekräftar"}</Text>
                                         )}
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        onPress={() => Alert.alert("Kontakta admin", "Denna funktion kommer snart: skicka meddelande till admin.")}
-                                        className="py-4 rounded-2xl items-center bg-[#F8FAFC] border border-[#E2E8F0]"
-                                    >
-                                        <Text className="text-slate-700 font-bold text-lg">Jag har en fråga om detta</Text>
                                     </TouchableOpacity>
                                 </View>
                             )}

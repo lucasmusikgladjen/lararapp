@@ -21,6 +21,9 @@ export const findNextLesson = (students: Student[]): LessonEvent | null => {
 
         // Vi använder 'index' för att hitta matchande tid och ID
         student.upcomingLessons.forEach((dateString, index) => {
+            const isCancelled = student.upcomingLessonCancelled?.[index] || false;
+            if (isCancelled) return;
+
             if (dateString >= todayString) {
                 // Hämta tiden på samma position (eller defaulta till "Tid saknas")
                 const timeString = student.upcomingLessonTimes?.[index] || "Tid saknas";
@@ -65,6 +68,8 @@ export const getAllLessonEvents = (students: Student[]): LessonEvent[] => {
         if (!student.upcomingLessons) return;
 
         student.upcomingLessons.forEach((dateString, index) => {
+            const isCancelled = student.upcomingLessonCancelled?.[index] || false;
+            if (isCancelled) return;
             const timeString = student.upcomingLessonTimes?.[index] || "Tid saknas";
 
             // Hämta det riktiga Airtable Record ID:t

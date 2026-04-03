@@ -27,7 +27,9 @@
 
 ## Backend: Teacher Profile & Settings
 - **Säkerhet (Read-only):** Fält som `Timlön`, `Skattesats` och `Status` (Aktiv/Slutat) kan inte uppdateras via API:et. Service-lagret (`teacher_service.ts`) använder en strikt "allow-list" och ignorerar tyst försök att ändra dessa fält.
+- **Personnummer:** Fältet har låsts upp i både backend (validering + service) och frontend för att lärare ska kunna komplettera sina uppgifter. Det mappar till kolumnen `Personnummer` i Airtable.
 - **Dokument-säkerhet:** `Avtal`, `Jämkning` och `Belastningsregister` mappas till frontend. Tidigare filtrerades belastningsregistret bort, men det har nu låsts upp för att lärare ska kunna verifiera sin status.
+- **Dokumentradering (Clear Logic):** Implementerat `clearDocument` i `UpdateTeacherData`. Genom att skicka en tom array `[]` till Airtables attachment-fält kan vi nu radera dokument (Avtal, Jämkning etc.) direkt från appen med en Confirm-pattern.
 - **Lösenords-hantering:** Vi måste explicit inkludera `password` i `mapAirtableToTeacher` för att `auth_controller` ska kunna verifiera inloggningen. Däremot tar `profile_controller` bort lösenordet från svaret innan det skickas till klienten.
 - **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress som ägs av en *annan* användare.
 - **Airtable fälttyper (Datum/Länkar):** Vissa fält (t.ex. `Terminsslut` eller `Önskar`) kan returneras som arrayer från Airtable. Tjänsten hanterar nu detta genom att mappa länkade Record IDs (från fältet `Önskar`) till `pendingStudentIds` för att möjliggöra statistik i frontend.
@@ -42,7 +44,8 @@
 - **Batch-operationer:** För att respektera Airtables API-gräns (max 10 rader per request) används en "chunking"-strategi i `lesson_service.ts` där anrop delas upp i grupper om 10.
 - **Tidszons-hantering (UTC):** För att undvika buggar vid sommartid/vintertid används strikt `setUTCDate` vid loopar för återkommande lektioner.
 - **Sökning med Linked Records:** Sökning sker på textfältet `Elev Namn` istället för Record ID för att undvika problem med maskerade ID:n i Airtables API.
-- **Enskilda Lektionsåtgärder (Single Lesson Actions):** Specifika endpoints (`PATCH /:id/complete`, `PATCH /:id/reschedule`, `PATCH /:id/cancel`) används för att ge tydligare intent och renare logik.
+- **Enskilda Lektionsåtgärder:** Specifika endpoints (`PATCH /:id/complete`, `PATCH /:id/reschedule`, `PATCH /:id/cancel`) används för att ge tydligare intent.
+- **Historikbevarande (Ansökningar):** Vid inskick av ny elevansökan via `requestToTeachStudent` bevaras historik i Airtable-kolumnen `Egen anteckning` genom att den nya texten läggs till sist med en tydlig header: `--- Elevansökan: [Namn] ([Datum]) ---`.
 
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
@@ -57,6 +60,7 @@
 - **70-tals Signature Style:** Appen använder en kurerad retro-palett: **Mustard Gold** (#F59E0B), **Terracotta/Rust** (#B45309) och **Muted Teal** (#0D9488) mot en krämvit bas (#FFFBEB).
 - **SVG Bakgrunder:** Vi använder komplexa `react-native-svg`-komponenter (`MainBackground`, `SettingsBackground`) för att skapa mjuka kurvor ("The S-Groove", "The Vinyl Radar") som ger appen en unik analog känsla.
 - **Lager-konflikter (Z-index):** För att SVG-bakgrunder ska synas måste överliggande containers (som `SafeAreaView` eller `ScrollView`) ha genomskinliga bakgrunder. Att inkludera `bg-brand-bg` eller liknande klasser på dessa blockerar bakgrunds-lagret helt.
+- **Typografi & Professionalism:** Vi undviker UPPERCASE på frågor och instruktionstexter för att bibehålla en premium känsla. Placeholders har förenklats från exempel ("T.ex...") till direkta instruktioner ("Skriv din motivering här...").
 - **iOS-liknande Notifikationstack:** `NotificationStack.tsx` använder `react-native-reanimated-carousel` med en `customAnimation` som morphar korten från en ihoptryckt stack (Y-offset, scaling) till en rak vertikal lista vid expansion. Detta bevarar scroll-funktionalitet i stängt läge samtidigt som det ger en "buttersmooth" iPhone-känsla och spatial kontinuitet vid utfällning.
 
 ## Frontend: Modulär Design (Hub-konceptet)
@@ -73,6 +77,7 @@
 - **Inline Accordion UX:** För enkla val föredras en inline-accordion (expand/collapse) framför Bottom Sheets för att minimera antalet animationer och behålla användarens fokus.
 - **Textbaserad Instrumenthantering:** Istället för komplexa multi-select grids hanteras instrument nu som ett vanligt `InputGroup`-textfält i `PersonalSection`. Användaren skriver instrument separerade med komma, vilket sedan mappas om till en array i `handleSave`. Detta förenklar både UI och state-hantering.
 - **Hjälp & Information:** `PageHeader` innehåller en interaktiv hjälpsymbol (`help-circle`) som öppnar en Modal. Denna modal använder företagets logotyp (`musikgladjen.png`), `text-justify` för biografi och klickbara kontaktlänkar via `Linking`-API:et för webb, e-post och telefon.
+- **Dokumenthantering (CRUD):** Implementerat radering av dokument med en dedikerad röd soptunne-knapp (`w-[68px]` kvadrat). Använder native `Alert` för bekräftelse innan API-anropet triggas.
 
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
@@ -81,6 +86,8 @@
     - **Lösning:** Håll `className` statisk för grundlayouten. Använd React Natives inbyggda `style`-prop med HEX-koder för dynamiska visuella ändringar (t.ex. bakgrundsfärg på en aktiv tag).
 - **Emergency Reset (Nödbroms):** Vi har identifierat att `AsyncStorage` kan hamna i osynk med Zustand-storen (token finns men user-objektet saknas). En nödutloggnings-knapp ("Tvinga utloggning") har implementerats på både **Dashboard** och **Inställningssidan** för att möjliggöra för användare att rensa korrupt state och logga in på nytt.
 - **Zustand Type Fix:** För att hantera fält som transformeras under redigering (t.ex. `instruments` som går från `string[]` till `string`) används explicit typ-casting i `useState`: `(user?.instruments || []) as string[] | string`.
+- **Synkroniserings-delay (Airtable Sync):** Eftersom Airtables Lookup-fält i bakgrunden kan ta upp till 1 sekund på sig att räkna om, har en `setTimeout` på 1000ms lagts till i alla lektionsmutations (complete, reschedule, cancel) innan `refetchStudents()` anropas. Detta säkerställer att UI:t visar korrekt data direkt efter en handling.
+- **Logik för Inställda Lektioner:** `lessonHelpers.ts` filtrerar nu bort lektioner där `isCancelled` är sant. Denna data hämtas från en dedikerad Lookup-kolumn `Lektioner Inställda` i Airtable för att garantera att "soft-deleted" lektioner inte syns i schemat.
 
 ## Frontend: Dark Mode & Native UI
 - **Native Theme Variant:** iOS-komponenter tvingas använda `themeVariant="light"` för att säkerställa läsbar text oavsett telefonens globala systeminställning.
@@ -113,6 +120,10 @@
 - **UX-optimering i formulär:** I åtgärdsformulär (t.ex. `CancelLessonSheet`) placeras det mest sannolika standardvalet (t.ex. "Vårdnadshavaren") till vänster och sätts som förvalt värde.
 - **Animerade komponenter:** `LayoutAnimation` används för smidiga expand/collapse-effekter.
 - **Native Layouts:** Använder `@react-native-picker/picker` och native datumväljare för att efterlikna systemets inbyggda känsla.
+
+## Airtable: Dataintegritet & Filtering
+- **Lookup Filtering:** För att förhindra att inställda lektioner "spökar" i appens UI har filter lagts på Lookup-fälten i tabellen **Elev**. Filter-villkoret är `Where Inställd is empty`. Detta gäller fälten `Bokade lektioner`, `Lektionstider`, `Lektioner` och `Lektioner Genomförda`.
+- **Säkerhet vid beroenden:** Genom att filtrera i Lookup-ledet säkerställer vi att även fält som `Sista bokade lektion` (på Vårdnadshavare) förblir korrekta och endast räknar med faktiska, aktiva lektionstillfällen.
 
 ## Push-notifikationer & Webhook Arkitektur
 - **Tre-parts system:** Kedja mellan Frontend (Token-hämtning), Backend (Lagring/Webhook) och Airtable (Automation).

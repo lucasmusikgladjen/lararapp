@@ -50,6 +50,7 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         upcomingLessonTimes: field.Lektionstider || [],
         upcomingLessonIds: field.Lektioner || [],
         upcomingLessonCompleted: field["Lektioner Genomförda"] || [],
+        upcomingLessonCancelled: field["Lektioner Inställda"] || [], 
 
         experience: field["Elevens erfarenhetsnivå"] || "",
         description: field["Kort om eleven (från anmälan)"] || "",
