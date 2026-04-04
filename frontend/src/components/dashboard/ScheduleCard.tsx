@@ -9,7 +9,7 @@ interface ScheduleCardProps {
     isLast: boolean;
     isKommande: boolean;
     isDelayed?: boolean;
-    onMarkCompleted?: (lessonId: string, studentId: string) => void;
+    onMarkCompleted?: (lessonId: string, studentId: string, currentNotes?: string, currentHomework?: string) => void;
     onReschedule?: (lessonId: string, studentId: string) => void;
     onCancel?: (lessonId: string, studentId: string) => void;
 }
@@ -25,7 +25,7 @@ export const ScheduleCard = ({
     onCancel,
 }: ScheduleCardProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const { student, date, time } = lesson;
+    const { student, date, time, notes, homework } = lesson;
 
     const lessonId = (lesson as any).id || `${student.id}-${date}`;
     const avatarUrl = `https://api.dicebear.com/7.x/avataaars/png?seed=${student.id}`;
@@ -42,7 +42,9 @@ export const ScheduleCard = ({
     const today = new Date();
     const isToday = dateObj.getFullYear() === today.getFullYear() && dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate();
 
-    const isExpandable = isKommande || isDelayed;
+    // Logik för att veta vilken typ av kort detta är
+    const isCompletedPast = !isKommande && !isDelayed;
+    const isExpandable = isKommande || isDelayed || isCompletedPast; 
     const isInteractive = isExpandable || !!onPress;
 
     const handleCardPress = () => {
@@ -66,12 +68,9 @@ export const ScheduleCard = ({
                 </View>
 
                 <View className="flex-1 justify-center gap-y-0.5">
-                    {/* RAD 1: Namn + Badge/Pil */}
                     <View className="flex-row justify-between items-center w-full">
-                        {/* Namnet flexar så långt det kan, men bryts snyggt om det krockar */}
                         <Text className="text-base font-bold text-slate-800">{student.name}</Text>
 
-                        {/* HÖGER SIDA LOGIK (Badges / Pilar) */}
                         {isDelayed ? (
                             <View className="bg-[#E35453] px-2.5 py-1 rounded-md shadow-sm shrink-0">
                                 <Text className="text-white font-extrabold text-[10px] tracking-wider uppercase">Försenad</Text>
@@ -80,19 +79,18 @@ export const ScheduleCard = ({
                             <View className="bg-[#FBBF24] px-2.5 py-1 rounded-md shadow-sm shrink-0">
                                 <Text className="text-slate-900 font-extrabold text-[10px] tracking-wider uppercase">Rapportera</Text>
                             </View>
+                        ) : isInteractive ? (
+                            <Ionicons name={isExpanded ? "chevron-down" : "chevron-forward"} size={20} color="#CBD5E1" className="shrink-0" />
                         ) : null}
                     </View>
 
-                    {/* RAD 2: Datum & Tid */}
                     <Text className="text-[13px] font-semibold text-slate-500 leading-tight">{formattedDateTime}</Text>
-
-                    {/* RAD 3: Instrument */}
                     <Text className="text-[13px] font-bold text-brand-orange leading-tight">{student.instrument}</Text>
                 </View>
             </TouchableOpacity>
 
-            {/* EXPANDERAD RAPPORT TOGGLE (MODERN DESIGN) */}
-            {isExpanded && isExpandable && (
+            {/* EXPANDERAD VY 1: För kommande/försenade (Actions) */}
+            {isExpanded && (isKommande || isDelayed) && (
                 <View className="flex-row gap-x-3 mt-5 pt-5 border-t border-slate-100">
                     <TouchableOpacity
                         className="flex-[1.3] bg-[#006e28] rounded-[24px] items-center justify-center py-5 shadow-sm"
@@ -126,6 +124,34 @@ export const ScheduleCard = ({
                             <Text className="text-slate-600 font-bold text-[12px] uppercase tracking-wider">inställd</Text>
                         </TouchableOpacity>
                     </View>
+                </View>
+            )}
+
+            {/* EXPANDERAD VY 2: För historiska lektioner (Visa Läxa/Anteckningar) */}
+            {isExpanded && isCompletedPast && (
+                <View className="mt-5 pt-5 border-t border-slate-100">
+                    <View className="mb-4">
+                        <Text className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Anteckningar</Text>
+                        <View className="bg-slate-50 border border-slate-100 p-4 rounded-2xl">
+                            <Text className="text-[15px] text-slate-700 leading-relaxed">{notes || "Inga anteckningar sparade."}</Text>
+                        </View>
+                    </View>
+
+                    <View className="mb-5">
+                        <Text className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Läxa</Text>
+                        <View className="bg-orange-50/50 border border-orange-100 p-4 rounded-2xl">
+                            <Text className="text-[15px] text-slate-800 leading-relaxed">{homework || "Ingen läxa utdelad."}</Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={() => onMarkCompleted && onMarkCompleted(lessonId, student.id, notes, homework)}
+                        className="flex-row items-center justify-center bg-white py-3.5 rounded-xl border border-slate-200 shadow-sm"
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="pencil" size={16} color="#64748B" />
+                        <Text className="text-slate-600 font-bold ml-2">Redigera info</Text>
+                    </TouchableOpacity>
                 </View>
             )}
         </View>

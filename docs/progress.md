@@ -210,6 +210,16 @@
     - [x] **Smart Start:** Automatisk GPS-hämtning och kartsökning vid app-start.
     - [x] **Ikonografi:** Implementerat instrument-specifika kartmarkörer med en hybrid av `MaterialCommunityIcons` och `FontAwesome5`.
 
+- [x] **Backend - Skottsäker Data-synkronisering (The Payload Trick):**
+    - [x] Implementerat `API_Payload` formelfält i Airtable (`Lektioner`) för att motverka "Array Collapse" (Airtables radering av tomma värden i lookup-listor).
+    - [x] Utökat `mapAirtableToStudent` i backend med en parser som mappar lektionsdata mot Record ID för 100% pålitlig synkronisering av historik.
+
+- [x] **Frontend - Lektionshistorik & Accordion UX:**
+    - [x] Implementerat expanderbar Accordion i `ScheduleCard` för historiska lektioner.
+    - [x] Visar sparade "Läxor" och "Lektionsanteckningar" direkt på kortet under fliken Senaste/Tidigare lektioner.
+    - [x] **Redigerings-läge:** Möjliggjort uppdatering av historisk data genom att återanvända `CompleteLessonSheet` med förifyllda värden (`initialNotes`/`initialHomework`).
+    - [x] Uppdaterat typer och `lessonHelpers.ts` för att stödja läxa/anteckningar genom hela flödet.
+
 ## Pågående 🚧
 - [ ] 
 

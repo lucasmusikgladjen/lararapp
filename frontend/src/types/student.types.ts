@@ -31,6 +31,8 @@ export type Student = {
     upcomingLessonIds?: string[];
     upcomingLessonCompleted: boolean[];
     upcomingLessonCancelled: boolean[];
+    upcomingLessonHomework: string[]; 
+    upcomingLessonNotes: string[];    
     notes: string | null;
     goals: string | null;
     guardian?: Guardian;

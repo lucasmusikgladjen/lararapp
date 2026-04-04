@@ -41,6 +41,9 @@ export default function StudentProfile() {
     const [savingNotes, setSavingNotes] = useState(false);
     const [savingGoals, setSavingGoals] = useState(false);
 
+    const [selectedNotes, setSelectedNotes] = useState("");
+    const [selectedHomework, setSelectedHomework] = useState("");
+
     const completeSheetRef = useRef<BottomSheetModal>(null);
     const rescheduleSheetRef = useRef<BottomSheetModal>(null);
     const cancelSheetRef = useRef<BottomSheetModal>(null);
@@ -130,6 +133,10 @@ export default function StudentProfile() {
             // Beräkna om lektionen är genomförd via lookup
             const isCompleted = student.upcomingLessonCompleted?.[index] ?? false;
 
+            // Plocka ut läxa och anteckningar
+            const homeworkString = student.upcomingLessonHomework?.[index] || "";
+            const notesString = student.upcomingLessonNotes?.[index] || "";
+
             // Beräkna daysLeft
             const todayStr = new Date().toISOString().split("T")[0];
             const diffTime = new Date(date).getTime() - new Date(todayStr).getTime();
@@ -142,6 +149,8 @@ export default function StudentProfile() {
                 daysLeft,
                 isCompleted,
                 student: student,
+                homework: homeworkString,
+                notes: notesString,
             });
         });
 
@@ -166,8 +175,10 @@ export default function StudentProfile() {
         updateMutation.mutate({ goals });
     };
 
-    const handleMarkCompleted = (lessonId: string) => {
+  const handleMarkCompleted = (lessonId: string, studentId: string, currentNotes: string = "", currentHomework: string = "") => {
         setSelectedLessonId(lessonId);
+        setSelectedNotes(currentNotes);
+        setSelectedHomework(currentHomework);
         setTimeout(() => completeSheetRef.current?.present(), 10);
     };
 
@@ -399,13 +410,17 @@ export default function StudentProfile() {
                     onClose={() => completeSheetRef.current?.dismiss()}
                     onConfirm={handleConfirmComplete}
                     isPending={completeMutation.isPending}
+                    initialNotes={selectedNotes}
+                    initialHomework={selectedHomework}
                 />
+
                 <RescheduleLessonSheet
                     ref={rescheduleSheetRef}
                     onClose={() => rescheduleSheetRef.current?.dismiss()}
                     onConfirm={handleConfirmReschedule}
                     isPending={rescheduleMutation.isPending}
                 />
+
                 <CancelLessonSheet
                     ref={cancelSheetRef}
                     onClose={() => cancelSheetRef.current?.dismiss()}

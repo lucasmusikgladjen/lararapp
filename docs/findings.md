@@ -47,6 +47,11 @@
 - **Enskilda Lektionsåtgärder:** Specifika endpoints (`PATCH /:id/complete`, `PATCH /:id/reschedule`, `PATCH /:id/cancel`) används för att ge tydligare intent.
 - **Historikbevarande (Ansökningar):** Vid inskick av ny elevansökan via `requestToTeachStudent` bevaras historik i Airtable-kolumnen `Egen anteckning` genom att den nya texten läggs till sist med en tydlig header: `--- Elevansökan: [Namn] ([Datum]) ---`.
 
+## Backend: Airtable Array Collapse & "The Payload Trick"
+- **Problemet:** Airtable raderar tomma värden i Lookup-arrayer (t.ex. om en lektion saknar läxa). Detta förstör index-baserad mappning av länkade records, vilket resulterar i att fel data visas på fel plats i frontend.
+- **Lösningen ("The Payload Trick"):** Istället för separata Lookups skapades ett formelfält i Airtable (`API_Payload`) som slår ihop lektionens ID, status och text till en säker sträng separerad med `|||`.
+- **Fördel:** Frontend och Backend kan nu packa upp datan säkert via ett Map-objekt (kopplat till Record ID). Detta löser både synk-problemet och förhindrar dyra N+1 anrop, eftersom all lektionsdata följer med direkt i `/students`-anropet.
+
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54.

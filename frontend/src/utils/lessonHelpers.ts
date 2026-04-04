@@ -7,6 +7,8 @@ export type LessonEvent = {
     student: Student;
     daysLeft: number;
     isCompleted: boolean;
+    homework: string;
+    notes: string;
 };
 
 export const findNextLesson = (students: Student[]): LessonEvent | null => {
@@ -22,6 +24,9 @@ export const findNextLesson = (students: Student[]): LessonEvent | null => {
         // Vi använder 'index' för att hitta matchande tid och ID
         student.upcomingLessons.forEach((dateString, index) => {
             const isCancelled = student.upcomingLessonCancelled?.[index] || false;
+            const homeworkString = student.upcomingLessonHomework?.[index] || "";
+            const notesString = student.upcomingLessonNotes?.[index] || "";
+
             if (isCancelled) return;
 
             if (dateString >= todayString) {
@@ -43,6 +48,8 @@ export const findNextLesson = (students: Student[]): LessonEvent | null => {
                     student: student,
                     daysLeft: diffDays,
                     isCompleted: false,
+                    homework: homeworkString,
+                    notes: notesString,
                 });
             }
         });
@@ -69,6 +76,9 @@ export const getAllLessonEvents = (students: Student[]): LessonEvent[] => {
 
         student.upcomingLessons.forEach((dateString, index) => {
             const isCancelled = student.upcomingLessonCancelled?.[index] || false;
+            const homeworkString = student.upcomingLessonHomework?.[index] || "";
+            const notesString = student.upcomingLessonNotes?.[index] || "";
+
             if (isCancelled) return;
             const timeString = student.upcomingLessonTimes?.[index] || "Tid saknas";
 
@@ -89,6 +99,8 @@ export const getAllLessonEvents = (students: Student[]): LessonEvent[] => {
                 student,
                 daysLeft: diffDays,
                 isCompleted: isCompleted,
+                homework: homeworkString,
+                notes: notesString,
             });
         });
     });

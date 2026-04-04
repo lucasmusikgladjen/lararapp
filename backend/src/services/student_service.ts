@@ -32,6 +32,26 @@ const deg2rad = (deg: number) => {
 
 const mapAirtableToStudent = (record: AirtableRecord): Student => {
     const field = record.fields;
+
+    // Parsing av lektionsdata
+    const rawPayloads = field["Lektioner Payload"] || [];
+    const payloadMap = new Map<string, any>();
+
+    // Packa upp varje lektionssträng och mappa den till lektionens unika ID
+    rawPayloads.forEach((p) => {
+        const parts = p.split("|||");
+        if (parts.length >= 5) {
+            payloadMap.set(parts[0], {
+                completed: parts[1] === "true",
+                cancelled: parts[2] === "true",
+                homework: parts[3] === "BLANK" ? "" : parts[3],
+                notes: parts[4] === "BLANK" ? "" : parts[4],
+            });
+        }
+    });
+
+    const upcomingLessonIds = field.Lektioner || [];
+
     return {
         id: record.id,
         displayId: field.ID || "",
@@ -48,9 +68,13 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
 
         upcomingLessons: field["Bokade lektioner"] || [],
         upcomingLessonTimes: field.Lektionstider || [],
-        upcomingLessonIds: field.Lektioner || [],
-        upcomingLessonCompleted: field["Lektioner Genomförda"] || [],
-        upcomingLessonCancelled: field["Lektioner Inställda"] || [], 
+
+        // Vi mappar genom ID-listan och plockar exakt rätt data!
+        upcomingLessonIds: upcomingLessonIds,
+        upcomingLessonCompleted: upcomingLessonIds.map((id) => payloadMap.get(id)?.completed || false),
+        upcomingLessonCancelled: upcomingLessonIds.map((id) => payloadMap.get(id)?.cancelled || false),
+        upcomingLessonHomework: upcomingLessonIds.map((id) => payloadMap.get(id)?.homework || ""),
+        upcomingLessonNotes: upcomingLessonIds.map((id) => payloadMap.get(id)?.notes || ""),
 
         experience: field["Elevens erfarenhetsnivå"] || "",
         description: field["Kort om eleven (från anmälan)"] || "",
@@ -183,14 +207,14 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     // 2. Append the new teacher ID to the list
     const updatedRequests = [...currentRequests, data.teacherId];
 
-  // 3. Append the comment to 'Egen anteckning'
+    // 3. Append the comment to 'Egen anteckning'
     // Vi läser av vad som redan står i 'Egen anteckning' för att inte radera tidigare historik
     let updatedComment = currentFields["Egen anteckning"] || "";
     if (data.message) {
         const dateStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
         // Om det redan finns text, lägger vi till en dubbel radbrytning innan vi lägger till det nya
         const separator = updatedComment ? "\n\n" : "";
-        
+
         // Snyggare och tydligare rubrik i Airtable!
         updatedComment += `${separator}--- Elevansökan: ${data.teacherName} (${dateStr}) ---\n${data.message}`;
     }

@@ -29,6 +29,9 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState<ToggleOption>("kommande");
     const [refreshing, setRefreshing] = useState(false);
 
+    const [selectedNotes, setSelectedNotes] = useState("");
+    const [selectedHomework, setSelectedHomework] = useState("");
+
     // --------------- MODAL STATE ---------------
     const completeSheetRef = useRef<BottomSheetModal>(null);
     const rescheduleSheetRef = useRef<BottomSheetModal>(null);
@@ -76,9 +79,11 @@ export default function Dashboard() {
     });
 
     // --------------- HANDLERS FÖR ATT ÖPPNA MODALER ---------------
-    const handleMarkCompleted = (lessonId: string, studentId: string) => {
+    const handleMarkCompleted = (lessonId: string, studentId: string, currentNotes: string = "", currentHomework: string = "") => {
         setSelectedLessonId(lessonId);
-        setSelectedStudentId(studentId);
+        setSelectedStudentId(studentId); // Notera: studentId behövs bara i index.tsx
+        setSelectedNotes(currentNotes);
+        setSelectedHomework(currentHomework);
         setTimeout(() => completeSheetRef.current?.present(), 10);
     };
 
@@ -251,13 +256,17 @@ export default function Dashboard() {
                     onClose={() => completeSheetRef.current?.dismiss()}
                     onConfirm={handleConfirmComplete}
                     isPending={completeMutation.isPending}
+                    initialNotes={selectedNotes}
+                    initialHomework={selectedHomework}
                 />
+
                 <RescheduleLessonSheet
                     ref={rescheduleSheetRef}
                     onClose={() => rescheduleSheetRef.current?.dismiss()}
                     onConfirm={handleConfirmReschedule}
                     isPending={rescheduleMutation.isPending}
                 />
+
                 <CancelLessonSheet
                     ref={cancelSheetRef}
                     onClose={() => cancelSheetRef.current?.dismiss()}

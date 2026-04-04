@@ -114,6 +114,11 @@
 | Standard Upplägg | Single select: `45-60 min`, `90 min`, `120 min` |
 | Lektionsdag | Single select: `Måndag`, `Tisdag`, `Onsdag`, `Torsdag`, `Fredag`, `Lördag`, `Söndag` |
 | Lektionstid_HHMM | Single line text |
+| Lektioner Genomförda | Lookup to **Lektioner** |
+| Förslag | Link to **Lärare** |
+| Lektioner Inställda | Lookup to **Lektioner** |
+| Lektioner Läxa | Lookup to **Lektioner** |
+| Lektioner Anteckning | Lookup to **Lektioner** |
 
 ---
 
@@ -325,6 +330,7 @@
 | Löner | Link to **Löner** |
 | Lärare (backup) | Single line text |
 | Vårdnadshavare (backup) | Single line text |
+| API_Payload (backup) | Formula: `RECORD_ID() & "|||" & IF({Genomförd}, "true", "false") & "|||" & IF({Inställd}, "true", "false") & "|||" & IF({Läxa}, {Läxa}, "BLANK") & "|||" & IF({Lektionsanteckning}, {Lektionsanteckning}, "BLANK")` |
 
 ---
 
