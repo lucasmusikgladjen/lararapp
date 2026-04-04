@@ -70,6 +70,7 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         // termEnd: field.Terminsslut,
         termEnd: Array.isArray(field.Terminsslut) ? field.Terminsslut[0] : field.Terminsslut || undefined,
         pushToken: field.PushToken,
+        resetCode: field["Återställningskod"],
     };
 };
 
@@ -129,6 +130,9 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.instruments) {
         fields.Instrument = data.instruments.join(", ");
     }
+
+    if (data.password !== undefined) fields.Lösenord = data.password;
+    if (data.resetCode !== undefined) fields["Återställningskod"] = data.resetCode;
 
     const response = await patch<AirtableTeacherRecord>(`/${TABLE_NAME}/${id}`, fields);
     return mapAirtableToTeacher(response);

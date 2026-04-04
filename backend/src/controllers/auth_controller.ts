@@ -2,7 +2,7 @@ import Debug from "debug";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-import { createTeacher, getTeacherByEmail } from "../services/teacher_service";
+import { createTeacher, getTeacherByEmail, updateTeacher } from "../services/teacher_service";
 import { JwtAccessTokenPayload } from "../types/JWT.types";
 import { StringValue } from "ms";
 import { TypedRequestBody } from "../types/Request.types";
@@ -166,5 +166,50 @@ export const register = async (req: Request, res: Response) => {
             status: "error",
             message: "An error occurred during registration",
         });
+    }
+};
+
+/**
+ * POST /reset-password
+ * Verify reset code and update password
+ */
+export const resetPassword = async (req: Request, res: Response) => {
+    const { email, resetCode, newPassword } = req.body;
+
+    if (!email || !resetCode || !newPassword) {
+        return res.status(400).send({ status: "fail", message: "Alla fält krävs." });
+    }
+
+    try {
+        const teacher = await getTeacherByEmail(email);
+
+        if (!teacher) {
+            return res.status(404).send({ status: "fail", message: "Kunde inte hitta en användare med den e-postadressen." });
+        }
+
+        // Kolla om Airtable har en återställningskod, och om den matchar vad användaren skrev
+        if (!teacher.resetCode || teacher.resetCode !== resetCode) {
+            return res.status(401).send({ status: "fail", message: "Ogiltig återställningskod." });
+        }
+
+        // Koden stämde! Dags att hasha det nya lösenordet.
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Uppdatera i Airtable och rensa återställningskoden
+        await updateTeacher(teacher.id, {
+            password: hashedPassword,
+            resetCode: "",
+        });
+
+        debug("Password reset successfully for user: %s", email);
+
+        res.send({
+            status: "success",
+            message: "Lösenordet har uppdaterats.",
+        });
+    } catch (error) {
+        debug("Reset password error: %O", error);
+        res.status(500).send({ status: "error", message: "Ett fel inträffade vid återställningen." });
     }
 };

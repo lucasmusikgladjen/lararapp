@@ -61,3 +61,11 @@ export const useRegister = () => {
         },
     });
 };
+
+export const useResetPassword = () => {
+    return useMutation({
+        mutationFn: async (data: { email: string; resetCode: string; newPassword: string }) => {
+            return await authService.resetPassword(data);
+        },
+    });
+};

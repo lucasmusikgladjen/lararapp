@@ -31,8 +31,15 @@
 - **Dokument-säkerhet:** `Avtal`, `Jämkning` och `Belastningsregister` mappas till frontend. Tidigare filtrerades belastningsregistret bort, men det har nu låsts upp för att lärare ska kunna verifiera sin status.
 - **Dokumentradering (Clear Logic):** Implementerat `clearDocument` i `UpdateTeacherData`. Genom att skicka en tom array `[]` till Airtables attachment-fält kan vi nu radera dokument (Avtal, Jämkning etc.) direkt från appen med en Confirm-pattern.
 - **Lösenords-hantering:** Vi måste explicit inkludera `password` i `mapAirtableToTeacher` för att `auth_controller` ska kunna verifiera inloggningen. Däremot tar `profile_controller` bort lösenordet från svaret innan det skickas till klienten.
-- **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress som ägs av en *annan* användare.
+- **Smart Email-validering:** Vid uppdatering (`PATCH`) tillåter validatorn att man behåller sin *egen* e-postadress, men blockerar om man försöker byta till en adress och ägs av en *annan* användare.
 - **Airtable fälttyper (Datum/Länkar):** Vissa fält (t.ex. `Terminsslut` eller `Önskar`) kan returneras som arrayer från Airtable. Tjänsten hanterar nu detta genom att mappa länkade Record IDs (från fältet `Önskar`) till `pendingStudentIds` för att möjliggöra statistik i frontend.
+
+## Backend: Autentisering & Lösenordsåterställning
+- **Ny Endpoint:** `POST /reset-password` implementerad i `auth_controller.ts`.
+- **Säkerhetslogik:** - Verifierar användarens e-post mot en manuellt satt `Återställningskod` i Airtable.
+    - Vid matchning hashas det nya lösenordet med `bcrypt`.
+    - `Återställningskod` töms automatiskt efter lyckad återställning för att förhindra återanvändning.
+- **Fältmappning:** `Återställningskod` (Airtable) <-> `resetCode` (Backend/Frontend).
 
 ## Backend: Notifikationssystem Arkitektur
 - **Modulär design:** Notifikationssystemet bygger på en tvådelad arkitektur. `NotificationTemplates` definierar standardvärden medan `Notifications` representerar individuella utskick som kan ärva eller överstyra mallens data.
@@ -74,6 +81,11 @@
 - **Standardiserade Lektionskort:** `ScheduleCard` har implementerats som den gemensamma standarden. Den använder en modern asymmetrisk layout där den primära åtgärden (Genomförd) tar störst plats.
 - **Dokumentgruppering:** Dokument visas i logiska grupper (Avtal, Jämkning, Belastningsregister) med tillhörande uppladdnings-placeholders (dashed borders) om filen saknas.
 
+## Frontend: UX-principer & "Lösenordsåterställning"
+- **Apple-Style FormSheet:** Modalen för återställning använder `presentationStyle="formSheet"` (iOS) för en naturlig känsla.
+- **Sticky Bottom Action:** Använder `flex-1` mellan sista input-fältet och knappen för att trycka ner bekräftelseknappen till botten av modalen. Detta skapar en tydlig visuell ram och förbättrar åtkomligheten.
+- **Header Design:** Implementerat en rubrik med ett tydligt cirkulärt stäng-kryss (Ionicons `close`), vilket eliminerar behovet av textbaserade "Avbryt"-knappar.
+
 ## Frontend: UX-principer & "iPhone-First" Form-logic
 - **Eliminering av Placeholders:** I moderna mobila flöden skippar vi "-- Välj --" eller tomma states. 
     - **Auto-select:** `SelectField` förväljer automatiskt första tillgängliga alternativ så fort data laddats via en `useEffect`.
@@ -95,7 +107,8 @@
 - **Logik för Inställda Lektioner:** `lessonHelpers.ts` filtrerar nu bort lektioner där `isCancelled` är sant. Denna data hämtas från en dedikerad Lookup-kolumn `Lektioner Inställda` i Airtable för att garantera att "soft-deleted" lektioner inte syns i schemat.
 
 ## Frontend: Dark Mode & Native UI
-- **Native Theme Variant:** iOS-komponenter tvingas använda `themeVariant="light"` för att säkerställa läsbar text oavsett telefonens globala systeminställning.
+- **Native Theme Variant:** iOS-komponenter (såsom `DateTimePicker`) tvingas använda `themeVariant="light"` och explicit `textColor="#0f172a"`. Detta förhindrar vit-text-på-vit-bakgrund problematik när telefonen är i systemomfattande Dark Mode.
+- **Global Bakgrund:** `RootLayout` (`_layout.tsx`) har tvingats till `backgroundColor: "#ffffff"` i den yttersta containern (`GestureHandlerRootView`). Detta åtgärdar felet där användare såg en svart skärm med orange laddningshjul vid uppstart om Dark Mode var aktiverat.
 - **App-nivå:** Appen är låst till `light` tema i `app.json`.
 
 ## Frontend: Moderniserad Kartsökning (Google Maps Style)

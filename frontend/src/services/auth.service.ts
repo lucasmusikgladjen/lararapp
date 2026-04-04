@@ -52,4 +52,10 @@ export const authService = {
         );
         return response.data;
     },
+
+    // Reset Password
+    resetPassword: async (data: any): Promise<{ status: string; message: string }> => {
+        const response = await axios.post(`${API_URL}/reset-password`, data);
+        return response.data;
+    },
 };

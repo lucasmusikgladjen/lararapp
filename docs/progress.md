@@ -220,6 +220,14 @@
     - [x] **Redigerings-läge:** Möjliggjort uppdatering av historisk data genom att återanvända `CompleteLessonSheet` med förifyllda värden (`initialNotes`/`initialHomework`).
     - [x] Uppdaterat typer och `lessonHelpers.ts` för att stödja läxa/anteckningar genom hela flödet.
 
+- [x] **Lösenordsåterställning (Reset Password):**
+    - [x] Backend: Implementerat `POST /reset-password` med verifiering mot återställningskod i Airtable.
+    - [x] Frontend: Byggt en Apple-style `Modal` för återställningsflödet med förankrad knapp (Sticky Bottom Action) och rensning av fält vid stängning.
+
+- [x] **Dark Mode Global Fix:**
+    - [x] Tvingat vit bakgrund på Root Layout (`_layout.tsx`) för att åtgärda svart skärm vid uppstart.
+    - [x] Tvingat `themeVariant="light"` och `textColor` på alla `DateTimePicker`-komponenter för full läsbarhet i Dark Mode.
+
 ## Pågående 🚧
 - [ ] 
 

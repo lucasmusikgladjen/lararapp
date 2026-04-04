@@ -1,7 +1,7 @@
 import express from "express";
 import studentRoutes from "./studentRoutes";
 import profileRoutes from "./profileRoutes";
-import { login, register } from "../controllers/auth_controller";
+import { login, register, resetPassword } from "../controllers/auth_controller";
 import { validateAccessToken } from "../middlewares/auth/jwt";
 import { createTeacherRules } from "../validations/teacher_validation";
 import notificationRoutes from "./notificationRoutes";
@@ -32,6 +32,13 @@ router.post("/login", login);
  * Register a new teacher.
  */
 router.post("/register", createTeacherRules, register);
+
+/**
+ * POST /reset-password
+ * Reset the authenticated teachers password.
+ */
+
+router.post("/reset-password", resetPassword);
 
 
 // ---------- PROFILE ROUTES ----------

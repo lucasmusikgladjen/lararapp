@@ -22,4 +22,5 @@ router.patch("/", updateProfileRules, updateProfile);
  */
 router.post("/push-token", updatePushToken);
 
+
 export default router;

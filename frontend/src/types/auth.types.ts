@@ -20,7 +20,7 @@ export type User = {
 
     // Personal & Contact
     birthYear?: string;
-    personalNumber?: string; 
+    personalNumber?: string;
     phone?: string;
 
     // Professional
@@ -54,6 +54,12 @@ export type RegisterResponse = {
         access_token: string;
         user: User;
     };
+};
+
+export type ResetPasswordPayload = {
+    email: string;
+    resetCode: string;
+    newPassword: string;
 };
 
 export type CreateTeacherData = {

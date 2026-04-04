@@ -47,6 +47,7 @@ export type AirtableTeacherRecord = {
         Belastningsregister?: AirtableAttachment[];
         Terminsslut?: string;
         PushToken?: string;
+        "Återställningskod"?: string;
     };
 };
 
@@ -81,6 +82,7 @@ export type Teacher = {
     documents: TeacherDocument[];
     termEnd?: string;
     pushToken?: string;
+   resetCode?: string;
 };
 
 export type CreateTeacherData = {
@@ -109,4 +111,6 @@ export type UpdateTeacherData = {
     desiredStudentCount?: number;
     pushToken?: string;
     clearDocument?: "contract" | "tax-adjustment" | "criminal-record";
+    password?: string;  
+    resetCode?: string; 
 };
