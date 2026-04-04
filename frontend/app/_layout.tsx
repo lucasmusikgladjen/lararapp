@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
+
 import { authService } from "../src/services/auth.service";
 import { useAuthStore } from "../src/store/authStore";
 
@@ -144,7 +145,7 @@ export default function RootLayout() {
     }, [authToken, isLoading]);
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#ffffff" }}>
             <QueryClientProvider client={queryClient}>
                 <BottomSheetModalProvider>
                     <Slot />

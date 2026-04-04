@@ -84,11 +84,13 @@ export const DatePickerField = ({ label, placeholder, value, onSelect }: DatePic
 
                                     <View className="py-4 px-4 justify-center items-center">
                                         <DateTimePicker
-                                            value={tempDate} // Använder tempDate
+                                            value={tempDate}
                                             mode="date"
                                             display="inline"
                                             onChange={onChange}
                                             locale="sv-SE"
+                                            themeVariant="light"
+                                            textColor="#0f172a"
                                         />
                                     </View>
                                 </View>
