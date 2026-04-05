@@ -32,20 +32,20 @@ export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
         if (!user || !token) return;
 
         try {
-            // 1. Öppna telefonens filväljare
+            // Öppna telefonens filväljare
             const result = await DocumentPicker.getDocumentAsync({
                 type: "*/*", // Tillåt pdf, word, bilder etc
                 copyToCacheDirectory: true,
             });
 
             if (!result.canceled && result.assets && result.assets.length > 0) {
-                setUploadingCategory(docType);
+                setUploadingCategory(docType); // Starta laddsnurran
                 const fileUri = result.assets[0].uri;
 
-                // 2. Ladda upp till Firebase
+                // Ladda upp till Firebase
                 const publicUrl = await uploadService.uploadFile(fileUri, "documents", user.id);
 
-                // 3. Mappa dokumentsorten till rätt nyckel i din DTO
+                // Mappa dokumentsorten till rätt nyckel
                 const payloadKeyMap: Record<string, keyof UpdateProfilePayload> = {
                     contract: "contractUrl",
                     "tax-adjustment": "taxAdjustmentUrl",
@@ -55,17 +55,25 @@ export const DocumentsSection = ({ user }: DocumentsSectionProps) => {
                 const payloadKey = payloadKeyMap[docType];
                 if (!payloadKey) throw new Error("Ogiltig dokumenttyp");
 
-                // 4. Uppdatera Airtable
-                const updatedUser = await authService.updateProfile(token, { [payloadKey]: publicUrl });
+                // Uppdatera Airtable (Airtable börjar nu ladda ner filen i bakgrunden)
+                await authService.updateProfile(token, { [payloadKey]: publicUrl });
 
-                // 5. Uppdatera Zustand UI
-                updateUser(updatedUser);
+                // THE FIX: Vänta 1.5 sekunder och hämta en fräsch profil så Airtable hinner generera filnamnet
+                setTimeout(async () => {
+                    try {
+                        const freshUser = await authService.getProfile(token);
+                        updateUser(freshUser);
+                    } catch (e) {
+                        console.error("Kunde inte synka profilen", e);
+                    } finally {
+                        setUploadingCategory(null); // Stäng av laddsnurran först när vi har nya datan
+                    }
+                }, 1500);
             }
         } catch (error) {
             console.error("Fel vid dokumentuppladdning:", error);
             Alert.alert("Fel", "Kunde inte ladda upp dokumentet. Filen kan vara för stor eller ha ett ogiltigt format.");
-        } finally {
-            setUploadingCategory(null);
+            setUploadingCategory(null); // Stäng av om något går snett
         }
     };
 

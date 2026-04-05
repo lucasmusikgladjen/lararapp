@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
     const [activeView, setActiveView] = useState<ActiveView>("person");
     const [isSaving, setIsSaving] = useState(false);
-    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false); 
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
     const [formData, setFormData] = useState({
         name: user?.name || "",
@@ -98,14 +98,14 @@ export default function SettingsPage() {
         ]);
     };
 
-    // 👇 NY FUNKTION: Hantera Profilbildsuppladdning
+    // Hantera Profilbildsuppladdning
     const handleAvatarUpload = async () => {
         if (!user || !token) return;
 
         try {
             // Öppna telefonens bildgalleri
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Bara bilder
+                mediaTypes: ["images"], // Bara bilder
                 allowsEditing: true, // Låt användaren beskära bilden till en fyrkant
                 aspect: [1, 1],
                 quality: 0.5, // Komprimera lite för att spara utrymme och gå snabbare

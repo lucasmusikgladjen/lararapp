@@ -1,5 +1,5 @@
 /**
- * GOOGLE FIRESTORE
+ * GOOGLE FIREBASE STORAGE
  *
  * Vi behöver en hjälpfunktion i frontend som tar en bild från telefonen, gör om den till ett format
  * som Firebase förstår (en "Blob"), laddar upp den, och ger oss den offentliga länken tillbaka.

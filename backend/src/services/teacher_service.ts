@@ -108,6 +108,10 @@ export const createTeacher = async (data: CreateTeacherData): Promise<Teacher> =
 export const updateTeacher = async (id: string, data: UpdateTeacherData): Promise<Teacher> => {
     const fields: Record<string, any> = {};
 
+    // 1. Hämta befintlig lärare för att kunna bygga ett snyggt filnamn
+    const existingTeacher = await getTeacherById(id);
+    const safeName = existingTeacher?.name ? existingTeacher.name.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_åäöÅÄÖ]/g, "") : id; // Fallback till ID om namnet saknas
+
     // Explicit mapping for allowed update fields
     if (data.name !== undefined) fields.Namn = data.name;
     if (data.email !== undefined) fields["E-post"] = data.email;
@@ -134,18 +138,18 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.password !== undefined) fields.Lösenord = data.password;
     if (data.resetCode !== undefined) fields["Återställningskod"] = data.resetCode;
 
-    // Google Firestore: Hantera uppladdning av nya filer till Airtable
+    // Firebase Storage: Hantera uppladdning av nya filer till Airtable med dynamiska namn
     if (data.profileImageUrl) {
-        fields.Profilbild = [{ url: data.profileImageUrl }];
+        fields.Profilbild = [{ url: data.profileImageUrl, filename: `Profilbild_${safeName}.jpg` }];
     }
     if (data.contractUrl) {
-        fields.Avtal = [{ url: data.contractUrl }];
+        fields.Avtal = [{ url: data.contractUrl, filename: `Avtal_${safeName}.pdf` }];
     }
     if (data.taxAdjustmentUrl) {
-        fields.Jämkning = [{ url: data.taxAdjustmentUrl }];
+        fields.Jämkning = [{ url: data.taxAdjustmentUrl, filename: `Jamkning_${safeName}.pdf` }];
     }
     if (data.criminalRecordUrl) {
-        fields.Belastningsregister = [{ url: data.criminalRecordUrl }];
+        fields.Belastningsregister = [{ url: data.criminalRecordUrl, filename: `Belastningsregister_${safeName}.pdf` }];
     }
 
     const response = await patch<AirtableTeacherRecord>(`/${TABLE_NAME}/${id}`, fields);
