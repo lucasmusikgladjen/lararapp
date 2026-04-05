@@ -17,21 +17,19 @@ export const uploadService = {
      */
     uploadFile: async (uri: string, folder: string, userId: string): Promise<string> => {
         try {
-            // 1. Gör om filen till en "Blob" (Binär data) som Firebase kan ta emot
             const response = await fetch(uri);
             const blob = await response.blob();
 
-            // 2. Skapa ett unikt filnamn (t.ex. avatars/rec123_1678900000.jpg)
             const fileExtension = uri.split(".").pop() || "jpg";
-            const fileName = `${folder}/${userId}_${Date.now()}.${fileExtension}`;
 
-            // 3. Skapa en referens till platsen i Firebase
+            // 👇 BEST PRACTICE: Vi skapar en undermapp för varje användare!
+            // Exempel: "documents/rec123456789/17123456789.pdf"
+            const fileName = `${folder}/${userId}/${Date.now()}.${fileExtension}`;
+
             const storageRef = ref(storage, fileName);
 
-            // 4. Ladda upp filen
             await uploadBytes(storageRef, blob);
 
-            // 5. Hämta och returnera den publika URL:en
             const downloadUrl = await getDownloadURL(storageRef);
             return downloadUrl;
         } catch (error) {
