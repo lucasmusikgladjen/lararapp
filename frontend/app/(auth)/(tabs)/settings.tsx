@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
 import { PageHeader } from "../../../src/components/ui/PageHeader";
 import { authService } from "../../../src/services/auth.service";
+import { uploadService } from "../../../src/services/upload.service";
 import { useAuthStore } from "../../../src/store/authStore";
 import { UpdateProfilePayload } from "../../../src/types/auth.types";
 
@@ -31,13 +33,13 @@ export default function SettingsPage() {
 
     const [activeView, setActiveView] = useState<ActiveView>("person");
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false); 
 
-    // LADE TILL personalNumber HÄR
     const [formData, setFormData] = useState({
         name: user?.name || "",
         email: user?.email || "",
         phone: user?.phone || "",
-        personalNumber: user?.personalNumber || "", 
+        personalNumber: user?.personalNumber || "",
         address: user?.address || "",
         zip: user?.zip || "",
         city: user?.city || "",
@@ -64,7 +66,6 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (user) {
-            // LADE TILL personalNumber HÄR OCKSÅ
             setFormData((prev) => ({
                 ...prev,
                 name: user.name || "",
@@ -97,6 +98,40 @@ export default function SettingsPage() {
         ]);
     };
 
+    // 👇 NY FUNKTION: Hantera Profilbildsuppladdning
+    const handleAvatarUpload = async () => {
+        if (!user || !token) return;
+
+        try {
+            // Öppna telefonens bildgalleri
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Bara bilder
+                allowsEditing: true, // Låt användaren beskära bilden till en fyrkant
+                aspect: [1, 1],
+                quality: 0.5, // Komprimera lite för att spara utrymme och gå snabbare
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setIsUploadingAvatar(true);
+                const imageUri = result.assets[0].uri;
+
+                // Ladda upp till Firebase
+                const publicUrl = await uploadService.uploadFile(imageUri, "avatars", user.id);
+
+                // Uppdatera Airtable
+                const updatedUser = await authService.updateProfile(token, { profileImageUrl: publicUrl });
+
+                // Uppdatera Zustand
+                updateUser(updatedUser);
+            }
+        } catch (error) {
+            console.error("Fel vid bilduppladdning:", error);
+            Alert.alert("Fel", "Kunde inte ladda upp bilden. Försök igen.");
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
     const handleSave = async (section: "personal" | "students" | "bio" | "salary") => {
         if (!token) return;
         setIsSaving(true);
@@ -107,7 +142,7 @@ export default function SettingsPage() {
                 payload.name = formData.name;
                 payload.email = formData.email;
                 payload.phone = formData.phone;
-                payload.personalNumber = formData.personalNumber; // LADE TILL personalNumber I PAYLOAD
+                payload.personalNumber = formData.personalNumber;
                 payload.address = formData.address;
                 payload.zip = formData.zip;
                 payload.city = formData.city;
@@ -139,12 +174,10 @@ export default function SettingsPage() {
         }
     };
 
-    // ⚠️ NÖDBROMS: Om user-objektet saknas, rendera nödknappen istället för att krascha/ladda oändligt!
     if (!user) {
         return (
             <View className="flex-1 items-center justify-center bg-brand-bg px-5">
                 <Text className="text-gray-500 mb-6">Laddar inställningar...</Text>
-
                 <TouchableOpacity
                     onPress={async () => {
                         await logout();
@@ -172,9 +205,21 @@ export default function SettingsPage() {
                     <View className="mx-5 bg-white rounded-3xl p-5 shadow-sm mb-6 border border-slate-100 mt-2">
                         {/* Profil Info (Bild, Namn och Bio) */}
                         <View className="flex-row items-start mb-5">
-                            <View className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 border border-slate-200 mr-4">
-                                <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
-                            </View>
+                            {/* 👇 ÄNDRAD: Profilbilden är nu en knapp */}
+                            <TouchableOpacity onPress={handleAvatarUpload} disabled={isUploadingAvatar} className="relative mr-4">
+                                <View className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 border border-slate-200 items-center justify-center">
+                                    {isUploadingAvatar ? (
+                                        <ActivityIndicator size="small" color="#F59E0B" />
+                                    ) : (
+                                        <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
+                                    )}
+                                </View>
+                                {/* Liten kamera-ikon som visar att man kan klicka */}
+                                <View className="absolute bottom-0 right-0 w-6 h-6 bg-[#F59E0B] rounded-full items-center justify-center border-2 border-white">
+                                    <Ionicons name="camera" size={12} color="white" />
+                                </View>
+                            </TouchableOpacity>
+
                             <View className="flex-1 pt-1">
                                 <Text className="text-xl font-bold text-slate-900">{user.name}</Text>
                                 <Text className="text-[13px] text-slate-600 leading-tight" numberOfLines={3}>
@@ -215,7 +260,6 @@ export default function SettingsPage() {
 
                     {/* =============== DYNAMIC CONTENT AREA =============== */}
                     <View className="px-5">
-                        {/* Personuppgifter */}
                         <View style={{ display: activeView === "person" ? "flex" : "none" }}>
                             <PersonalSection
                                 user={user}
@@ -226,7 +270,6 @@ export default function SettingsPage() {
                             />
                         </View>
 
-                        {/* Lön */}
                         <View style={{ display: activeView === "lon" ? "flex" : "none" }}>
                             <SalarySection
                                 user={user}
@@ -237,22 +280,18 @@ export default function SettingsPage() {
                             />
                         </View>
 
-                        {/* Elever */}
                         <View style={{ display: activeView === "elever" ? "flex" : "none" }}>
                             <StudentsSection user={user} formData={formData} setFormData={setFormData} handleSave={() => handleSave("students")} />
                         </View>
 
-                        {/* Biografi */}
                         <View style={{ display: activeView === "bio" ? "flex" : "none" }}>
                             <BiografiSection formData={formData} setFormData={setFormData} handleSave={() => handleSave("bio")} isSaving={isSaving} />
                         </View>
 
-                        {/* Dokument */}
                         <View style={{ display: activeView === "docs" ? "flex" : "none" }}>
                             <DocumentsSection user={user} />
                         </View>
 
-                        {/* Logga Ut Knapp (Alltid synlig längst ner) */}
                         <View className="mt-10 mb-6">
                             <TouchableOpacity
                                 onPress={handleLogout}

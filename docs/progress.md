@@ -1,6 +1,7 @@
 # Progress Tracker
 
 ## Genomfört ✅
+
 - [x] Backend-filtrering (Lärare ser egna elever).
 - [x] Airtable Lookup för lektionstider.
 - [x] Pixel Perfect Dashboard UI med `style_guide.md`.
@@ -41,13 +42,11 @@
     - Hero Card med CTA "Hitta elever" som navigerar till find-students-tabben
     - Tomt schema-placeholder med streckad border
     - Villkorsstyrd rendering i `app/(auth)/index.tsx` baserat på `students.length`
-    
 - [x] **Frontend - Dashboard:**
     - [x] Implementerat en interaktiv vertikal karusell (`NotificationStack`) för notiser.
     - [x] **Premium UX:** Refactor av `NotificationStack` med "Morphing animation" (Stack -> Lista) för en buttersmooth iPhone-känsla.
     - [x] Utnyttjade stabil `react-native-reanimated-carousel` med `customAnimation` för fysisk spatial continuity.
     - [x] **UX-stabilitet:** Implementerat en "Emergency Reset"-knapp (Tvinga utloggning) för att hantera korrupt state i `AsyncStorage`.
-    
 - [x] Backend: Implementerat geospatial sökning (`GET /api/students/search`) med Haversine-formel och filtrering på "Söker lärare".
 
 - [x] **Backend - Geospatial Sökning & DTO-uppdatering:**
@@ -56,7 +55,6 @@
     - Typsäker `StudentPublicDTO` för att skydda elevdata.
     - **FIX:** Implementerat paginering (`getAllRecords`) i Airtable-servicen för att säkerställa att ALLA elever hämtas.
     - Utökat `StudentPublicDTO` med `birthYear` för åldersberäkning och `NummerID` för anonymiserad referens (t.ex. "Elev #479").
-    
 - [x] **Frontend - Karta (Fas 1):**
     - Installation och konfiguration av `react-native-maps` och `expo-location` i `app.json`.
     - Implementerat `findStudentsStore` (Zustand) för att hantera kart-state (elever, plats, filter).
@@ -85,7 +83,7 @@
 - [x] **Frontend - Karta (Fas 4): Detaljvy & Ansökan (Google Maps Style):**
     - Ersatte den gamla `Modal`-lösningen med en andra `BottomSheet` för detaljvyn (`StudentDetailModal`).
     - **Interaction Parity:** Klick på markör → öppnar detalj-sheet direkt (Peek 25% -> Full 90%).
-    - **Smart Camera:** Centrerar kartan med en *offset* vid val av elev så att markören syns ovanför sheetet.
+    - **Smart Camera:** Centrerar kartan med en _offset_ vid val av elev så att markören syns ovanför sheetet.
     - **Design:** Uppdaterad list-design ("Tiles" med grå mellanrum) exakt som Google Maps.
 
 - [x] **Frontend - Karta (Fas 5): Fri Utforskning ("Search This Area"):**
@@ -228,8 +226,17 @@
     - [x] Tvingat vit bakgrund på Root Layout (`_layout.tsx`) för att åtgärda svart skärm vid uppstart.
     - [x] Tvingat `themeVariant="light"` och `textColor` på alla `DateTimePicker`-komponenter för full läsbarhet i Dark Mode.
 
+- [x] **Firebase Storage & Filhantering (Bilder/Dokument):**
+    - [x] **Infrastruktur:** Konfigurerat Firebase Storage i EU-regionen (Blaze Plan) med säkra access-regler för Airtable-synk.
+    - [x] **Frontend Service:** Byggt `upload.service.ts` för konvertering av lokala URI:er till binära Blobs och uppladdning till molnet.
+    - [x] **Profilbild:** Implementerat klickbar avatar i Inställningar med `expo-image-picker` och realtids-uppdatering.
+    - [x] **Dokument:** Integrerat `expo-document-picker` i `DocumentsSection` för säker uppladdning av avtal och intyg.
+    - [x] **Backend Bridge:** Uppdaterat `teacher_service.ts` och `teacher_validation.ts` för att hantera URL-länkar från Firebase till Airtable-attachments via `matchedData`.
+
 ## Pågående 🚧
-- [ ] 
+
+- [ ]
 
 ## Kommande 📅
-*(Listan är för närvarande tom. Dags att planera nästa stora funktion!)*
+
+_(Listan är för närvarande tom. Dags att planera nästa stora funktion!)_

@@ -77,6 +77,12 @@ export const updateProfileRules = [
     body("desiredStudentCount").optional().isInt({ min: 0 }),
     body("clearDocument").optional().isIn(["contract", "tax-adjustment", "criminal-record"]),
 
+    // GOOGLE FIREBASE UPLOADS 
+    body("profileImageUrl").optional().isURL().withMessage("Must be a valid URL"),
+    body("contractUrl").optional().isURL().withMessage("Must be a valid URL"),
+    body("taxAdjustmentUrl").optional().isURL().withMessage("Must be a valid URL"),
+    body("criminalRecordUrl").optional().isURL().withMessage("Must be a valid URL"),
+
     body("instruments")
         .optional()
         .isArray()

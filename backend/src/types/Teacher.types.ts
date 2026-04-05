@@ -113,4 +113,10 @@ export type UpdateTeacherData = {
     clearDocument?: "contract" | "tax-adjustment" | "criminal-record";
     password?: string;  
     resetCode?: string; 
+
+    // GOOGLE FIRESTORE
+    profileImageUrl?: string;
+    contractUrl?: string;
+    taxAdjustmentUrl?: string;
+    criminalRecordUrl?: string;
 };

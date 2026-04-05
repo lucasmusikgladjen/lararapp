@@ -88,6 +88,12 @@ export type UpdateProfilePayload = {
     instruments?: string[];
     desiredStudentCount?: number;
     clearDocument?: "contract" | "tax-adjustment" | "criminal-record";
+
+    // GOOGLE FIRESTORE
+    profileImageUrl?: string;
+    contractUrl?: string;
+    taxAdjustmentUrl?: string;
+    criminalRecordUrl?: string;
 };
 
 export type AuthState = {

@@ -59,6 +59,11 @@
 - **Lösningen ("The Payload Trick"):** Istället för separata Lookups skapades ett formelfält i Airtable (`API_Payload`) som slår ihop lektionens ID, status och text till en säker sträng separerad med `|||`.
 - **Fördel:** Frontend och Backend kan nu packa upp datan säkert via ett Map-objekt (kopplat till Record ID). Detta löser både synk-problemet och förhindrar dyra N+1 anrop, eftersom all lektionsdata följer med direkt i `/students`-anropet.
 
+## Backend: Filhantering & Bilagor (Airtable Bridge)
+- **Airtable URL Bridge:** Eftersom Airtables API inte tar emot binär fildata direkt, används en "bro-arkitektur". Backend tar emot en offentlig URL (från Firebase) och skickar den som ett attachment-objekt: `[{ url: "https://..." }]`. Airtable hämtar sedan filen asynkront från länken och sparar den internt.
+- **Utökad Validering:** `updateProfileRules` i `teacher_validation.ts` har utökats med strikt URL-validering (`isURL()`) för fälten `profileImageUrl`, `contractUrl`, `taxAdjustmentUrl` och `criminalRecordUrl`.
+- **Sanering med MatchedData:** Controllern använder uteslutande `matchedData(req)` för att säkerställa att endast validerade URL-strängar skickas vidare till databasen, vilket förhindrar att oönskad data injiceras i `PATCH`-anropet.
+
 ## Frontend
 - **Tech Stack:** React Native (Expo 54), NativeWind, Zustand, TanStack Query.
 - **Dependencies:** Använder `react-native-reanimated@4.1.1` för kompatibilitet med Expo 54.
@@ -96,6 +101,13 @@
 - **Hjälp & Information:** `PageHeader` innehåller en interaktiv hjälpsymbol (`help-circle`) som öppnar en Modal. Denna modal använder företagets logotyp (`musikgladjen.png`), `text-justify` för biografi och klickbara kontaktlänkar via `Linking`-API:et för webb, e-post och telefon.
 - **Dokumenthantering (CRUD):** Implementerat radering av dokument med en dedikerad röd soptunne-knapp (`w-[68px]` kvadrat). Använder native `Alert` för bekräftelse innan API-anropet triggas.
 
+## Frontend: Firebase Storage & Media Integration
+- **Storage Integration:** Implementerat `firebase/storage` via en central konfigurationsfil `firebase.ts`. Miljövariabler (`EXPO_PUBLIC_`) används för att dölja känsliga API-nycklar i källkoden.
+- **Binary Conversion (Blobs):** På grund av begränsningar i mobilmiljöer konverterar `uploadService.ts` lokala fil-URI:er till binära `Blobs` via `fetch` API:et innan de laddas upp till Firebase.
+- **Unik Filnamnsstrategi:** Filer sparas i logiska mappar (`avatars/`, `documents/`) med unika filnamn baserade på `userId` och `Date.now()`. Detta eliminerar risken för namnskonflikter och tvingar Airtable att uppdatera bilagan när en ny fil laddas upp (cache-busting).
+- **Media Pickers:** - `expo-image-picker` används för profilbilder med tvingad redigering (`allowsEditing: true`) och 1:1 aspekt-ratio.
+    - `expo-document-picker` används för att hantera PDF-filer och övriga dokumenttyper i `DocumentsSection`.
+
 ## Frontend: Stabilitet & Renderingsfel
 - **Unika Nycklar (Composite Keys):** För att undvika krascher i listor används Composite Keys (t.ex. ``key={`${studentId}-${date}-${time}-${index}`}``).
 - **NativeWind & Navigation Context:** För att undvika kraschen `Couldn't find a navigation context` vid flikbyten, används `style={{ display: activeView === 'x' ? 'flex' : 'none' }}` istället för villkorsstyrd rendering (`&&`). Detta behåller komponenterna monterade men gömda.
@@ -127,7 +139,7 @@
 
 ## Hantera Lektionsschema (Schedule Management UX)
 - **Entry Card Pattern:** Placerat som en `ListHeaderComponent` i elevlistan för en ren Apple-esque hierarki.
-- **Deep Linking:** Användaren kan hoppa direkt från en Elevprofil till schemaläggaren med rätt elev förvald via URL-parametrar.
+- **Deep Linking:** Använder och skickar URL-parametrar för att förifylla elevdata i schemaläggaren.
 - **Säkerhetsspärrar:** Destruktiva handlingar kräver både en bekräftelse-checkbox och en native `Alert`.
 
 ## UI & Styling Strategy
@@ -138,6 +150,10 @@
 - **UX-optimering i formulär:** I åtgärdsformulär (t.ex. `CancelLessonSheet`) placeras det mest sannolika standardvalet (t.ex. "Vårdnadshavaren") till vänster och sätts som förvalt värde.
 - **Animerade komponenter:** `LayoutAnimation` används för smidiga expand/collapse-effekter.
 - **Native Layouts:** Använder `@react-native-picker/picker` och native datumväljare för att efterlikna systemets inbyggda känsla.
+
+## Infrastruktur: Molnbaserad Lagring
+- **Regional Policy:** Firebase Storage är konfigurerat i regionen **EU** (Multi-regional) för att minimera latens och efterleva GDPR-principer gällande personuppgifter (profilbilder).
+- **Säkerhetsregler (Security Rules):** Reglerna i Firebase Storage är inställda på `allow read, write: if true`. Detta krävs för att Airtables servrar ska kunna läsa filerna när de synkroniseras via URL-bryggan.
 
 ## Airtable: Dataintegritet & Filtering
 - **Lookup Filtering:** För att förhindra att inställda lektioner "spökar" i appens UI har filter lagts på Lookup-fälten i tabellen **Elev**. Filter-villkoret är `Where Inställd is empty`. Detta gäller fälten `Bokade lektioner`, `Lektionstider`, `Lektioner` och `Lektioner Genomförda`.

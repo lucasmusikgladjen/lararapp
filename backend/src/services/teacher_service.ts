@@ -134,6 +134,20 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.password !== undefined) fields.Lösenord = data.password;
     if (data.resetCode !== undefined) fields["Återställningskod"] = data.resetCode;
 
+    // Google Firestore: Hantera uppladdning av nya filer till Airtable
+    if (data.profileImageUrl) {
+        fields.Profilbild = [{ url: data.profileImageUrl }];
+    }
+    if (data.contractUrl) {
+        fields.Avtal = [{ url: data.contractUrl }];
+    }
+    if (data.taxAdjustmentUrl) {
+        fields.Jämkning = [{ url: data.taxAdjustmentUrl }];
+    }
+    if (data.criminalRecordUrl) {
+        fields.Belastningsregister = [{ url: data.criminalRecordUrl }];
+    }
+
     const response = await patch<AirtableTeacherRecord>(`/${TABLE_NAME}/${id}`, fields);
     return mapAirtableToTeacher(response);
 };
