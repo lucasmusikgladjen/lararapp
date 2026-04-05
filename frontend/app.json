@@ -3,6 +3,7 @@
     "name": "Musikglädjen",
     "slug": "musikgladjen",
     "version": "1.0.0",
+    "scheme": "musikgladjen-app",
     "icon": "./assets/vinyl.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -18,6 +19,10 @@
         "resizeMode": "contain",
         "backgroundColor": "#ffffff"
       }
+    },
+    "notification": {
+      "icon": "./assets/push-icon.png",
+      "color": "#F59E0B"
     },
     "android": {
       "package": "se.musikgladjen.lararapp",
