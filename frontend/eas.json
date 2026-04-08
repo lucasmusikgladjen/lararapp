@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 18.5.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://lararapp-production.up.railway.app/api",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyBP1m0tQKLTk3TPE7ul6-Nb6MpZUVDVM60",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "lararapp-1b8b0.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "lararapp-1b8b0",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "lararapp-1b8b0.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "265954346959",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:265954346959:web:62cea8553d7209b3f5f4ba"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
