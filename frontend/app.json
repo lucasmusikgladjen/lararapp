@@ -4,7 +4,7 @@
     "slug": "musikgladjen",
     "version": "1.0.0",
     "scheme": "musikgladjen-app",
-    "icon": "./assets/vinyl.png",
+    "icon": "./assets/musikgladjen-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -20,7 +20,8 @@
         "backgroundColor": "#ffffff"
       },
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Musikglädjen behöver din plats för att visa elever i ditt område."
       }
     },
     "notification": {
