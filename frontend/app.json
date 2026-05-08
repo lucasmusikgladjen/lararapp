@@ -21,7 +21,8 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "Musikglädjen behöver din plats för att visa elever i ditt område."
+        "NSLocationWhenInUseUsageDescription": "Musikglädjen behöver din plats för att visa elever i ditt område.",
+        "NSPhotoLibraryUsageDescription": "Musikglädjen behöver åtkomst till dina bilder för att du ska kunna välja en profilbild."
       },
       "buildNumber": "2"
     },

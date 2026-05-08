@@ -1,4 +1,5 @@
 import Debug from "debug";
+import axios from "axios";
 import { Request, Response } from "express";
 import { getTeacherById, updateTeacher } from "../services/teacher_service";
 import { matchedData } from "express-validator";
@@ -128,6 +129,56 @@ export const updatePushToken = async (req: Request, res: Response) => {
         res.status(500).json({
             status: "error",
             message: "Could not register push token",
+        });
+    }
+};
+
+/**
+ * POST /delete-request
+ * Create an authenticated account deletion request for the current teacher.
+ */
+export const requestAccountDeletion = async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401).json({ status: "fail", message: "Unauthorized" });
+        return;
+    }
+
+    const deletionWebhookUrl = process.env.DELETE_ACCOUNT_WEBHOOK_URL;
+
+    if (!deletionWebhookUrl) {
+        debug("DELETE_ACCOUNT_WEBHOOK_URL is missing in environment");
+        res.status(500).json({
+            status: "error",
+            message: "Account deletion request is not configured",
+        });
+        return;
+    }
+
+    try {
+        const teacher = await getTeacherById(req.user.id);
+
+        if (!teacher) {
+            res.status(404).json({ status: "fail", message: "User not found" });
+            return;
+        }
+
+        await axios.post(deletionWebhookUrl, {
+            teacherId: teacher.id,
+            email: teacher.email,
+            name: teacher.name,
+            requestedAt: new Date().toISOString(),
+            source: "lararapp",
+        });
+
+        res.status(202).json({
+            status: "success",
+            message: "Account deletion request received",
+        });
+    } catch (error) {
+        debug("Error requesting account deletion: %O", error);
+        res.status(500).json({
+            status: "error",
+            message: "Could not request account deletion",
         });
     }
 };

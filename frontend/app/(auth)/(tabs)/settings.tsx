@@ -16,10 +16,10 @@ import { PersonalSection } from "../../../src/components/settings/PersonalSectio
 import { SalarySection } from "../../../src/components/settings/SalarySection";
 import { StudentsSection } from "../../../src/components/settings/StudentsSection";
 import { SettingsBackground } from "../../../src/components/ui/SettingsBackground";
+import { PrivacyPolicyLink } from "../../../src/components/legal/PrivacyPolicyLink";
 
 type ActiveView = "person" | "lon" | "elever" | "bio" | "docs";
 
-const DELETE_ACCOUNT_WEBHOOK_URL = "https://hook.eu1.make.com/mkwr6vgxkx1wxiqs7loo9gl7n70q66kv";
 
 const SETTINGS_TAGS: { id: ActiveView; label: string; activeBackground: string; activeText: string }[] = [
     { id: "person", label: "Personuppgifter", activeBackground: "#DBEAFE", activeText: "#1E40AF" },
@@ -88,25 +88,25 @@ export default function SettingsPage() {
     }, [user]);
 
     const requestAccountDeletion = async () => {
-        if (!user?.email || isDeletingAccount) return;
+        if (!token || isDeletingAccount) return;
 
         setIsDeletingAccount(true);
 
         try {
-            const response = await fetch(DELETE_ACCOUNT_WEBHOOK_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email: user.email }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Account deletion webhook failed with status ${response.status}`);
-            }
-
-            await logout();
-            router.replace("/(public)/login");
+            await authService.requestAccountDeletion(token);
+            Alert.alert(
+                "Begäran mottagen",
+                "Din begäran om kontoradering har tagits emot. Du får bekräftelse via e-post när den hanteras. Du loggas nu ut.",
+                [
+                    {
+                        text: "OK",
+                        onPress: async () => {
+                            await logout();
+                            router.replace("/(public)/login");
+                        },
+                    },
+                ],
+            );
         } catch (error) {
             console.error("Fel vid kontoradering:", error);
             Alert.alert("Fel", "Kunde inte skicka begäran om att ta bort kontot. Försök igen.");
@@ -118,7 +118,7 @@ export default function SettingsPage() {
     const handleDeleteAccount = () => {
         Alert.alert(
             "Ta bort konto",
-            "Är du säker på att du vill ta bort ditt konto? Din begäran skickas till Musikglädjen och du loggas ut.",
+            "Vi skickar en begäran om att radera ditt lärarkonto och tillhörande personuppgifter. Viss information kan behöva sparas enligt avtal, bokföring eller säkerhetskrav. Du får bekräftelse via e-post när begäran är mottagen.",
             [
                 { text: "Avbryt", style: "cancel" },
                 {
@@ -357,6 +357,15 @@ export default function SettingsPage() {
                                 </TouchableOpacity>
                             </View>
                         )}
+
+                        <View className="mt-6 bg-white rounded-2xl p-4 border border-slate-100">
+                            <View className="flex-row items-center">
+                                <Ionicons name="shield-checkmark-outline" size={20} color="#64748B" style={{ marginRight: 8 }} />
+                                <Text className="text-sm text-slate-600 flex-1">
+                                    Läs hur Musikglädjen hanterar personuppgifter i vår <PrivacyPolicyLink className="text-indigo-600 font-bold underline" />.
+                                </Text>
+                            </View>
+                        </View>
 
                         <View className="mt-4 mb-6">
                             <TouchableOpacity

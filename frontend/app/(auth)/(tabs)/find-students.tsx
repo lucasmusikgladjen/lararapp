@@ -1,7 +1,7 @@
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { FilterBar } from "../../../src/components/find-students/FilterBar";
 import { StudentDetailModal } from "../../../src/components/find-students/StudentDetailModal";
@@ -54,6 +54,19 @@ const INSTRUMENT_ICONS: Record<string, InstrumentIcon> = {
 function getInstrumentIcon(instruments: string[]): InstrumentIcon {
     const first = instruments[0]?.toLowerCase();
     return INSTRUMENT_ICONS[first] || { family: "Ionicons", name: "musical-notes" };
+}
+
+function askToUseCurrentLocation(): Promise<boolean> {
+    return new Promise((resolve) => {
+        Alert.alert(
+            "Visa elever nära dig",
+            "Musikglädjen kan använda din plats för att visa elever i ditt område. Du kan också söka på kartan utan att dela din plats.",
+            [
+                { text: "Sök utan plats", style: "cancel", onPress: () => resolve(false) },
+                { text: "Använd min plats", onPress: () => resolve(true) },
+            ],
+        );
+    });
 }
 
 export default function FindStudents() {
@@ -128,23 +141,42 @@ export default function FindStudents() {
 
     // --- SMART START: GPS med fallback till Stockholm ---
     useEffect(() => {
-        (async () => {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            let location = STOCKHOLM;
+        let isMounted = true;
 
-            if (status === "granted") {
-                try {
-                    const pos = await Location.getCurrentPositionAsync({
-                        accuracy: Location.Accuracy.Balanced,
-                    });
-                    location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                } catch {
-                    // GPS misslyckades, använd Stockholm
+        const initializeMap = async () => {
+            let location = STOCKHOLM;
+            let canShowUserLocation = false;
+
+            try {
+                const existingPermission = await Location.getForegroundPermissionsAsync();
+                let status = existingPermission.status;
+
+                if (status !== "granted" && existingPermission.canAskAgain) {
+                    const wantsToUseLocation = await askToUseCurrentLocation();
+                    if (wantsToUseLocation) {
+                        const requestedPermission = await Location.requestForegroundPermissionsAsync();
+                        status = requestedPermission.status;
+                    }
                 }
-            } else {
-                setPermissionDenied(true);
+
+                if (status === "granted") {
+                    canShowUserLocation = true;
+                    try {
+                        const pos = await Location.getCurrentPositionAsync({
+                            accuracy: Location.Accuracy.Balanced,
+                        });
+                        location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    } catch {
+                        // GPS misslyckades, använd Stockholm
+                    }
+                }
+            } catch {
+                // Permissions/GPS misslyckades, använd Stockholm
             }
 
+            if (!isMounted) return;
+
+            setPermissionDenied(!canShowUserLocation);
             setUserLocation(location);
 
             // Sätt initial region och lastSearchRegion för tröskeljämförelser
@@ -165,9 +197,17 @@ export default function FindStudents() {
 
             await useFindStudentsStore.getState().fetchStudents(location.lat, location.lng, initialRadius);
 
-            setInitializing(false);
-        })();
-    }, []);
+            if (isMounted) {
+                setInitializing(false);
+            }
+        };
+
+        initializeMap();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [setMapRegion, setUserLocation]);
 
     // Loading screen
     if (initializing) {

@@ -17,6 +17,7 @@ import { useLogin, useResetPassword } from "../../src/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { PrivacyPolicyLink } from "../../src/components/legal/PrivacyPolicyLink";
 
 type LoginFormData = {
     email: string;
@@ -179,6 +180,11 @@ export default function LoginScreen() {
                                     Inget konto? <Text className="text-indigo-600 font-bold underline">Skapa konto</Text>
                                 </Text>
                             </TouchableOpacity>
+
+                            <Text className="text-center text-[11px] text-slate-400 mt-4 px-6 leading-4">
+                                Genom att logga in godkänner du vår {"\n"}
+                                <PrivacyPolicyLink>Integritetspolicy.</PrivacyPolicyLink>
+                            </Text>
                         </View>
                     </View>
                 </ScrollView>

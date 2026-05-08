@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { PrivacyPolicyLink } from "../../src/components/legal/PrivacyPolicyLink";
 
 export default function StartScreen() {
     const router = useRouter();
@@ -62,7 +63,7 @@ export default function StartScreen() {
                     <Text className="text-center text-[11px] text-slate-400 mt-4 px-6 leading-4">
                         Genom att fortsätta godkänner du våra{"\n"}
                         <Text className="underline text-slate-400 font-semibold">Användarvillkor</Text> &{" "}
-                        <Text className="underline text-slate-400 font-semibold">Integritetspolicy.</Text>
+                        <PrivacyPolicyLink>Integritetspolicy.</PrivacyPolicyLink>
                     </Text>
                 </View>
             </View>

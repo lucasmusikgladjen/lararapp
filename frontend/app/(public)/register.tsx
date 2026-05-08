@@ -7,6 +7,7 @@ import { z } from "zod";
 import ProgressBar from "../../src/components/onboarding/ProgressBar";
 import { useRegister } from "../../src/hooks/useAuth";
 import { CreateTeacherData } from "../../src/types/auth.types";
+import { PrivacyPolicyLink } from "../../src/components/legal/PrivacyPolicyLink";
 
 // Zod schema matching backend CreateTeacherData validation rules
 const registerSchema = z.object({
@@ -195,6 +196,11 @@ export default function RegisterScreen() {
                             <Text className="text-white font-bold text-lg">FORTSÄTT</Text>
                         )}
                     </TouchableOpacity>
+
+                    <Text className="text-center text-[11px] text-slate-400 mt-5 px-4 leading-4">
+                        Genom att skapa konto godkänner du vår {"\n"}
+                        <PrivacyPolicyLink>Integritetspolicy.</PrivacyPolicyLink>
+                    </Text>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
