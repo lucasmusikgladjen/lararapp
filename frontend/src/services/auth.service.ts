@@ -58,4 +58,16 @@ export const authService = {
         const response = await axios.post(`${API_URL}/reset-password`, data);
         return response.data;
     },
+
+    // Request account deletion for the authenticated teacher.
+    requestAccountDeletion: async (token: string): Promise<{ status: string; message: string }> => {
+        const response = await axios.post<{ status: string; message: string }>(
+            `${API_URL}/profile/delete-request`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            },
+        );
+        return response.data;
+    },
 };

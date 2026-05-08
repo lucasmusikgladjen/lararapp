@@ -6,7 +6,8 @@ import * as Notifications from "expo-notifications";
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
@@ -17,6 +18,8 @@ import { useAuthStore } from "../src/store/authStore";
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+const PUSH_PERMISSION_PROMPT_KEY = "push_permission_pre_prompt_seen";
 
 // Configure how notifications appear when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -29,12 +32,9 @@ Notifications.setNotificationHandler({
 });
 
 /**
- * Helper function to register for push notifications.
- * It checks permissions and fetches the Expo token using the projectId.
+ * Configure Android's notification channel before asking for permission or saving a token.
  */
-async function registerForPushNotificationsAsync() {
-    let token;
-
+async function ensureAndroidNotificationChannelAsync() {
     if (Platform.OS === "android") {
         await Notifications.setNotificationChannelAsync("default", {
             name: "default",
@@ -43,48 +43,97 @@ async function registerForPushNotificationsAsync() {
             lightColor: "#FF231F7C",
         });
     }
+}
 
-    if (Device.isDevice) {
-        // 1. Check existing permissions
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-
-        // 2. Ask for permission if not already granted
-        if (existingStatus !== "granted") {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-        }
-
-        // 3. Stop if permission denied
-        if (finalStatus !== "granted") {
-            console.log("Permission not granted to get push token for push notification!");
-            return;
-        }
-
-        // 4. Extract Project ID
-        const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-
-        if (!projectId) {
-            console.error("Project ID not found. Did you run `npx eas-cli init`?");
-            return;
-        }
-
-        // 5. Fetch the token from Expo's servers
-        try {
-            token = (
-                await Notifications.getExpoPushTokenAsync({
-                    projectId,
-                })
-            ).data;
-            console.log("Expo Push Token Generated:", token);
-        } catch (e) {
-            console.error("Error getting push token:", e);
-        }
-    } else {
+/**
+ * Fetch the Expo push token only after notification permission has already been granted.
+ */
+async function getExpoPushTokenAsync() {
+    if (!Device.isDevice) {
         console.log("Must use physical device for push notifications");
+        return;
     }
 
-    return token;
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== "granted") {
+        return;
+    }
+
+    const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+
+    if (!projectId) {
+        console.error("Project ID not found. Did you run `npx eas-cli init`?");
+        return;
+    }
+
+    try {
+        const token = (
+            await Notifications.getExpoPushTokenAsync({
+                projectId,
+            })
+        ).data;
+        console.log("Expo Push Token Generated:", token);
+        return token;
+    } catch (e) {
+        console.error("Error getting push token:", e);
+    }
+}
+
+async function savePushTokenIfAvailable(authToken: string) {
+    await ensureAndroidNotificationChannelAsync();
+    const pushToken = await getExpoPushTokenAsync();
+
+    if (!pushToken) return;
+
+    await authService.registerPushToken(authToken, pushToken);
+    console.log("Successfully saved Push Token to backend");
+}
+
+async function requestPushPermissionAndSaveToken(authToken: string) {
+    await ensureAndroidNotificationChannelAsync();
+    await SecureStore.setItemAsync(PUSH_PERMISSION_PROMPT_KEY, "accepted");
+
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== "granted") {
+        console.log("Permission not granted to get push token for push notification!");
+        return;
+    }
+
+    await savePushTokenIfAvailable(authToken);
+}
+
+async function handlePushNotificationsAsync(authToken: string) {
+    const { status } = await Notifications.getPermissionsAsync();
+
+    if (status === "granted") {
+        await savePushTokenIfAvailable(authToken);
+        return;
+    }
+
+    const promptSeen = await SecureStore.getItemAsync(PUSH_PERMISSION_PROMPT_KEY);
+    if (promptSeen) return;
+
+    Alert.alert(
+        "Notiser från Musikglädjen",
+        "Vill du få notiser om schemaändringar, elevförfrågningar och viktiga uppdateringar? Du kan använda appen även om du väljer Inte nu.",
+        [
+            {
+                text: "Inte nu",
+                style: "cancel",
+                onPress: () => {
+                    SecureStore.setItemAsync(PUSH_PERMISSION_PROMPT_KEY, "dismissed").catch((err) =>
+                        console.error("Failed to save push prompt choice", err),
+                    );
+                },
+            },
+            {
+                text: "Tillåt notiser",
+                onPress: () => {
+                    requestPushPermissionAndSaveToken(authToken).catch((err) => console.error("Failed to enable push notifications", err));
+                },
+            },
+        ],
+    );
 }
 
 function useProtectedRoute() {
@@ -131,17 +180,10 @@ export default function RootLayout() {
         hideSplash();
     }, [isLoading]);
 
-    // 4. Register Push Notifications
+    // 4. Register Push Notifications after an explanatory pre-permission prompt
     useEffect(() => {
         if (authToken && !isLoading) {
-            registerForPushNotificationsAsync().then((pushToken) => {
-                if (pushToken) {
-                    authService
-                        .registerPushToken(authToken, pushToken)
-                        .then(() => console.log("Successfully saved Push Token to backend"))
-                        .catch((err) => console.error("Failed to save Push Token", err));
-                }
-            });
+            handlePushNotificationsAsync(authToken).catch((err) => console.error("Failed to handle push notifications", err));
         }
     }, [authToken, isLoading]);
 

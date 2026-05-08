@@ -1,5 +1,5 @@
 import express from "express";
-import { getProfile, updateProfile, updatePushToken } from "../controllers/profile_controller";
+import { getProfile, requestAccountDeletion, updateProfile, updatePushToken } from "../controllers/profile_controller";
 import { updateProfileRules } from "../validations/teacher_validation";
 
 const router = express.Router();
@@ -22,5 +22,10 @@ router.patch("/", updateProfileRules, updateProfile);
  */
 router.post("/push-token", updatePushToken);
 
+/**
+ * POST /delete-request
+ * Starts an authenticated account deletion request for the teacher.
+ */
+router.post("/delete-request", requestAccountDeletion);
 
 export default router;
