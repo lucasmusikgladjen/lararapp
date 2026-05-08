@@ -8,6 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
 import { authService } from "../src/services/auth.service";
@@ -146,11 +147,13 @@ export default function RootLayout() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-            <QueryClientProvider client={queryClient}>
-                <BottomSheetModalProvider>
-                    <Slot />
-                </BottomSheetModalProvider>
-            </QueryClientProvider>
+            <SafeAreaProvider>
+                <QueryClientProvider client={queryClient}>
+                    <BottomSheetModalProvider>
+                        <Slot />
+                    </BottomSheetModalProvider>
+                </QueryClientProvider>
+            </SafeAreaProvider>
         </GestureHandlerRootView>
     );
 }

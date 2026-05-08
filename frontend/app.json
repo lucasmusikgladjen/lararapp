@@ -22,7 +22,8 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Musikglädjen behöver din plats för att visa elever i ditt område."
-      }
+      },
+      "buildNumber": "2"
     },
     "notification": {
       "icon": "./assets/push-icon.png",
@@ -39,7 +40,8 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
-      ]
+      ],
+      "versionCode": 2
     },
     "web": {
       "favicon": "",
