@@ -19,6 +19,8 @@ import { SettingsBackground } from "../../../src/components/ui/SettingsBackgroun
 
 type ActiveView = "person" | "lon" | "elever" | "bio" | "docs";
 
+const DELETE_ACCOUNT_WEBHOOK_URL = "https://hook.eu1.make.com/mkwr6vgxkx1wxiqs7loo9gl7n70q66kv";
+
 const SETTINGS_TAGS: { id: ActiveView; label: string; activeBackground: string; activeText: string }[] = [
     { id: "person", label: "Personuppgifter", activeBackground: "#DBEAFE", activeText: "#1E40AF" },
     { id: "lon", label: "Lön", activeBackground: "#D1FAE5", activeText: "#065F46" },
@@ -34,6 +36,7 @@ export default function SettingsPage() {
     const [activeView, setActiveView] = useState<ActiveView>("person");
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
     const [formData, setFormData] = useState({
         name: user?.name || "",
@@ -83,6 +86,49 @@ export default function SettingsPage() {
             }));
         }
     }, [user]);
+
+    const requestAccountDeletion = async () => {
+        if (!user?.email || isDeletingAccount) return;
+
+        setIsDeletingAccount(true);
+
+        try {
+            const response = await fetch(DELETE_ACCOUNT_WEBHOOK_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: user.email }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Account deletion webhook failed with status ${response.status}`);
+            }
+
+            await logout();
+            router.replace("/(public)/login");
+        } catch (error) {
+            console.error("Fel vid kontoradering:", error);
+            Alert.alert("Fel", "Kunde inte skicka begäran om att ta bort kontot. Försök igen.");
+        } finally {
+            setIsDeletingAccount(false);
+        }
+    };
+
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            "Ta bort konto",
+            "Är du säker på att du vill ta bort ditt konto? Din begäran skickas till Musikglädjen och du loggas ut.",
+            [
+                { text: "Avbryt", style: "cancel" },
+                {
+                    text: "Ta bort konto",
+                    style: "destructive",
+                    onPress: requestAccountDeletion,
+                },
+            ],
+        );
+    };
 
     const handleLogout = async () => {
         Alert.alert("Logga ut", "Är du säker på att du vill logga ut?", [
@@ -292,7 +338,27 @@ export default function SettingsPage() {
                             <DocumentsSection user={user} />
                         </View>
 
-                        <View className="mt-10 mb-6">
+                        {activeView === "person" && (
+                            <View className="mt-10">
+                                <TouchableOpacity
+                                    onPress={handleDeleteAccount}
+                                    disabled={isDeletingAccount}
+                                    activeOpacity={0.8}
+                                    className={`w-full bg-red-600 flex-row items-center justify-center py-4 rounded-2xl ${
+                                        isDeletingAccount ? "opacity-70" : ""
+                                    }`}
+                                >
+                                    {isDeletingAccount ? (
+                                        <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
+                                    ) : (
+                                        <Ionicons name="trash-outline" size={20} color="white" style={{ marginRight: 8 }} />
+                                    )}
+                                    <Text className="text-white font-bold text-base">Ta bort konto</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        <View className="mt-4 mb-6">
                             <TouchableOpacity
                                 onPress={handleLogout}
                                 className="w-full bg-[#E35453] flex-row items-center justify-center py-4 rounded-2xl"
