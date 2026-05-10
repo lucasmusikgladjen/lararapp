@@ -47,7 +47,6 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         studentIds: field.Elev || [],
         pendingStudentIds: field["Önskar"] || [],
         profileImageUrl: imageUrl,
-        status: field.Slutar || "Okänd",
         address: field.Adress,
         zip: field.Postnummer,
         city: field.Ort,
@@ -98,7 +97,6 @@ export const createTeacher = async (data: CreateTeacherData): Promise<Teacher> =
             Postnummer: data.zip,
             Ort: data.city,
             Födelseår: data.birthYear,
-            Slutar: "Aktiv",
         },
     };
     const response = await post<AirtableTeacherRecord>(`/${TABLE_NAME}`, body);
