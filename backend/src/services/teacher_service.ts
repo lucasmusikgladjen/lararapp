@@ -98,7 +98,6 @@ export const createTeacher = async (data: CreateTeacherData): Promise<Teacher> =
             Postnummer: data.zip,
             Ort: data.city,
             Födelseår: data.birthYear,
-            Slutar: "Aktiv",
         },
     };
     const response = await post<AirtableTeacherRecord>(`/${TABLE_NAME}`, body);
