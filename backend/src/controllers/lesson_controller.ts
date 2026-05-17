@@ -141,12 +141,19 @@ export const completeLesson = async (req: Request, res: Response) => {
 
         debug(`Marking lesson ${id} as completed`);
 
+        const lektionsanteckning = notes || "";
+        const laxa = homework || "";
+
         const updatedRecord = await updateSingleLesson(id, {
             Status: "Genomförd",
             Anteckningar: JSON.stringify({
-                lektionsanteckning: notes || "",
-                laxa: homework || "",
+                lektionsanteckning,
+                laxa,
             }),
+            // Dual-write to legacy fields so the Airtable "Lektioner Payload"
+            // rollup (via API_Payload formula) continues to work in the teacher app.
+            'Läxa': laxa,
+            'Lektionsanteckning': lektionsanteckning,
         });
 
         res.send({
