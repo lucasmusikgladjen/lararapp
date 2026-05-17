@@ -14,7 +14,7 @@ export const createLessonsBatch = async (lessons: CreateLessonDTO[]): Promise<Ai
             Elev: [lesson.studentId],
             Datum: lesson.date,
             Klockslag: lesson.timeHHMM,
-            Upplägg: lesson.layout,
+            Lektionsform: lesson.layout,
         },
     }));
 
