@@ -173,7 +173,7 @@ export const rescheduleLesson = async (req: Request, res: Response) => {
         const fieldsToUpdate: any = {
             Datum: newDate,
             Status: "Ombokad",
-            "Orsak ombokning": reason,
+            Orsak: JSON.stringify({ installd: "", ombokning: reason }),
         };
 
         if (newTime) {
@@ -205,7 +205,7 @@ export const cancelLesson = async (req: Request, res: Response) => {
 
         const updatedRecord = await updateSingleLesson(id, {
             Status: "Inställd",
-            "Orsak inställd": `${cancelledBy} ställer in: ${reason}`,
+            Orsak: JSON.stringify({ installd: `${cancelledBy} ställer in: ${reason}`, ombokning: "" }),
         });
 
         res.send({
