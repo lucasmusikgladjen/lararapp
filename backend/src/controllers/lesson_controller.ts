@@ -30,7 +30,7 @@ export const create = async (req: Request, res: Response) => {
                 layout,
             });
 
-            currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+            currentDate.setDate(currentDate.getDate() + 7);
         }
 
         const createdRecords = await createLessonsBatch(lessonsToCreate);
@@ -106,11 +106,11 @@ export const adjustFutureLessons = async (req: Request, res: Response) => {
                 fields: {
                     Datum: currentDate.toISOString().split("T")[0],
                     Klockslag: timeHHMM || lesson.fields.Klockslag,
-                    Upplägg: layout || lesson.fields.Upplägg,
+                    Lektionsform: layout || lesson.fields.Lektionsform,
                 },
             };
 
-            currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+            currentDate.setDate(currentDate.getDate() + 7);
 
             return updateDoc;
         });
@@ -142,9 +142,11 @@ export const completeLesson = async (req: Request, res: Response) => {
         debug(`Marking lesson ${id} as completed`);
 
         const updatedRecord = await updateSingleLesson(id, {
-            Genomförd: true,
-            Lektionsanteckning: notes || "",
-            Läxa: homework || "",
+            Status: "Genomförd",
+            Anteckningar: JSON.stringify({
+                lektionsanteckning: notes || "",
+                laxa: homework || "",
+            }),
         });
 
         res.send({
@@ -170,7 +172,8 @@ export const rescheduleLesson = async (req: Request, res: Response) => {
 
         const fieldsToUpdate: any = {
             Datum: newDate,
-            "Anledning ombokning": reason,
+            Status: "Ombokad",
+            "Orsak ombokning": reason,
         };
 
         if (newTime) {
@@ -201,8 +204,8 @@ export const cancelLesson = async (req: Request, res: Response) => {
         debug(`Cancelling lesson ${id}. Initiated by: ${cancelledBy}`);
 
         const updatedRecord = await updateSingleLesson(id, {
-            Inställd: true,
-            "Anledning inställd": `${cancelledBy} ställer in: ${reason}`,
+            Status: "Inställd",
+            "Orsak inställd": `${cancelledBy} ställer in: ${reason}`,
         });
 
         res.send({
