@@ -21,10 +21,6 @@ export type AirtableStudentFields = {
     Lektionstider?: string[];
     Lektioner?: string[];
     "Lektioner Payload"?: string[];
-    "Lektioner Genomförda"?: boolean[];
-    "Lektioner Inställda"?: boolean[];
-    "Lektioner Läxa"?: string[];       
-    "Lektioner Anteckning"?: string[]; 
     Kommentar?: string;
     Terminsmål?: string;
     "Vårdnadshavare namn"?: string[];
