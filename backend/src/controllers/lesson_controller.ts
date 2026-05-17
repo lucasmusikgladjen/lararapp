@@ -141,19 +141,12 @@ export const completeLesson = async (req: Request, res: Response) => {
 
         debug(`Marking lesson ${id} as completed`);
 
-        const lektionsanteckning = notes || "";
-        const laxa = homework || "";
-
         const updatedRecord = await updateSingleLesson(id, {
             Status: "Genomförd",
             Anteckningar: JSON.stringify({
-                lektionsanteckning,
-                laxa,
+                lektionsanteckning: notes || "",
+                laxa: homework || "",
             }),
-            // Dual-write to legacy fields so the Airtable "Lektioner Payload"
-            // rollup (via API_Payload formula) continues to work in the teacher app.
-            'Läxa': laxa,
-            'Lektionsanteckning': lektionsanteckning,
         });
 
         res.send({
@@ -180,7 +173,7 @@ export const rescheduleLesson = async (req: Request, res: Response) => {
         const fieldsToUpdate: any = {
             Datum: newDate,
             Status: "Ombokad",
-            "Orsak ombokning": reason,
+            Orsak: JSON.stringify({ installd: "", ombokning: reason }),
         };
 
         if (newTime) {
@@ -212,7 +205,7 @@ export const cancelLesson = async (req: Request, res: Response) => {
 
         const updatedRecord = await updateSingleLesson(id, {
             Status: "Inställd",
-            "Orsak inställd": `${cancelledBy} ställer in: ${reason}`,
+            Orsak: JSON.stringify({ installd: `${cancelledBy} ställer in: ${reason}`, ombokning: "" }),
         });
 
         res.send({
