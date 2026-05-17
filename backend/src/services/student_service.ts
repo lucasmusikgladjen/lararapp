@@ -38,14 +38,27 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
     const payloadMap = new Map<string, any>();
 
     // Packa upp varje lektionssträng och mappa den till lektionens unika ID
+    // Format: RECORD_ID|||completed|||cancelled|||ANTECKNINGAR_JSON
     rawPayloads.forEach((p) => {
         const parts = p.split("|||");
-        if (parts.length >= 5) {
+        if (parts.length >= 4) {
+            let homework = "";
+            let notes = "";
+            const raw = parts[3] === "BLANK" ? "" : parts[3];
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    homework = parsed.laxa || "";
+                    notes = parsed.lektionsanteckning || "";
+                } catch {
+                    homework = raw;
+                }
+            }
             payloadMap.set(parts[0], {
                 completed: parts[1] === "true",
                 cancelled: parts[2] === "true",
-                homework: parts[3] === "BLANK" ? "" : parts[3],
-                notes: parts[4] === "BLANK" ? "" : parts[4],
+                homework,
+                notes,
             });
         }
     });
