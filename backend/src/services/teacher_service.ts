@@ -66,8 +66,7 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         taxRate: field.Skattesats,
         documents: docs,
 
-        // termEnd: field.Terminsslut,
-        termEnd: Array.isArray(field.Terminsslut) ? field.Terminsslut[0] : field.Terminsslut || undefined,
+        termEnd: undefined,
         pushToken: field.PushToken,
         resetCode: field["Återställningskod"],
     };
