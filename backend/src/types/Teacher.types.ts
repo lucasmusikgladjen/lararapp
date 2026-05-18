@@ -44,7 +44,6 @@ export type AirtableTeacherRecord = {
         Avtal?: AirtableAttachment[];
         Jämkning?: AirtableAttachment[];
         Belastningsregister?: AirtableAttachment[];
-        Terminsslut?: string;
         PushToken?: string;
         "Återställningskod"?: string;
     };
@@ -78,7 +77,6 @@ export type Teacher = {
     hourlyWage?: number;
     taxRate?: number;
     documents: TeacherDocument[];
-    termEnd?: string;
     pushToken?: string;
    resetCode?: string;
 };
