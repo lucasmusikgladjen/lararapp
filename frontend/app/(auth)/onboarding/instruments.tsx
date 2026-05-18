@@ -27,12 +27,12 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 const PRESET_INSTRUMENTS = [
-    { id: "piano", label: "Piano", emoji: "🎹", iconBg: "bg-amber-100" },
-    { id: "guitarr", label: "Guitarr", emoji: "🎸", iconBg: "bg-yellow-100" },
-    { id: "fiol", label: "Fiol", emoji: "🎻", iconBg: "bg-green-200" },
-    { id: "klarinett", label: "Klarinett", emoji: "🎵", iconBg: "bg-purple-200" },
-    { id: "trummor", label: "Trummor", emoji: "🥁", iconBg: "bg-pink-200" },
-    { id: "saxofon", label: "Saxofon", emoji: "🎷", iconBg: "bg-rose-100" },
+    { id: "piano",   label: "Piano",   emoji: "🎹", iconBg: "bg-amber-100"  },
+    { id: "gitarr",  label: "Gitarr",  emoji: "🎸", iconBg: "bg-yellow-100" },
+    { id: "sang",    label: "Sång",    emoji: "🎤", iconBg: "bg-red-100"    },
+    { id: "fiol",    label: "Fiol",    emoji: "🎻", iconBg: "bg-green-200"  },
+    { id: "trummor", label: "Trummor", emoji: "🥁", iconBg: "bg-pink-200"   },
+    { id: "bas",     label: "Bas",     emoji: "🎵", iconBg: "bg-blue-100"   },
 ];
 
 export default function InstrumentsScreen() {

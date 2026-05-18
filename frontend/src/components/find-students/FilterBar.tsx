@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FilterChip } from "../ui/FilterChip";
 import { useFindStudentsStore } from "../../store/findStudentsStore";
 
-const INSTRUMENT_OPTIONS = ["Piano", "Gitarr", "Fiol", "Trummor", "Sång", "Övriga"];
+const INSTRUMENT_OPTIONS = ["Piano", "Gitarr", "Sång", "Fiol", "Trummor", "Bas"];
 
 export function FilterBar() {
     const insets = useSafeAreaInsets();

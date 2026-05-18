@@ -25,7 +25,9 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
 
     const imageUrl = field.Profilbild && field.Profilbild.length > 0 ? field.Profilbild[0].thumbnails?.large.url || field.Profilbild[0].url : "";
 
-    const instrumentList = field.Instrument ? field.Instrument.split(",").map((instrument) => instrument.trim()) : [];
+    const instrumentList = Array.isArray(field.Instrument)
+      ? field.Instrument
+      : field.Instrument ? field.Instrument.split(",").map((i) => i.trim()) : [];
 
     // Handle Documents
     const docs: TeacherDocument[] = [];
@@ -129,7 +131,7 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     if (data.clearDocument === "criminal-record") fields.Belastningsregister = [];
 
     if (data.instruments) {
-        fields.Instrument = data.instruments.join(", ");
+        fields.Instrument = data.instruments;
     }
 
     if (data.password !== undefined) fields.Lösenord = data.password;
