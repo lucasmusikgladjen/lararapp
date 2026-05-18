@@ -257,7 +257,6 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     // 4. Update Elev in Airtable - only update the 'Önskar' field
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
         LärareÖnskar: updatedRequests,
-        "Egen anteckning": updatedComment.trim(),
     });
 
     return mapAirtableToStudent(updatedRecord);
