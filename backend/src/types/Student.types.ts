@@ -3,7 +3,7 @@ export type AirtableStudentFields = {
     NummerID?: number | string;
     Namn: string;
     Födelseår: string;
-    Instrument: string;
+    Instrument: string | string[];
     Förnamn: string;
     Gata?: string[];
     Ort?: string[];

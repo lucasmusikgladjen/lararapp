@@ -70,7 +70,7 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         displayId: field.ID || "",
         name: field.Namn || "",
         firstName: field.Förnamn || "",
-        instrument: field.Instrument || "",
+        instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : (field.Instrument || ''),
         address: field.Gata?.[0] || "",
         city: field.Ort?.[0] || "",
         location: {
@@ -146,7 +146,7 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     }
 
     if (query.instrument) {
-        filters.push(`FIND('${query.instrument.toLowerCase()}', LOWER({Instrument}))`);
+        filters.push(`FIND("${query.instrument.toLowerCase()}", LOWER(ARRAYJOIN({Instrument}, ",")))`);
     }
 
     const filterFormula = `AND(${filters.join(",")})`;
@@ -180,7 +180,7 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
             id: record.id,
             name: fields.Förnamn || fields.Namn || "Anonym",
             city: city,
-            instruments: fields.Instrument ? fields.Instrument.split(",").map((i) => i.trim()) : [],
+            instruments: Array.isArray(fields.Instrument) ? fields.Instrument : (fields.Instrument ? fields.Instrument.split(',').map(s => s.trim()).filter(Boolean) : []),
             lat: lat,
             lng: lng,
             distance: distance ? parseFloat(distance.toFixed(1)) : undefined,
