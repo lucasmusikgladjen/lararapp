@@ -31,8 +31,6 @@ export type AirtableTeacherRecord = {
         Timlön?: number;
         Skattesats?: number;
         Adress?: string;
-        Postnummer?: string;
-        Ort?: string;
         Födelseår?: string;
         Personnummer?: string;
         Instrument?: string;

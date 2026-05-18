@@ -41,6 +41,22 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
     const criminalRecord = mapAttachmentToDoc(field.Belastningsregister, "criminal-record");
     if (criminalRecord) docs.push(criminalRecord);
 
+    // Parse the JSON Adress field to extract address/zip/city
+    let parsedAddress = '';
+    let parsedZip = '';
+    let parsedCity = '';
+    if (field.Adress) {
+        try {
+            const parsed = JSON.parse(field.Adress);
+            parsedAddress = parsed.adress || '';
+            parsedZip = parsed.postnummer || '';
+            parsedCity = parsed.ort || '';
+        } catch {
+            // Fallback: treat raw value as plain address string (migration period)
+            parsedAddress = field.Adress;
+        }
+    }
+
     return {
         id: record.id,
         name: field.Namn || "Okänd lärare",
@@ -49,9 +65,9 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
         studentIds: field.Elev || [],
         pendingStudentIds: field["Önskar"] || [],
         profileImageUrl: imageUrl,
-        address: field.Adress,
-        zip: field.Postnummer,
-        city: field.Ort,
+        address: parsedAddress || undefined,
+        zip: parsedZip || undefined,
+        city: parsedCity || undefined,
         birthYear: field.Födelseår,
         personalNumber: field.Personnummer,
         instruments: instrumentList,
@@ -93,9 +109,7 @@ export const createTeacher = async (data: CreateTeacherData): Promise<Teacher> =
             Namn: data.name,
             "E-post": data.email,
             Lösenord: data.password,
-            Adress: data.address,
-            Postnummer: data.zip,
-            Ort: data.city,
+            Adress: JSON.stringify({ adress: data.address, postnummer: data.zip, ort: data.city }),
             Födelseår: data.birthYear,
         },
     };
@@ -113,10 +127,19 @@ export const updateTeacher = async (id: string, data: UpdateTeacherData): Promis
     // Explicit mapping for allowed update fields
     if (data.name !== undefined) fields.Namn = data.name;
     if (data.email !== undefined) fields["E-post"] = data.email;
-    if (data.address !== undefined) fields.Adress = data.address;
-    if (data.zip !== undefined) fields.Postnummer = data.zip;
-    if (data.city !== undefined) fields.Ort = data.city;
     if (data.birthYear !== undefined) fields.Födelseår = data.birthYear;
+
+    // Merge address/zip/city into a single JSON Adress field
+    if (data.address !== undefined || data.zip !== undefined || data.city !== undefined) {
+        const currentAddress = existingTeacher?.address || '';
+        const currentZip = existingTeacher?.zip || '';
+        const currentCity = existingTeacher?.city || '';
+        fields.Adress = JSON.stringify({
+            adress: data.address !== undefined ? data.address : currentAddress,
+            postnummer: data.zip !== undefined ? data.zip : currentZip,
+            ort: data.city !== undefined ? data.city : currentCity,
+        });
+    }
     if (data.personalNumber !== undefined) fields.Personnummer = data.personalNumber;
     if (data.phone !== undefined) fields.Telefon = data.phone;
     if (data.bank !== undefined) fields.Bank = data.bank;
