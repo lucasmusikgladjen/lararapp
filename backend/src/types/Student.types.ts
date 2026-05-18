@@ -11,9 +11,8 @@ export type AirtableStudentFields = {
     Longitude?: number[];
     Status: string;
     "Bokade lektioner"?: string[];
-    "Elevens erfarenhetsnivå"?: string;
+    Barn?: string;
     Ansökningsdag?: string;
-    "Kort om eleven (från anmälan)"?: string;
     "Lead score"?: string;
     "Närmaste lärare"?: string[];
     LärareÖnskar?: string[];

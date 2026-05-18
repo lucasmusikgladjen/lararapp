@@ -33,6 +33,17 @@ const deg2rad = (deg: number) => {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
+const parseBarn = (json?: string | null): { erfarenhetsniva: string; kortOmEleven: string } => {
+    try {
+        const arr = JSON.parse(json || '[]');
+        if (Array.isArray(arr) && arr.length > 0) {
+            const b = arr[0];
+            return { erfarenhetsniva: b.erfarenhetsniva || '', kortOmEleven: b.kortOmEleven || '' };
+        }
+    } catch {}
+    return { erfarenhetsniva: '', kortOmEleven: '' };
+};
+
 const mapAirtableToStudent = (record: AirtableRecord): Student => {
     const field = record.fields;
 
@@ -92,8 +103,8 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         upcomingLessonHomework: upcomingLessonIds.map((id) => payloadMap.get(id)?.homework || ""),
         upcomingLessonNotes: upcomingLessonIds.map((id) => payloadMap.get(id)?.notes || ""),
 
-        experience: field["Elevens erfarenhetsnivå"] || "",
-        description: field["Kort om eleven (från anmälan)"] || "",
+        experience: parseBarn(field.Barn).erfarenhetsniva,
+        description: parseBarn(field.Barn).kortOmEleven,
         leadScore: field["Lead score"],
         notes: field.Kommentar || "",
         goals: field.Terminsmål || "",
@@ -152,7 +163,7 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
         filters.push(`FIND("${query.instrument.toLowerCase()}", LOWER(ARRAYJOIN({Instrument}, ",")))`);
     }
 
-    const filterFormula = `AND(${filters.join(",")})`;
+    const filterFormula = `AND(${filters.join(",")})`;;
 
     const url = `/${TABLE_NAME}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
