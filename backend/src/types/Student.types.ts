@@ -16,7 +16,7 @@ export type AirtableStudentFields = {
     "Kort om eleven (från anmälan)"?: string;
     "Lead score"?: string;
     "Närmaste lärare"?: string[];
-    Önskar?: string[];
+    LärareÖnskar?: string[];
     "Egen anteckning"?: string;
     Lektionstider?: string[];
     Lektioner?: string[];

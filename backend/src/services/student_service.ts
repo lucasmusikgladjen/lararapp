@@ -176,7 +176,7 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
         }
 
         // EVALUATE IF APPLIED
-        const onskarArray = fields.Önskar || [];
+        const onskarArray = fields.LärareÖnskar || [];
         const hasApplied = query.teacherId ? onskarArray.includes(query.teacherId) : false;
 
         return {
@@ -213,7 +213,7 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     const currentStudentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${studentId}`);
     const currentFields = currentStudentRecord.fields;
 
-    const currentRequests = currentFields.Önskar || [];
+    const currentRequests = currentFields.LärareÖnskar || [];
 
     // Safety check: Prevent duplicate requests from the same teacher
     if (currentRequests.includes(data.teacherId)) {
@@ -245,7 +245,8 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
 
     // 4. Update Elev in Airtable - only update the 'Önskar' field
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
-        Önskar: updatedRequests,
+        LärareÖnskar: updatedRequests,
+        "Egen anteckning": updatedComment.trim(),
     });
 
     return mapAirtableToStudent(updatedRecord);

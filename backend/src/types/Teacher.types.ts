@@ -26,7 +26,7 @@ export type AirtableTeacherRecord = {
         "E-post"?: string;
         Lösenord?: string;
         Elev?: string[];
-        Önskar?: string[];
+        ElevÖnskemål?: string[];
         Profilbild?: AirtableImage[];
         Timlön?: number;
         Skattesats?: number;
