@@ -12,6 +12,9 @@ import { get, getAllRecords, patch } from "./airtable";
 // Table: "Elev" | ID: tblAj4VVugqhdPWnR
 const TABLE_NAME = "tblAj4VVugqhdPWnR";
 
+// Table: "Vårdnadshavare" | ID: tblfYUEqhO9gtSQMh
+const GUARDIAN_TABLE_NAME = "tblfYUEqhO9gtSQMh";
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 // Matematik: Räkna ut avstånd mellan två GPS-punkter (Haversine Formula)
@@ -220,22 +223,29 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     // 2. Append the new teacher ID to the list
     const updatedRequests = [...currentRequests, data.teacherId];
 
-    // 3. Append the comment to 'Egen anteckning'
-    // Vi läser av vad som redan står i 'Egen anteckning' för att inte radera tidigare historik
-    let updatedComment = currentFields["Egen anteckning"] || "";
-    if (data.message) {
+    // 3. Append the comment to 'Vårdnadshavare.OnboardingAnteckning'
+    // Vi läser av vad som redan står hos vårdnadshavaren för att inte radera tidigare historik
+    const guardianIds: string[] = currentFields["Vårdnadshavare"] || [];
+    if (data.message && guardianIds.length > 0) {
+        const guardianId = guardianIds[0];
+        const guardianRecord = await get<AirtableRecord>(`/${GUARDIAN_TABLE_NAME}/${guardianId}`);
+        let updatedComment = guardianRecord.fields["OnboardingAnteckning"] || "";
+
         const dateStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
         // Om det redan finns text, lägger vi till en dubbel radbrytning innan vi lägger till det nya
         const separator = updatedComment ? "\n\n" : "";
 
         // Snyggare och tydligare rubrik i Airtable!
         updatedComment += `${separator}--- Elevansökan: ${data.teacherName} (${dateStr}) ---\n${data.message}`;
+
+        await patch<AirtableRecord>(`/${GUARDIAN_TABLE_NAME}/${guardianId}`, {
+            "OnboardingAnteckning": updatedComment.trim(),
+        });
     }
 
-    // 4. Update Airtable - Använd exakt samma kolumnnamn som i Airtable!
+    // 4. Update Elev in Airtable - only update the 'Önskar' field
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
         Önskar: updatedRequests,
-        "Egen anteckning": updatedComment.trim(),
     });
 
     return mapAirtableToStudent(updatedRecord);
