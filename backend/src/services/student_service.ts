@@ -72,7 +72,7 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         id: record.id,
         displayId: field.ID || "",
         name: field.Namn || "",
-        firstName: field.Förnamn || "",
+        firstName: (field.Namn || "").split(" ")[0] || "",
         instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : (field.Instrument || ''),
         address: field.Gata?.[0] || "",
         city: field.Ort?.[0] || "",
@@ -92,8 +92,8 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         upcomingLessonHomework: upcomingLessonIds.map((id) => payloadMap.get(id)?.homework || ""),
         upcomingLessonNotes: upcomingLessonIds.map((id) => payloadMap.get(id)?.notes || ""),
 
-        experience: field["Elevens erfarenhetsnivå"] || "",
-        description: field["Kort om eleven (från anmälan)"] || "",
+        experience: "",
+        description: "",
         leadScore: field["Lead score"],
         notes: field.Kommentar || "",
         goals: field.Terminsmål || "",
@@ -181,7 +181,7 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
 
         return {
             id: record.id,
-            name: fields.Förnamn || fields.Namn || "Anonym",
+            name: fields.Namn || "Anonym",
             city: city,
             instruments: Array.isArray(fields.Instrument) ? fields.Instrument : (fields.Instrument ? fields.Instrument.split(',').map(s => s.trim()).filter(Boolean) : []),
             lat: lat,
@@ -209,10 +209,9 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
 
 // This function handles the logic of adding a teacher to a student's 'Önskar' list
 export const requestToTeachStudent = async (studentId: string, data: RequestToTeachInput): Promise<Student> => {
-    // 1. Fetch current student to get existing 'Önskar' array
+    // 1. Fetch current student to get existing 'LärareÖnskar' array
     const currentStudentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${studentId}`);
     const currentFields = currentStudentRecord.fields;
-
     const currentRequests = currentFields.LärareÖnskar || [];
 
     // Safety check: Prevent duplicate requests from the same teacher
@@ -223,31 +222,39 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     // 2. Append the new teacher ID to the list
     const updatedRequests = [...currentRequests, data.teacherId];
 
-    // 3. Append the comment to 'Vårdnadshavare.OnboardingAnteckning'
-    // Vi läser av vad som redan står hos vårdnadshavaren för att inte radera tidigare historik
-    const guardianIds: string[] = currentFields["Vårdnadshavare"] || [];
+    const dateStr = new Date().toLocaleDateString("sv-SE");
+
+    // 3. Build accumulated LärareÖnskarKommentar on Elev
+    let elevKommentar = (currentFields as any).LärareÖnskarKommentar || "";
+    if (data.message) {
+        const separator = elevKommentar ? "\n\n" : "";
+        elevKommentar += `${separator}--- ${data.teacherName} (${dateStr}) ---\n${data.message}`;
+    }
+
+    // 4. Also write to guardian's Anteckning.OnboardingAnteckning (JSON field)
+    const guardianIds: string[] = (currentFields as any)["Vårdnadshavare"] || [];
     if (data.message && guardianIds.length > 0) {
         const guardianId = guardianIds[0];
-        const guardianRecord = await get<AirtableRecord>(`/${GUARDIAN_TABLE_NAME}/${guardianId}`);
-        let updatedComment = guardianRecord.fields["OnboardingAnteckning"] || "";
-
-        const dateStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
-        // Om det redan finns text, lägger vi till en dubbel radbrytning innan vi lägger till det nya
-        const separator = updatedComment ? "\n\n" : "";
-
-        // Snyggare och tydligare rubrik i Airtable!
-        updatedComment += `${separator}--- Elevansökan: ${data.teacherName} (${dateStr}) ---\n${data.message}`;
-
-        await patch<AirtableRecord>(`/${GUARDIAN_TABLE_NAME}/${guardianId}`, {
-            "OnboardingAnteckning": updatedComment.trim(),
+        const guardianRecord = await get<any>(`/${GUARDIAN_TABLE_NAME}/${guardianId}`);
+        let anteckningJson: any = {};
+        try { anteckningJson = JSON.parse(guardianRecord.fields["Anteckning"] || "{}"); } catch {}
+        let onboardingText = anteckningJson.OnboardingAnteckning || "";
+        const separator = onboardingText ? "\n\n" : "";
+        onboardingText += `${separator}--- Elevansökan: ${data.teacherName} (${dateStr}) ---\n${data.message}`;
+        anteckningJson.OnboardingAnteckning = onboardingText;
+        await patch<any>(`/${GUARDIAN_TABLE_NAME}/${guardianId}`, {
+            "Anteckning": JSON.stringify(anteckningJson),
         });
     }
 
-    // 4. Update Elev in Airtable - only update the 'Önskar' field
-    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
+    // 5. Update Elev: LärareÖnskar + LärareÖnskarKommentar
+    const patchFields: Record<string, any> = {
         LärareÖnskar: updatedRequests,
-        "Egen anteckning": updatedComment.trim(),
-    });
+    };
+    if (data.message) {
+        patchFields["LärareÖnskarKommentar"] = elevKommentar.trim();
+    }
 
+    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, patchFields);
     return mapAirtableToStudent(updatedRecord);
 };
