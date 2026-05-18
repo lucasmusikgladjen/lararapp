@@ -2,13 +2,13 @@ export type AirtableStudentFields = {
     ID: string;
     NummerID?: number | string;
     Namn: string;
-    Födelseår: string;
-    Instrument: string | string[];
-    Förnamn: string;
+    Barn?: string;            // JSON: [{namn, födelseår, årkurs, instrument}]
+    Lektionsupplägg?: string; // JSON: {form, längd, lektionstid, reservtid, terminsmål, kommentar}
+    ElevLatitude?: number;
+    ElevLongitude?: number;
+    // Lookup fields from Vårdnadshavare (remain until those fields are deleted)
     Gata?: string[];
     Ort?: string[];
-    Latitude?: number[];
-    Longitude?: number[];
     Status: string;
     "Bokade lektioner"?: string[];
     "Elevens erfarenhetsnivå"?: string;
@@ -21,8 +21,6 @@ export type AirtableStudentFields = {
     Lektionstider?: string[];
     Lektioner?: string[];
     "Lektioner Payload"?: string[];
-    Kommentar?: string;
-    Terminsmål?: string;
     "Vårdnadshavare namn"?: string[];
     "Vårdnadshavare e-post"?: string[];
     "Vårdnadshavare telefon"?: string[];
@@ -62,8 +60,8 @@ export type Student = {
     upcomingLessonIds: string[];
     upcomingLessonCompleted: boolean[];
     upcomingLessonCancelled: boolean[];
-    upcomingLessonHomework: string[];  
-    upcomingLessonNotes: string[];     
+    upcomingLessonHomework: string[];
+    upcomingLessonNotes: string[];
     experience: string;
     description: string;
     leadScore?: string;

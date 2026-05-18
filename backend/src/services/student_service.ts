@@ -14,9 +14,8 @@ const TABLE_NAME = "tblAj4VVugqhdPWnR";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-// Matematik: Räkna ut avstånd mellan två GPS-punkter (Haversine Formula)
 const getDistanceFromLatLonInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Jordens radie i km
+    const R = 6371;
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat1)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -30,15 +29,41 @@ const deg2rad = (deg: number) => {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
+function parseBarn(barnJson?: string): { namn: string; födelseår: string; instrument: string[] } {
+    try {
+        const arr = JSON.parse(barnJson || '[]');
+        if (Array.isArray(arr) && arr.length > 0) {
+            return {
+                namn: arr[0].namn || '',
+                födelseår: arr[0].födelseår || '',
+                instrument: Array.isArray(arr[0].instrument) ? arr[0].instrument : [],
+            };
+        }
+    } catch {}
+    return { namn: '', födelseår: '', instrument: [] };
+}
+
+function parseLektionsupplagg(json?: string): { terminsmål: string; kommentar: string } {
+    try {
+        const obj = JSON.parse(json || '{}');
+        return {
+            terminsmål: obj.terminsmål || '',
+            kommentar: obj.kommentar || '',
+        };
+    } catch {}
+    return { terminsmål: '', kommentar: '' };
+}
+
 const mapAirtableToStudent = (record: AirtableRecord): Student => {
     const field = record.fields;
+
+    const barn = parseBarn(field.Barn);
+    const lektionsupplagg = parseLektionsupplagg(field.Lektionsupplägg);
 
     // Parsing av lektionsdata
     const rawPayloads = field["Lektioner Payload"] || [];
     const payloadMap = new Map<string, any>();
 
-    // Packa upp varje lektionssträng och mappa den till lektionens unika ID
-    // Format: RECORD_ID|||completed|||cancelled|||ANTECKNINGAR_JSON
     rawPayloads.forEach((p) => {
         const parts = p.split("|||");
         if (parts.length >= 4) {
@@ -69,20 +94,19 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         id: record.id,
         displayId: field.ID || "",
         name: field.Namn || "",
-        firstName: field.Förnamn || "",
-        instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : (field.Instrument || ''),
+        firstName: barn.namn || "",
+        instrument: barn.instrument.join(', ') || "",
         address: field.Gata?.[0] || "",
         city: field.Ort?.[0] || "",
         location: {
-            lat: field.Latitude?.[0] || 0,
-            lng: field.Longitude?.[0] || 0,
+            lat: field.ElevLatitude || 0,
+            lng: field.ElevLongitude || 0,
         },
         status: field.Status || "Okänd",
 
         upcomingLessons: field["Bokade lektioner"] || [],
         upcomingLessonTimes: field.Lektionstider || [],
 
-        // Vi mappar genom ID-listan och plockar exakt rätt data!
         upcomingLessonIds: upcomingLessonIds,
         upcomingLessonCompleted: upcomingLessonIds.map((id) => payloadMap.get(id)?.completed || false),
         upcomingLessonCancelled: upcomingLessonIds.map((id) => payloadMap.get(id)?.cancelled || false),
@@ -92,8 +116,8 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         experience: field["Elevens erfarenhetsnivå"] || "",
         description: field["Kort om eleven (från anmälan)"] || "",
         leadScore: field["Lead score"],
-        notes: field.Kommentar || "",
-        goals: field.Terminsmål || "",
+        notes: lektionsupplagg.kommentar,
+        goals: lektionsupplagg.terminsmål,
         guardianName: field["Vårdnadshavare namn"]?.[0] || "",
         guardianEmail: field["Vårdnadshavare e-post"]?.[0] || "",
         guardianPhone: field["Vårdnadshavare telefon"]?.[0] || "",
@@ -102,7 +126,6 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
 
 export const getAllStudents = async (): Promise<Student[]> => {
     const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever`);
-
     return response.records.map(mapAirtableToStudent);
 };
 
@@ -114,31 +137,29 @@ export const getStudentById = async (id: string): Promise<Student> => {
 export const getStudentsByTeacher = async (teacherName: string): Promise<Student[]> => {
     const formula = `SEARCH("${teacherName}", {Lärare})`;
     const encodedFormula = encodeURIComponent(formula);
-
     const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever&filterByFormula=${encodedFormula}`);
     return response.records.map(mapAirtableToStudent);
 };
 
 export const updateStudent = async (id: string, data: UpdateStudentInput): Promise<Student> => {
-    const airtableFields: Record<string, any> = {};
+    const currentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${id}`);
+    let lektionsupplagg: Record<string, any> = {};
+    try {
+        lektionsupplagg = JSON.parse(currentRecord.fields.Lektionsupplägg || '{}');
+    } catch {}
 
-    if (data.kommentar !== undefined) {
-        airtableFields["Kommentar"] = data.kommentar;
-    }
+    if (data.kommentar !== undefined) lektionsupplagg.kommentar = data.kommentar;
+    if (data.terminsmal !== undefined) lektionsupplagg.terminsmål = data.terminsmal;
 
-    if (data.terminsmal !== undefined) {
-        airtableFields["Terminsmål"] = data.terminsmal;
-    }
-
-    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, airtableFields);
+    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, {
+        Lektionsupplägg: JSON.stringify(lektionsupplagg),
+    });
 
     return mapAirtableToStudent(updatedRecord);
 };
 
 export const findStudents = async (query: GetStudentsQuery): Promise<StudentPublicDTO[]> => {
-    // 1. Bygg filter-formel för Airtable
     const filters: string[] = [];
-
     filters.push("{Status} = 'Söker lärare'");
 
     if (query.city) {
@@ -150,89 +171,73 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     }
 
     const filterFormula = `AND(${filters.join(",")})`;
-
     const url = `/${TABLE_NAME}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
-    // Använd getAllRecords för att hämta ALLA sidor, inte bara de första 100
     const response = await getAllRecords<{ records: AirtableRecord[] }>(url);
 
-    // 2. Mappa datan och hantera Array-fälten
     let students: StudentPublicDTO[] = response.records.map((record) => {
         const fields = record.fields;
+        const barn = parseBarn(fields.Barn);
 
-        const lat = fields.Latitude?.[0];
-        const lng = fields.Longitude?.[0];
+        const lat = fields.ElevLatitude;
+        const lng = fields.ElevLongitude;
         const city = fields.Ort?.[0] || "";
 
         let distance = undefined;
-
-        if (query.lat && query.lng && lat && lng) {
+        if (query.lat && query.lng && lat !== undefined && lng !== undefined) {
             const userLat = parseFloat(query.lat);
             const userLng = parseFloat(query.lng);
             distance = getDistanceFromLatLonInKm(userLat, userLng, lat, lng);
         }
 
-        // EVALUATE IF APPLIED
         const onskarArray = fields.Önskar || [];
         const hasApplied = query.teacherId ? onskarArray.includes(query.teacherId) : false;
 
         return {
             id: record.id,
-            name: fields.Förnamn || fields.Namn || "Anonym",
-            city: city,
-            instruments: Array.isArray(fields.Instrument) ? fields.Instrument : (fields.Instrument ? fields.Instrument.split(',').map(s => s.trim()).filter(Boolean) : []),
-            lat: lat,
-            lng: lng,
+            name: barn.namn || fields.Namn || "Anonym",
+            city,
+            instruments: barn.instrument.length ? barn.instrument : [],
+            lat,
+            lng,
             distance: distance ? parseFloat(distance.toFixed(1)) : undefined,
-            hasApplied: hasApplied,
-            birthYear: fields.Födelseår,
+            hasApplied,
+            birthYear: barn.födelseår || undefined,
             studentNumber: fields.NummerID,
         };
     });
 
-    // 3. Filtrera på Radius (Geografiskt - görs i minnet)
     if (query.radius && query.lat && query.lng) {
         const radius = parseFloat(query.radius);
         students = students.filter((s) => {
             if (s.distance === undefined) return false;
             return s.distance <= radius;
         });
-
         students.sort((a, b) => (a.distance || 0) - (b.distance || 0));
     }
 
     return students;
 };
 
-// This function handles the logic of adding a teacher to a student's 'Önskar' list
 export const requestToTeachStudent = async (studentId: string, data: RequestToTeachInput): Promise<Student> => {
-    // 1. Fetch current student to get existing 'Önskar' array
     const currentStudentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${studentId}`);
     const currentFields = currentStudentRecord.fields;
 
     const currentRequests = currentFields.Önskar || [];
 
-    // Safety check: Prevent duplicate requests from the same teacher
     if (currentRequests.includes(data.teacherId)) {
         throw new Error("You have already sent a request for this student");
     }
 
-    // 2. Append the new teacher ID to the list
     const updatedRequests = [...currentRequests, data.teacherId];
 
-    // 3. Append the comment to 'Egen anteckning'
-    // Vi läser av vad som redan står i 'Egen anteckning' för att inte radera tidigare historik
     let updatedComment = currentFields["Egen anteckning"] || "";
     if (data.message) {
-        const dateStr = new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
-        // Om det redan finns text, lägger vi till en dubbel radbrytning innan vi lägger till det nya
+        const dateStr = new Date().toLocaleDateString("sv-SE");
         const separator = updatedComment ? "\n\n" : "";
-
-        // Snyggare och tydligare rubrik i Airtable!
         updatedComment += `${separator}--- Elevansökan: ${data.teacherName} (${dateStr}) ---\n${data.message}`;
     }
 
-    // 4. Update Airtable - Använd exakt samma kolumnnamn som i Airtable!
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, {
         Önskar: updatedRequests,
         "Egen anteckning": updatedComment.trim(),
