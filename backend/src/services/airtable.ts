@@ -83,3 +83,14 @@ export const patch = async <T>(endpoint: string, fields: Record<string, any>) =>
         throw error;
     }
 };
+
+export function normalizeMultiSelect(val: unknown): string {
+    if (Array.isArray(val)) return val.join(', ');
+    return (val as string) || '';
+}
+
+export function parseMultiSelect(val: unknown): string[] {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val) return val.split(',').map(s => s.trim()).filter(Boolean);
+    return [];
+}
