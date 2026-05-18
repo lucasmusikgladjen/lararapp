@@ -74,12 +74,9 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         name: field.Namn || "",
         firstName: (field.Namn || "").split(" ")[0] || "",
         instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : (field.Instrument || ''),
-        address: field.Gata?.[0] || "",
-        city: field.Ort?.[0] || "",
-        location: {
-            lat: field.Latitude?.[0] || 0,
-            lng: field.Longitude?.[0] || 0,
-        },
+        address: "",
+        city: "",
+        location: { lat: 0, lng: 0 },
         status: field.Status || "Okänd",
 
         upcomingLessons: field["Bokade lektioner"] || [],
@@ -95,8 +92,8 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         experience: "",
         description: "",
         leadScore: field["Lead score"],
-        notes: field.Kommentar || "",
-        goals: field.Terminsmål || "",
+        notes: (() => { try { return JSON.parse((field as any)['Lektionsupplägg'] || '{}').kommentar || ''; } catch { return ''; } })(),
+        goals: (() => { try { return JSON.parse((field as any)['Lektionsupplägg'] || '{}').terminsmål || ''; } catch { return ''; } })(),
         guardianName: field["Vårdnadshavare namn"]?.[0] || "",
         guardianEmail: field["Vårdnadshavare e-post"]?.[0] || "",
         guardianPhone: field["Vårdnadshavare telefon"]?.[0] || "",
@@ -123,17 +120,21 @@ export const getStudentsByTeacher = async (teacherName: string): Promise<Student
 };
 
 export const updateStudent = async (id: string, data: UpdateStudentInput): Promise<Student> => {
-    const airtableFields: Record<string, any> = {};
+    // kommentar and terminsmål are stored inside the Lektionsupplägg JSON field
+    const currentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${id}`);
+    let lektionsupplaggObj: any = {};
+    try { lektionsupplaggObj = JSON.parse((currentRecord.fields as any)['Lektionsupplägg'] || '{}'); } catch {}
 
     if (data.kommentar !== undefined) {
-        airtableFields["Kommentar"] = data.kommentar;
+        lektionsupplaggObj.kommentar = data.kommentar;
     }
-
     if (data.terminsmal !== undefined) {
-        airtableFields["Terminsmål"] = data.terminsmal;
+        lektionsupplaggObj.terminsmål = data.terminsmal;
     }
 
-    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, airtableFields);
+    const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, {
+        Lektionsupplägg: JSON.stringify(lektionsupplaggObj),
+    });
 
     return mapAirtableToStudent(updatedRecord);
 };
@@ -143,10 +144,6 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     const filters: string[] = [];
 
     filters.push("{Status} = 'Söker lärare'");
-
-    if (query.city) {
-        filters.push(`SEARCH('${query.city.toLowerCase()}', LOWER({Ort} & ""))`);
-    }
 
     if (query.instrument) {
         filters.push(`FIND("${query.instrument.toLowerCase()}", LOWER(ARRAYJOIN({Instrument}, ",")))`);
@@ -163,17 +160,14 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     let students: StudentPublicDTO[] = response.records.map((record) => {
         const fields = record.fields;
 
-        const lat = fields.Latitude?.[0];
-        const lng = fields.Longitude?.[0];
-        const city = fields.Ort?.[0] || "";
+        const lat: number | undefined = undefined;
+        const lng: number | undefined = undefined;
+        const city = "";
 
         let distance = undefined;
 
-        if (query.lat && query.lng && lat && lng) {
-            const userLat = parseFloat(query.lat);
-            const userLng = parseFloat(query.lng);
-            distance = getDistanceFromLatLonInKm(userLat, userLng, lat, lng);
-        }
+        // Note: Latitude/Longitude are on Vårdnadshavare, not Elev
+        // Distance filtering is not available in this endpoint without a VH lookup
 
         // EVALUATE IF APPLIED
         const onskarArray = fields.LärareÖnskar || [];
