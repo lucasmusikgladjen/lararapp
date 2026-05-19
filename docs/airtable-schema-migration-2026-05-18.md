@@ -361,7 +361,7 @@ Alla JSON-fält (`Kontaktuppgifter`, `Erfarenheter`, `Övrigt`) fanns redan i ga
 | Födelseår | fldOsBOwWWpwrGytT | singleLineText |
 | Status | fldQfvT0oGCvXcNJp | singleSelect |
 | Instrument | fldCEc2Rl2X3SsKIg | multipleSelects |
-| EgenAnteckning | fldW105mIHjk72rAd | multilineText |
+| IntervjuAnteckning | fldW105mIHjk72rAd | multilineText |
 | Länk till lärare | fldnqvkyX4bDg8oeK | multipleRecordLinks |
 | Latitude | fld2QDW50sNrpWkj5 | number |
 | Longitude | fldvVj8KnUzFhtmda | number |
