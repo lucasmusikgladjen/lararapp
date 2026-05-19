@@ -3,26 +3,18 @@ export type AirtableStudentFields = {
     NummerID?: number | string;
     Namn: string;
     Födelseår: string;
-    Instrument: string | string[];
-    Gata?: string[];
-    Ort?: string[];
-    Latitude?: number[];
-    Longitude?: number[];
+    Instrument: string[];
     Status: string;
-    "Bokade lektioner"?: string[];
     Ansökningsdag?: string;
-    "Lead score"?: string;
-    "Närmaste lärare"?: string[];
     LärareÖnskar?: string[];
     LärareÖnskarKommentar?: string;
     Lektionstider?: string[];
     Lektioner?: string[];
-    "Lektioner Payload"?: string[];
-    Kommentar?: string;
-    Terminsmål?: string;
     "Vårdnadshavare namn"?: string[];
-    "Vårdnadshavare e-post"?: string[];
-    "Vårdnadshavare telefon"?: string[];
+    Vårdnadshavare?: string[];
+    Barn?: string;
+    Lektionsupplägg?: string;
+    LärareFörslag?: string[];
 };
 
 export type AirtableRecord = {
