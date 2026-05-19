@@ -17,89 +17,49 @@ const GUARDIAN_TABLE_NAME = "tblfYUEqhO9gtSQMh";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-// Matematik: Räkna ut avstånd mellan två GPS-punkter (Haversine Formula)
-const getDistanceFromLatLonInKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Jordens radie i km
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat1)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-};
-
-const deg2rad = (deg: number) => {
-    return deg * (Math.PI / 180);
-};
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+function parseJsonField<T>(value: string | undefined | null, fallback: T): T {
+    if (!value || typeof value !== 'string') return fallback;
+    try { return JSON.parse(value) as T; } catch { return fallback; }
+}
 
 const mapAirtableToStudent = (record: AirtableRecord): Student => {
     const field = record.fields;
 
-    // Parsing av lektionsdata
-    const rawPayloads = field["Lektioner Payload"] || [];
-    const payloadMap = new Map<string, any>();
-
-    // Packa upp varje lektionssträng och mappa den till lektionens unika ID
-    // Format: RECORD_ID|||completed|||cancelled|||ANTECKNINGAR_JSON
-    rawPayloads.forEach((p) => {
-        const parts = p.split("|||");
-        if (parts.length >= 4) {
-            let homework = "";
-            let notes = "";
-            const raw = parts[3] === "BLANK" ? "" : parts[3];
-            if (raw) {
-                try {
-                    const parsed = JSON.parse(raw);
-                    homework = parsed.laxa || "";
-                    notes = parsed.lektionsanteckning || "";
-                } catch {
-                    homework = raw;
-                }
-            }
-            payloadMap.set(parts[0], {
-                completed: parts[1] === "true",
-                cancelled: parts[2] === "true",
-                homework,
-                notes,
-            });
-        }
-    });
-
     const upcomingLessonIds = field.Lektioner || [];
+
+    const lektionsupplägg = parseJsonField(field.Lektionsupplägg, { terminsmål: '', kommentar: '' });
 
     return {
         id: record.id,
         displayId: field.ID || "",
         name: field.Namn || "",
         firstName: (field.Namn || "").split(" ")[0] || "",
-        instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : (field.Instrument || ''),
-        address: field.Gata?.[0] || "",
-        city: field.Ort?.[0] || "",
+        instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : '',
+        address: "",
+        city: "",
         location: {
-            lat: field.Latitude?.[0] || 0,
-            lng: field.Longitude?.[0] || 0,
+            lat: 0,
+            lng: 0,
         },
         status: field.Status || "Okänd",
 
-        upcomingLessons: field["Bokade lektioner"] || [],
+        upcomingLessons: field.Lektioner || [],
         upcomingLessonTimes: field.Lektionstider || [],
 
-        // Vi mappar genom ID-listan och plockar exakt rätt data!
         upcomingLessonIds: upcomingLessonIds,
-        upcomingLessonCompleted: upcomingLessonIds.map((id) => payloadMap.get(id)?.completed || false),
-        upcomingLessonCancelled: upcomingLessonIds.map((id) => payloadMap.get(id)?.cancelled || false),
-        upcomingLessonHomework: upcomingLessonIds.map((id) => payloadMap.get(id)?.homework || ""),
-        upcomingLessonNotes: upcomingLessonIds.map((id) => payloadMap.get(id)?.notes || ""),
+        upcomingLessonCompleted: [],
+        upcomingLessonCancelled: [],
+        upcomingLessonHomework: [],
+        upcomingLessonNotes: [],
 
         experience: "",
         description: "",
-        leadScore: field["Lead score"],
-        notes: field.Kommentar || "",
-        goals: field.Terminsmål || "",
+        leadScore: undefined,
+        notes: lektionsupplägg.kommentar || "",
+        goals: lektionsupplägg.terminsmål || "",
         guardianName: field["Vårdnadshavare namn"]?.[0] || "",
-        guardianEmail: field["Vårdnadshavare e-post"]?.[0] || "",
-        guardianPhone: field["Vårdnadshavare telefon"]?.[0] || "",
+        guardianEmail: "",
+        guardianPhone: "",
     };
 };
 
@@ -125,12 +85,13 @@ export const getStudentsByTeacher = async (teacherName: string): Promise<Student
 export const updateStudent = async (id: string, data: UpdateStudentInput): Promise<Student> => {
     const airtableFields: Record<string, any> = {};
 
-    if (data.kommentar !== undefined) {
-        airtableFields["Kommentar"] = data.kommentar;
-    }
-
-    if (data.terminsmal !== undefined) {
-        airtableFields["Terminsmål"] = data.terminsmal;
+    if (data.kommentar !== undefined || data.terminsmal !== undefined) {
+        const currentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${id}`);
+        let lu: any = {};
+        try { lu = JSON.parse(currentRecord.fields.Lektionsupplägg || '{}'); } catch {}
+        if (data.kommentar !== undefined) lu.kommentar = data.kommentar;
+        if (data.terminsmal !== undefined) lu.terminsmål = data.terminsmal;
+        airtableFields['Lektionsupplägg'] = JSON.stringify(lu);
     }
 
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, airtableFields);
@@ -144,10 +105,6 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
 
     filters.push("{Status} = 'Söker lärare'");
 
-    if (query.city) {
-        filters.push(`SEARCH('${query.city.toLowerCase()}', LOWER({Ort} & ""))`);
-    }
-
     if (query.instrument) {
         filters.push(`FIND("${query.instrument.toLowerCase()}", LOWER(ARRAYJOIN({Instrument}, ",")))`);
     }
@@ -160,20 +117,8 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
     const response = await getAllRecords<{ records: AirtableRecord[] }>(url);
 
     // 2. Mappa datan och hantera Array-fälten
-    let students: StudentPublicDTO[] = response.records.map((record) => {
+    const students: StudentPublicDTO[] = response.records.map((record) => {
         const fields = record.fields;
-
-        const lat = fields.Latitude?.[0];
-        const lng = fields.Longitude?.[0];
-        const city = fields.Ort?.[0] || "";
-
-        let distance = undefined;
-
-        if (query.lat && query.lng && lat && lng) {
-            const userLat = parseFloat(query.lat);
-            const userLng = parseFloat(query.lng);
-            distance = getDistanceFromLatLonInKm(userLat, userLng, lat, lng);
-        }
 
         // EVALUATE IF APPLIED
         const onskarArray = fields.LärareÖnskar || [];
@@ -182,27 +127,16 @@ export const findStudents = async (query: GetStudentsQuery): Promise<StudentPubl
         return {
             id: record.id,
             name: fields.Namn || "Anonym",
-            city: city,
-            instruments: Array.isArray(fields.Instrument) ? fields.Instrument : (fields.Instrument ? fields.Instrument.split(',').map(s => s.trim()).filter(Boolean) : []),
-            lat: lat,
-            lng: lng,
-            distance: distance ? parseFloat(distance.toFixed(1)) : undefined,
+            city: "",
+            instruments: Array.isArray(fields.Instrument) ? fields.Instrument : [],
+            lat: undefined,
+            lng: undefined,
+            distance: undefined,
             hasApplied: hasApplied,
             birthYear: fields.Födelseår,
             studentNumber: fields.NummerID,
         };
     });
-
-    // 3. Filtrera på Radius (Geografiskt - görs i minnet)
-    if (query.radius && query.lat && query.lng) {
-        const radius = parseFloat(query.radius);
-        students = students.filter((s) => {
-            if (s.distance === undefined) return false;
-            return s.distance <= radius;
-        });
-
-        students.sort((a, b) => (a.distance || 0) - (b.distance || 0));
-    }
 
     return students;
 };
