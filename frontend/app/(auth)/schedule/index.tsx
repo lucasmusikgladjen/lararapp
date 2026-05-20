@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DatePickerField } from "../../../src/components/ui/DatePickerField";
@@ -145,15 +145,25 @@ export default function SchedulePage() {
         });
     };
 
+    // Synkron lås så ett snabbt dubbeltryck inte hinner förbi isPending-staten
+    // (React-state är async). Motsvarar lärarsidans addRecurringLessonsLockRef.
+    const createLessonsLockRef = useRef(false);
+
     const { mutate: createLessonMutation, isPending: isCreating } = useCreateLessons({
         onSuccess: () => {
+            createLessonsLockRef.current = false;
             Alert.alert("Klart!", "Lektionerna har skapats framgångsrikt.");
             router.back();
         },
-        onError: () => Alert.alert("Ett fel uppstod", "Kunde inte skapa lektionerna."),
+        onError: () => {
+            createLessonsLockRef.current = false;
+            Alert.alert("Ett fel uppstod", "Kunde inte skapa lektionerna.");
+        },
     });
 
     const handleCreateLessons = () => {
+        if (createLessonsLockRef.current) return;
+
         if (!createStudent || !createDate || !createTime || !createLayout) {
             Alert.alert("Saknad info", "Vänligen fyll i alla fält.");
             return;
@@ -163,6 +173,7 @@ export default function SchedulePage() {
 
         const repeatUntil = repeatTerm ? user.termEnd || "2026-06-10" : undefined;
 
+        createLessonsLockRef.current = true;
         createLessonMutation({
             teacherId: user.id,
             studentId: createStudent,
