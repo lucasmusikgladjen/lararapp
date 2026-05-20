@@ -6,7 +6,6 @@ export type AirtableLessonFields = {
     Klockslag?: string;
     Status?: "Genomförd" | "Inställd" | "Ombokad" | "Pausad";
     Anteckningar?: string;
-    Orsak?: string;
     "Ombokad till"?: string;
 };
 
