@@ -171,7 +171,7 @@ Kod som använder fältnamn (t.ex. `fields["Önskar"]`) bryts. Kod som använder
 | Kontaktuppgifter | fldxOAeCt9zLNkFLL | multilineText | `{"epost": "", "telefon": "", "gata": "", "gatunummer": "", "postnummer": "", "ort": ""}` |
 | Anmälningsinfo | flde9zyX5sZZYaC8D | multilineText | `{"hurSnart": "", "vadHoppas": [], "tillgangInstrument": "", "annatViBorVeta": "", "kommunikationspreferens": []}` |
 | Anteckning | fldw3qDboPQAxwG6c | multilineText | Fritext. Ersätter Samtalsanteckning, Kommentar från första lektionen och Något annat vi bör veta? |
-| Abonnemangsupplägg | fldg9hFFvSrndEflN | multilineText | `{"upplägg": "veckovis|varannan", "längd": 60}` |
+| Abonnemangsupplägg | fldg9hFFvSrndEflN | multilineText | `{"upplägg": "veckovis\|varannan vecka", "längd": 60\|90\|120}` — `upplägg`=frekvens, `längd`=lektionslängd i minuter. Lektionsform härleds från längd (60→Individuell, 90→Delad, 120→Dubbel). |
 
 ### Borttagna fält
 
@@ -242,8 +242,7 @@ Kod som använder fältnamn (t.ex. `fields["Önskar"]`) bryts. Kod som använder
 | Samtalsanteckning | Anteckning |
 | Kommentar från första lektionen | Anteckning eller Matchningar.FörstaLektionAnteckning |
 | Anmälningskommentar (intern) | Anteckning |
-| Lektionsform | Abonnemangsupplägg.upplägg |
-| Lektion längd | Abonnemangsupplägg.längd |
+| Lektion längd | Abonnemangsupplägg.längd (Lektionsform härleds från längd) |
 | Lektionstid | → Elev.Lektionsupplägg.lektionstid |
 | Reservtid | → Elev.Lektionsupplägg.reservtid |
 
@@ -493,8 +492,7 @@ Måste hanteras i **både** create och update:
 | Gatunummer | Kontaktuppgifter | `.gatunummer` |
 | Postnummer | Kontaktuppgifter | `.postnummer` |
 | Ort | Kontaktuppgifter | `.ort` |
-| Lektionsform | Abonnemangsupplägg | `.upplägg` |
-| Lektion längd | Abonnemangsupplägg | `.längd` |
+| Lektion längd | Abonnemangsupplägg | `.längd` (Lektionsform härleds från längd) |
 | Hur snart vill ni komma igång | Anmälningsinfo | `.hurSnart` |
 | Tillgång till instrument | Anmälningsinfo | `.tillgangInstrument` |
 | Vad hoppas ni fått ut av undervisning | Anmälningsinfo | `.vadHoppas` |
