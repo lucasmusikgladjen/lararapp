@@ -31,7 +31,6 @@ export type AirtableResponse<T> = {
 };
 
 export type UpdateStudentInput = {
-    kommentar?: string;
     terminsmal?: string;
 };
 
@@ -52,7 +51,6 @@ export type Student = {
     experience: string;
     description: string;
     leadScore?: string;
-    notes?: string;
     goals?: string;
     guardianName?: string;
     guardianEmail?: string;
