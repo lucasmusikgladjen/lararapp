@@ -8,6 +8,8 @@ import type {
     RequestToTeachInput,
 } from "../types/Student.types";
 import { get, getAllRecords, patch } from "./airtable";
+import { getLessonsByIds } from "./lesson_service";
+import type { AirtableLessonRecord, StudentLessonDTO } from "../types/Lessons.types";
 
 // Table: "Elev" | ID: tblAj4VVugqhdPWnR
 const TABLE_NAME = "tblAj4VVugqhdPWnR";
@@ -22,11 +24,32 @@ function parseJsonField<T>(value: string | undefined | null, fallback: T): T {
     try { return JSON.parse(value) as T; } catch { return fallback; }
 }
 
-const mapAirtableToStudent = (record: AirtableRecord): Student => {
+const mapLessonRecordToDTO = (record: AirtableLessonRecord): StudentLessonDTO => {
+    const f = record.fields;
+    let homework = "";
+    let notes = "";
+    try {
+        const parsed = JSON.parse(f.Anteckningar || "{}");
+        homework = parsed.laxa || "";
+        notes = parsed.lektionsanteckning || "";
+    } catch { /* ignore */ }
+
+    const status = f.Status || "";
+
+    return {
+        id: record.id,
+        date: f.Datum || "",
+        time: f.Klockslag || "",
+        status,
+        isCompleted: status === "Genomförd",
+        isCancelled: status === "Inställd",
+        homework,
+        notes,
+    };
+};
+
+const mapAirtableToStudent = (record: AirtableRecord, lessons: StudentLessonDTO[]): Student => {
     const field = record.fields;
-
-    const upcomingLessonIds = field.Lektioner || [];
-
     const lektionsupplägg = parseJsonField(field.Lektionsupplägg, { terminsmål: '', kommentar: '' });
 
     return {
@@ -37,21 +60,9 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
         instrument: Array.isArray(field.Instrument) ? field.Instrument.join(', ') : '',
         address: "",
         city: "",
-        location: {
-            lat: 0,
-            lng: 0,
-        },
+        location: { lat: 0, lng: 0 },
         status: field.Status || "Okänd",
-
-        upcomingLessons: field.Lektioner || [],
-        upcomingLessonTimes: field.Lektionstider || [],
-
-        upcomingLessonIds: upcomingLessonIds,
-        upcomingLessonCompleted: [],
-        upcomingLessonCancelled: [],
-        upcomingLessonHomework: [],
-        upcomingLessonNotes: [],
-
+        lessons,
         experience: "",
         description: "",
         leadScore: undefined,
@@ -63,15 +74,30 @@ const mapAirtableToStudent = (record: AirtableRecord): Student => {
     };
 };
 
+const attachLessonsToStudents = async (records: AirtableRecord[]): Promise<Student[]> => {
+    const allLessonIds = records.flatMap((r) => r.fields.Lektioner || []);
+    const lessonRecords = await getLessonsByIds(allLessonIds);
+    const lessonsById = new Map(lessonRecords.map((l) => [l.id, mapLessonRecordToDTO(l)]));
+
+    return records.map((record) => {
+        const ids = record.fields.Lektioner || [];
+        const lessons = ids
+            .map((id) => lessonsById.get(id))
+            .filter((l): l is StudentLessonDTO => Boolean(l))
+            .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+        return mapAirtableToStudent(record, lessons);
+    });
+};
+
 export const getAllStudents = async (): Promise<Student[]> => {
     const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever`);
-
-    return response.records.map(mapAirtableToStudent);
+    return attachLessonsToStudents(response.records);
 };
 
 export const getStudentById = async (id: string): Promise<Student> => {
     const record = await get<AirtableRecord>(`/${TABLE_NAME}/${id}`);
-    return mapAirtableToStudent(record);
+    const [student] = await attachLessonsToStudents([record]);
+    return student;
 };
 
 export const getStudentsByTeacher = async (teacherName: string): Promise<Student[]> => {
@@ -79,7 +105,7 @@ export const getStudentsByTeacher = async (teacherName: string): Promise<Student
     const encodedFormula = encodeURIComponent(formula);
 
     const response = await get<AirtableResponse<AirtableRecord>>(`/${TABLE_NAME}?view=Aktiva%20elever&filterByFormula=${encodedFormula}`);
-    return response.records.map(mapAirtableToStudent);
+    return attachLessonsToStudents(response.records);
 };
 
 export const updateStudent = async (id: string, data: UpdateStudentInput): Promise<Student> => {
@@ -96,7 +122,8 @@ export const updateStudent = async (id: string, data: UpdateStudentInput): Promi
 
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${id}`, airtableFields);
 
-    return mapAirtableToStudent(updatedRecord);
+    const [student] = await attachLessonsToStudents([updatedRecord]);
+    return student;
 };
 
 export const findStudents = async (query: GetStudentsQuery): Promise<StudentPublicDTO[]> => {
@@ -190,5 +217,6 @@ export const requestToTeachStudent = async (studentId: string, data: RequestToTe
     }
 
     const updatedRecord = await patch<AirtableRecord>(`/${TABLE_NAME}/${studentId}`, patchFields);
-    return mapAirtableToStudent(updatedRecord);
+    const [student] = await attachLessonsToStudents([updatedRecord]);
+    return student;
 };

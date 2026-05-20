@@ -11,8 +11,11 @@ export type Lesson = {
     id: string;
     date: string;
     time: string;
-    completed: boolean;
-    cancelled: boolean;
+    status: string;
+    isCompleted: boolean;
+    isCancelled: boolean;
+    homework: string;
+    notes: string;
 };
 
 export type Student = {
@@ -26,17 +29,10 @@ export type Student = {
     city: string;
     comment: string;
     lessonPrice: number;
-    upcomingLessons: string[];
-    upcomingLessonTimes: string[];
-    upcomingLessonIds?: string[];
-    upcomingLessonCompleted: boolean[];
-    upcomingLessonCancelled: boolean[];
-    upcomingLessonHomework: string[]; 
-    upcomingLessonNotes: string[];    
+    lessons: Lesson[];
     notes: string | null;
     goals: string | null;
     guardian?: Guardian;
-    lessons?: Lesson[];
     guardianName?: string;
     guardianEmail?: string;
     guardianPhone?: string;

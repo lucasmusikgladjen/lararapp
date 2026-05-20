@@ -1,3 +1,7 @@
+import type { StudentLessonDTO } from "./Lessons.types";
+
+export type { StudentLessonDTO };
+
 export type AirtableStudentFields = {
     ID: string;
     NummerID?: number | string;
@@ -8,7 +12,6 @@ export type AirtableStudentFields = {
     Ansökningsdag?: string;
     LärareÖnskar?: string[];
     LärareÖnskarKommentar?: string;
-    Lektionstider?: string[];
     Lektioner?: string[];
     "Vårdnadshavare namn"?: string[];
     Vårdnadshavare?: string[];
@@ -45,13 +48,7 @@ export type Student = {
         lng: number;
     };
     status: string;
-    upcomingLessons: string[];
-    upcomingLessonTimes: string[];
-    upcomingLessonIds: string[];
-    upcomingLessonCompleted: boolean[];
-    upcomingLessonCancelled: boolean[];
-    upcomingLessonHomework: string[];  
-    upcomingLessonNotes: string[];     
+    lessons: StudentLessonDTO[];
     experience: string;
     description: string;
     leadScore?: string;
