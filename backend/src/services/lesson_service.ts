@@ -7,8 +7,59 @@ dotenv.config();
 
 const TABLE_NAME = "tblbMwm8gitNwBAUH";
 
+const isAirtableRecordId = (id: string): boolean => /^rec[A-Za-z0-9]{14}$/.test(id);
+
+// Stable identity for a lesson slot. Matches lärarsidans signature
+// (same student + teacher + datum + klockslag = same slot) so dubbeltryck,
+// retries och samtidiga klienter inte skapar två rader i Lektioner.
+const lessonSlotSignature = (teacherId: string, studentId: string, date: string, time: string): string =>
+    `${teacherId}|${studentId}|${date}|${time}`;
+
 export const createLessonsBatch = async (lessons: CreateLessonDTO[]): Promise<AirtableLessonRecord[]> => {
-    const formattedRecords = lessons.map((lesson) => ({
+    if (lessons.length === 0) return [];
+
+    const seenInBatch = new Set<string>();
+    const dedupedBatch = lessons.filter((lesson) => {
+        const sig = lessonSlotSignature(lesson.teacherId, lesson.studentId, lesson.date, lesson.timeHHMM);
+        if (seenInBatch.has(sig)) return false;
+        seenInBatch.add(sig);
+        return true;
+    });
+
+    // Server-side dedup against existing Lektioner. Skopa per lärare via
+    // filterByFormula så vi slipper helbasscan. Om teacherId inte ser ut
+    // som ett Airtable rec-ID hoppar vi över denna del (sker inte i praktiken,
+    // men en full scan vore för dyr att göra blint).
+    const teacherIds = Array.from(new Set(dedupedBatch.map((l) => l.teacherId)));
+    const existingSignatures = new Set<string>();
+
+    for (const teacherId of teacherIds) {
+        if (!isAirtableRecordId(teacherId)) continue;
+
+        const formula = `FIND("${teacherId}", ARRAYJOIN({Lärare})) > 0`;
+        const url = `/${TABLE_NAME}?filterByFormula=${encodeURIComponent(formula)}`;
+        const existing = await getAllRecords<{ records: AirtableLessonRecord[] }>(url);
+
+        for (const record of existing.records) {
+            const f = record.fields;
+            const teacher = Array.isArray(f.Lärare) ? f.Lärare[0] : undefined;
+            const student = Array.isArray(f.Elev) ? f.Elev[0] : undefined;
+            if (teacher && student && f.Datum && f.Klockslag) {
+                existingSignatures.add(lessonSlotSignature(teacher, student, f.Datum, f.Klockslag));
+            }
+        }
+    }
+
+    const toCreate = dedupedBatch.filter(
+        (lesson) =>
+            !existingSignatures.has(
+                lessonSlotSignature(lesson.teacherId, lesson.studentId, lesson.date, lesson.timeHHMM)
+            )
+    );
+
+    if (toCreate.length === 0) return [];
+
+    const formattedRecords = toCreate.map((lesson) => ({
         fields: {
             Lärare: [lesson.teacherId],
             Elev: [lesson.studentId],
