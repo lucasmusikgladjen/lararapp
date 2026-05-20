@@ -118,43 +118,31 @@ export default function StudentProfile() {
         };
     }, [student]);
 
-    // Skapa LessonEvents kompatibla med ScheduleCard
     const allLessons: LessonEvent[] = useMemo(() => {
         if (!student) return [];
-        const lessons: LessonEvent[] = [];
+        const todayStr = new Date().toISOString().split("T")[0];
+        const events: LessonEvent[] = [];
 
-        student.upcomingLessons?.forEach((date, index) => {
-            const isCancelled = student.upcomingLessonCancelled?.[index] || false;
-            if (isCancelled) return;
+        for (const lesson of student.lessons ?? []) {
+            if (lesson.isCancelled) continue;
+            if (!lesson.date) continue;
 
-            const realId = student.upcomingLessonIds?.[index];
-            const fallbackId = `${student.id}-${date}-${index}`;
-
-            // Beräkna om lektionen är genomförd via lookup
-            const isCompleted = student.upcomingLessonCompleted?.[index] ?? false;
-
-            // Plocka ut läxa och anteckningar
-            const homeworkString = student.upcomingLessonHomework?.[index] || "";
-            const notesString = student.upcomingLessonNotes?.[index] || "";
-
-            // Beräkna daysLeft
-            const todayStr = new Date().toISOString().split("T")[0];
-            const diffTime = new Date(date).getTime() - new Date(todayStr).getTime();
+            const diffTime = new Date(lesson.date).getTime() - new Date(todayStr).getTime();
             const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            lessons.push({
-                id: realId || fallbackId,
-                date,
-                time: student.upcomingLessonTimes?.[index] || "Tid saknas",
+            events.push({
+                id: lesson.id,
+                date: lesson.date,
+                time: lesson.time || "Tid saknas",
                 daysLeft,
-                isCompleted,
-                student: student,
-                homework: homeworkString,
-                notes: notesString,
+                isCompleted: lesson.isCompleted,
+                student,
+                homework: lesson.homework,
+                notes: lesson.notes,
             });
-        });
+        }
 
-        return lessons.sort((a, b) => a.date.localeCompare(b.date));
+        return events.sort((a, b) => a.date.localeCompare(b.date));
     }, [student]);
 
     const today = new Date().toISOString().split("T")[0];

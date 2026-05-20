@@ -1,13 +1,24 @@
 export type AirtableLessonFields = {
     Lärare?: string[];
     Elev?: string[];
-    Datum?: string; 
-    Lektionsform?: string; 
-    Klockslag?: string; 
-    Status?: string;
+    Datum?: string;
+    Lektionsform?: string;
+    Klockslag?: string;
+    Status?: "Genomförd" | "Inställd" | "Ombokad" | "Pausad";
     Anteckningar?: string;
     Orsak?: string;
     "Ombokad till"?: string;
+};
+
+export type StudentLessonDTO = {
+    id: string;
+    date: string;
+    time: string;
+    status: string;
+    isCompleted: boolean;
+    isCancelled: boolean;
+    homework: string;
+    notes: string;
 };
 
 export type AirtableLessonRecord = {

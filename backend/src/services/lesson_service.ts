@@ -32,6 +32,23 @@ export const createLessonsBatch = async (lessons: CreateLessonDTO[]): Promise<Ai
     return createdRecords;
 };
 
+export const getLessonsByIds = async (ids: string[]): Promise<AirtableLessonRecord[]> => {
+    if (ids.length === 0) return [];
+
+    const chunkSize = 100;
+    const all: AirtableLessonRecord[] = [];
+
+    for (let i = 0; i < ids.length; i += chunkSize) {
+        const chunk = ids.slice(i, i + chunkSize);
+        const formula = `OR(${chunk.map((id) => `RECORD_ID()='${id}'`).join(",")})`;
+        const url = `/${TABLE_NAME}?filterByFormula=${encodeURIComponent(formula)}`;
+        const response = await getAllRecords<{ records: AirtableLessonRecord[] }>(url);
+        all.push(...response.records);
+    }
+
+    return all;
+};
+
 export const getFutureLessonsForStudent = async (studentName: string, fromDate: string): Promise<AirtableLessonRecord[]> => {
     // Söker exakt på elevens namn för att undvika problem med Airtables ID-länkningar
     const formula = `AND(SEARCH('${studentName}', {Elev Namn} & ''), IS_AFTER({Datum}, '${fromDate}'))`;
