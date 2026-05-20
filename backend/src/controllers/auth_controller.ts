@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { createTeacher, getTeacherByEmail, updateTeacher } from "../services/teacher_service";
+import { isTeacherActive } from "../services/teacher_status";
 import { JwtAccessTokenPayload } from "../types/JWT.types";
 import { StringValue } from "ms";
 import { TypedRequestBody } from "../types/Request.types";
@@ -51,7 +52,16 @@ export const login = async (req: TypedRequestBody<LoginRequestBody>, res: Respon
             return;
         }
 
-        // 3. Verify credentials
+        // 3. Block teachers that have ended their employment
+        if (!isTeacherActive(teacher.status)) {
+            debug("Login failed: User %s is inactive (status=%s)", email, teacher.status);
+            res.status(403).send({
+                status: "fail",
+                message: "Kontot är avslutat. Kontakta Musikglädjen om du har frågor.",
+            });
+            return;
+        }
+
         if (!teacher.password) {
             debug("Login failed: User %s has no password set", email);
             res.status(401).send({
@@ -185,6 +195,11 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         if (!teacher) {
             return res.status(404).send({ status: "fail", message: "Kunde inte hitta en användare med den e-postadressen." });
+        }
+
+        if (!isTeacherActive(teacher.status)) {
+            debug("Reset password blocked: User %s is inactive (status=%s)", email, teacher.status);
+            return res.status(403).send({ status: "fail", message: "Kontot är avslutat. Kontakta Musikglädjen om du har frågor." });
         }
 
         // Kolla om Airtable har en återställningskod, och om den matchar vad användaren skrev

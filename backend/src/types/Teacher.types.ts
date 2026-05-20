@@ -44,6 +44,7 @@ export type AirtableTeacherRecord = {
         Belastningsregister?: AirtableAttachment[];
         PushToken?: string;
         "Återställningskod"?: string;
+        Slutar?: "Aktiv" | "Paus" | "Slutat";
     };
 };
 
@@ -77,6 +78,7 @@ export type Teacher = {
     documents: TeacherDocument[];
     pushToken?: string;
    resetCode?: string;
+    status?: "Aktiv" | "Paus" | "Slutat";
 };
 
 export type CreateTeacherData = {
