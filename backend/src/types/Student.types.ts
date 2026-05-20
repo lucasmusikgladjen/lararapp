@@ -12,7 +12,6 @@ export type AirtableStudentFields = {
     Lektioner?: string[];
     "Vårdnadshavare namn"?: string[];
     Vårdnadshavare?: string[];
-    Barn?: string;
     Lektionsupplägg?: string;
     LärareFörslag?: string[];
 };
