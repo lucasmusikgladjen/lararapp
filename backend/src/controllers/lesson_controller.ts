@@ -4,12 +4,35 @@ import {
     createLessonsBatch,
     deleteLessonsBatch,
     getFutureLessonsForStudent,
+    getLessonsByIds,
     updateLessonsBatch,
     updateSingleLesson,
 } from "../services/lesson_service";
 import { CreateLessonDTO } from "../types/Lessons.types";
 
 const debug = Debug("musikgladjen:lessonController");
+
+type AnteckningarPayload = {
+    lektionsanteckning?: string;
+    laxa?: string;
+    installd?: string;
+    ombokning?: string;
+};
+
+const parseAnteckningar = (raw: unknown): AnteckningarPayload => {
+    if (typeof raw !== "string" || !raw) return {};
+    try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === "object" && parsed ? parsed : {};
+    } catch {
+        return {};
+    }
+};
+
+const fetchAnteckningar = async (lessonId: string): Promise<AnteckningarPayload> => {
+    const records = await getLessonsByIds([lessonId]);
+    return parseAnteckningar(records[0]?.fields?.Anteckningar);
+};
 
 export const create = async (req: Request, res: Response) => {
     try {
@@ -141,9 +164,11 @@ export const completeLesson = async (req: Request, res: Response) => {
 
         debug(`Marking lesson ${id} as completed`);
 
+        const existing = await fetchAnteckningar(id);
         const updatedRecord = await updateSingleLesson(id, {
             Status: "Genomförd",
             Anteckningar: JSON.stringify({
+                ...existing,
                 lektionsanteckning: notes || "",
                 laxa: homework || "",
             }),
@@ -170,10 +195,15 @@ export const rescheduleLesson = async (req: Request, res: Response) => {
 
         debug(`Rescheduling lesson ${id} to ${newDate}`);
 
+        const existing = await fetchAnteckningar(id);
         const fieldsToUpdate: any = {
             Datum: newDate,
             Status: "Ombokad",
-            Orsak: JSON.stringify({ installd: "", ombokning: reason }),
+            Anteckningar: JSON.stringify({
+                ...existing,
+                installd: "",
+                ombokning: reason,
+            }),
         };
 
         if (newTime) {
@@ -203,9 +233,14 @@ export const cancelLesson = async (req: Request, res: Response) => {
 
         debug(`Cancelling lesson ${id}. Initiated by: ${cancelledBy}`);
 
+        const existing = await fetchAnteckningar(id);
         const updatedRecord = await updateSingleLesson(id, {
             Status: "Inställd",
-            Orsak: JSON.stringify({ installd: `${cancelledBy} ställer in: ${reason}`, ombokning: "" }),
+            Anteckningar: JSON.stringify({
+                ...existing,
+                installd: `${cancelledBy} ställer in: ${reason}`,
+                ombokning: "",
+            }),
         });
 
         res.send({
