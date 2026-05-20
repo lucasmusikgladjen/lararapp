@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { createTeacher, getTeacherByEmail, updateTeacher } from "../services/teacher_service";
+import { isTeacherActive } from "../services/teacher_status";
 import { JwtAccessTokenPayload } from "../types/JWT.types";
 import { StringValue } from "ms";
 import { TypedRequestBody } from "../types/Request.types";
@@ -52,8 +53,8 @@ export const login = async (req: TypedRequestBody<LoginRequestBody>, res: Respon
         }
 
         // 3. Block teachers that have ended their employment
-        if (teacher.status === "Slutat") {
-            debug("Login failed: User %s has status Slutat", email);
+        if (!isTeacherActive(teacher.status)) {
+            debug("Login failed: User %s is inactive (status=%s)", email, teacher.status);
             res.status(403).send({
                 status: "fail",
                 message: "Kontot är avslutat. Kontakta Musikglädjen om du har frågor.",
@@ -196,8 +197,8 @@ export const resetPassword = async (req: Request, res: Response) => {
             return res.status(404).send({ status: "fail", message: "Kunde inte hitta en användare med den e-postadressen." });
         }
 
-        if (teacher.status === "Slutat") {
-            debug("Reset password blocked: User %s has status Slutat", email);
+        if (!isTeacherActive(teacher.status)) {
+            debug("Reset password blocked: User %s is inactive (status=%s)", email, teacher.status);
             return res.status(403).send({ status: "fail", message: "Kontot är avslutat. Kontakta Musikglädjen om du har frågor." });
         }
 
