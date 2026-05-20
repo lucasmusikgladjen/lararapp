@@ -39,13 +39,9 @@ export const getStudentById = async (token: string, studentId: string): Promise<
 };
 
 export const updateStudentInfo = async (token: string, studentId: string, payload: UpdateStudentPayload): Promise<Student> => {
-    // Map frontend field names to API field names
-    // notes -> kommentar, goals -> terminsmal
+    // Map frontend field names to API field names: goals -> terminsmal
     const apiPayload: Record<string, string> = {};
 
-    if (payload.notes !== undefined) {
-        apiPayload.kommentar = payload.notes;
-    }
     if (payload.goals !== undefined) {
         apiPayload.terminsmal = payload.goals;
     }

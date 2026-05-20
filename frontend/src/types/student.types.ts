@@ -30,7 +30,6 @@ export type Student = {
     comment: string;
     lessonPrice: number;
     lessons: Lesson[];
-    notes: string | null;
     goals: string | null;
     guardian?: Guardian;
     guardianName?: string;
@@ -58,7 +57,6 @@ export type SearchStudentsResponse = {
 };
 
 export type UpdateStudentPayload = {
-    notes?: string;
     goals?: string;
 };
 

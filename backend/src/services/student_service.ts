@@ -50,7 +50,7 @@ const mapLessonRecordToDTO = (record: AirtableLessonRecord): StudentLessonDTO =>
 
 const mapAirtableToStudent = (record: AirtableRecord, lessons: StudentLessonDTO[]): Student => {
     const field = record.fields;
-    const lektionsupplägg = parseJsonField(field.Lektionsupplägg, { terminsmål: '', kommentar: '' });
+    const lektionsupplägg = parseJsonField(field.Lektionsupplägg, { terminsmål: '' });
 
     return {
         id: record.id,
@@ -66,7 +66,6 @@ const mapAirtableToStudent = (record: AirtableRecord, lessons: StudentLessonDTO[
         experience: "",
         description: "",
         leadScore: undefined,
-        notes: lektionsupplägg.kommentar || "",
         goals: lektionsupplägg.terminsmål || "",
         guardianName: field["Vårdnadshavare namn"]?.[0] || "",
         guardianEmail: "",
@@ -111,12 +110,11 @@ export const getStudentsByTeacher = async (teacherName: string): Promise<Student
 export const updateStudent = async (id: string, data: UpdateStudentInput): Promise<Student> => {
     const airtableFields: Record<string, any> = {};
 
-    if (data.kommentar !== undefined || data.terminsmal !== undefined) {
+    if (data.terminsmal !== undefined) {
         const currentRecord = await get<AirtableRecord>(`/${TABLE_NAME}/${id}`);
         let lu: any = {};
         try { lu = JSON.parse(currentRecord.fields.Lektionsupplägg || '{}'); } catch {}
-        if (data.kommentar !== undefined) lu.kommentar = data.kommentar;
-        if (data.terminsmal !== undefined) lu.terminsmål = data.terminsmal;
+        lu.terminsmål = data.terminsmal;
         airtableFields['Lektionsupplägg'] = JSON.stringify(lu);
     }
 
