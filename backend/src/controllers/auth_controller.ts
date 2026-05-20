@@ -51,7 +51,16 @@ export const login = async (req: TypedRequestBody<LoginRequestBody>, res: Respon
             return;
         }
 
-        // 3. Verify credentials
+        // 3. Block teachers that have ended their employment
+        if (teacher.status === "Slutat") {
+            debug("Login failed: User %s has status Slutat", email);
+            res.status(403).send({
+                status: "fail",
+                message: "Kontot är avslutat. Kontakta Musikglädjen om du har frågor.",
+            });
+            return;
+        }
+
         if (!teacher.password) {
             debug("Login failed: User %s has no password set", email);
             res.status(401).send({
@@ -185,6 +194,11 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         if (!teacher) {
             return res.status(404).send({ status: "fail", message: "Kunde inte hitta en användare med den e-postadressen." });
+        }
+
+        if (teacher.status === "Slutat") {
+            debug("Reset password blocked: User %s has status Slutat", email);
+            return res.status(403).send({ status: "fail", message: "Kontot är avslutat. Kontakta Musikglädjen om du har frågor." });
         }
 
         // Kolla om Airtable har en återställningskod, och om den matchar vad användaren skrev

@@ -86,6 +86,7 @@ const mapAirtableToTeacher = (record: AirtableTeacherRecord): Teacher => {
 
         pushToken: field.PushToken,
         resetCode: field["Återställningskod"],
+        status: field.Slutar,
     };
 };
 
